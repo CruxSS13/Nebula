@@ -1,7 +1,7 @@
 // Used for creating the exchange areas.
 /area/turbolift
 	name = "\improper Turbolift"
-	base_turf = /turf/simulated/open
+	base_turf = /turf/open
 	requires_power = FALSE
 	sound_env = SMALL_ENCLOSED
 	holomap_color = HOLOMAP_AREACOLOR_LIFTS

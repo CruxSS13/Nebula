@@ -1,6 +1,6 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "a" = (
-/turf/exterior/open/flooded,
+/turf/open/flooded,
 /area/crux/outside/ocean/deep)
 "k" = (
 /turf/unsimulated/dark_filler,
@@ -10,7 +10,7 @@
 /area/crux/outside/ocean/deep)
 "V" = (
 /obj/abstract/level_data_spawner/crux_ocean_shallows,
-/turf/exterior/open/flooded,
+/turf/open/flooded,
 /area/crux/outside/ocean/deep)
 
 (1,1,1) = {"
