@@ -6,7 +6,7 @@
 /obj/abstract/landmark{
 	name = "carpspawn"
 	},
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside)
 "aad" = (
 /obj/structure/lattice,
@@ -24762,7 +24762,7 @@
 /turf/simulated/floor/tiled/steel_grid,
 /area/crux/engineering/auxiliary_engineering)
 "qmt" = (
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside)
 "qNz" = (
 /obj/structure/lattice,

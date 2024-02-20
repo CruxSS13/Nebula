@@ -3,38 +3,38 @@
 /obj/abstract/landmark{
 	name = "carpspawn"
 	},
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_two)
 "aad" = (
 /obj/structure/lattice,
 /obj/structure/grille,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_two)
 "aae" = (
 /obj/item/stack/material/rods,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_two)
 "aag" = (
 /obj/structure/lattice,
 /obj/structure/grille/broken,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_two)
 "abc" = (
 /obj/structure/lattice,
 /obj/item/stack/material/rods,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_two)
 "adJ" = (
 /obj/structure/lattice,
 /obj/item/stack/material/rods,
 /obj/item/stack/material/rods,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_two)
 "adK" = (
 /obj/structure/lattice,
 /obj/item/stack/material/rods,
 /obj/structure/grille/broken,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_two)
 "aGU" = (
 /obj/structure/railing/mapped{
@@ -52,7 +52,7 @@
 /obj/structure/lattice,
 /obj/structure/grille/broken,
 /obj/item/stack/material/rods,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_two)
 "aXD" = (
 /obj/machinery/smartfridge/drying_rack,
@@ -60,7 +60,7 @@
 /area/crux/habitation/hydroponics)
 "aXG" = (
 /obj/random/junk,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_two)
 "aYE" = (
 /obj/structure/railing/mapped{
@@ -74,15 +74,15 @@
 	density = 0;
 	icon_state = "brokengrille"
 	},
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_two)
 "bho" = (
 /obj/structure/grille,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_two)
 "bjT" = (
 /obj/random/tool,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_two)
 "boS" = (
 /obj/structure/railing/mapped{
@@ -97,7 +97,7 @@
 /obj/structure/railing/mapped{
 	dir = 4
 	},
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_two)
 "bWW" = (
 /obj/machinery/portable_atmospherics/hydroponics,
@@ -148,7 +148,7 @@
 /obj/structure/railing/mapped{
 	dir = 4
 	},
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_two)
 "cKW" = (
 /obj/structure/cable{
@@ -232,11 +232,11 @@
 /turf/simulated/floor/carpet/red,
 /area/crux/habitation/chapel)
 "djC" = (
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_two)
 "djD" = (
 /obj/structure/lattice,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_two)
 "dAV" = (
 /turf/simulated/floor/reinforced,
@@ -1329,7 +1329,7 @@
 	icon_state = "32-4"
 	},
 /obj/machinery/door/firedoor,
-/turf/simulated/open,
+/turf/open,
 /area/crux/maintenance/thirddeck/forestarboard)
 "dDC" = (
 /obj/effect/floor_decal/industrial/warning{
@@ -1612,7 +1612,7 @@
 	icon_state = "32-1"
 	},
 /obj/machinery/door/firedoor,
-/turf/simulated/open,
+/turf/open,
 /area/crux/maintenance/thirddeck/foreport)
 "dEc" = (
 /obj/structure/cable/cyan{
@@ -6106,7 +6106,7 @@
 /obj/structure/railing{
 	dir = 4
 	},
-/turf/simulated/open,
+/turf/open,
 /area/crux/hallway/primary/thirddeck/central)
 "dOe" = (
 /obj/effect/floor_decal/industrial/warning{
@@ -8622,7 +8622,7 @@
 	icon_state = "32-2"
 	},
 /obj/machinery/door/firedoor,
-/turf/simulated/open,
+/turf/open,
 /area/crux/maintenance/thirddeck/aftstarboard)
 "dTc" = (
 /obj/structure/rack,
@@ -8932,7 +8932,7 @@
 	icon_state = "32-8"
 	},
 /obj/machinery/door/firedoor,
-/turf/simulated/open,
+/turf/open,
 /area/crux/maintenance/thirddeck/aftport)
 "dTF" = (
 /obj/machinery/door/firedoor,
@@ -9824,7 +9824,7 @@
 	icon_state = "32-2"
 	},
 /obj/structure/railing,
-/turf/simulated/open,
+/turf/open,
 /area/crux/maintenance/substation/command)
 "edC" = (
 /obj/structure/cable{
@@ -10160,7 +10160,7 @@
 /obj/structure/ladder,
 /obj/structure/catwalk,
 /obj/structure/railing/mapped,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_two)
 "ijt" = (
 /obj/structure/flora/bush/fullgrass,
@@ -10475,7 +10475,7 @@
 /turf/simulated/floor/tiled/freezer,
 /area/crux/habitation/hydroponics)
 "rkR" = (
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/roof)
 "rzH" = (
 /obj/effect/wingrille_spawn/reinforced,
@@ -10644,7 +10644,7 @@
 "wIZ" = (
 /obj/structure/catwalk,
 /obj/structure/railing/mapped,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_two)
 "wUI" = (
 /obj/structure/bed/sofa/pew/right/mahogany{

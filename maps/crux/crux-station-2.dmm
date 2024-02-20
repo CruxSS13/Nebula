@@ -1,47 +1,47 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "aaa" = (
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "aab" = (
 /obj/abstract/landmark{
 	name = "carpspawn"
 	},
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "aad" = (
 /obj/structure/lattice,
 /obj/structure/grille,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "aae" = (
 /obj/item/stack/material/rods,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "aaf" = (
 /obj/structure/lattice,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "aag" = (
 /obj/structure/lattice,
 /obj/structure/grille/broken,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "abc" = (
 /obj/structure/lattice,
 /obj/item/stack/material/rods,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "adJ" = (
 /obj/structure/lattice,
 /obj/item/stack/material/rods,
 /obj/item/stack/material/rods,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "adK" = (
 /obj/structure/lattice,
 /obj/item/stack/material/rods,
 /obj/structure/grille/broken,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "ahQ" = (
 /turf/unsimulated/dark_filler,
@@ -51,8 +51,8 @@
 /turf/simulated/floor/plating,
 /area/crux/maintenance/library)
 "aOv" = (
-/turf/exterior/open,
-/turf/exterior/open,
+/turf/open,
+/turf/open,
 /area/crux/outside/level_one)
 "aQj" = (
 /obj/machinery/atmospherics/pipe/simple/hidden/supply{
@@ -710,7 +710,7 @@
 /area/crux/hotel/standard_room_c)
 "aXG" = (
 /obj/random/junk,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "aXO" = (
 /obj/structure/cable/green,
@@ -3182,7 +3182,7 @@
 	density = 0;
 	icon_state = "brokengrille"
 	},
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "bfH" = (
 /obj/structure/railing{
@@ -3408,7 +3408,7 @@
 "bgw" = (
 /obj/machinery/atmospherics/pipe/simple/visible/red,
 /obj/structure/lattice,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "bgy" = (
 /turf/simulated/wall,
@@ -3663,7 +3663,7 @@
 /area/crux/engineering/atmos)
 "bho" = (
 /obj/structure/grille,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "bhp" = (
 /obj/machinery/air_sensor{
@@ -3972,14 +3972,14 @@
 /area/crux/engineering/atmos)
 "bif" = (
 /obj/structure/grille/broken,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "big" = (
 /obj/abstract/landmark{
 	name = "carpspawn"
 	},
 /obj/structure/lattice,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "bih" = (
 /obj/effect/floor_decal/corner/white/diagonal,
@@ -4736,17 +4736,17 @@
 /area/crux/hotel)
 "bjT" = (
 /obj/random/tool,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "bjU" = (
 /obj/machinery/atmospherics/pipe/simple/visible/green,
 /obj/structure/lattice,
-/turf/exterior/open,
+/turf/open,
 /area/crux/engineering/atmos)
 "bjV" = (
 /obj/machinery/atmospherics/pipe/simple/visible/cyan,
 /obj/structure/lattice,
-/turf/exterior/open,
+/turf/open,
 /area/crux/engineering/atmos)
 "bjW" = (
 /obj/effect/floor_decal/corner/lime/full{
@@ -5038,12 +5038,12 @@
 "bkE" = (
 /obj/structure/lattice,
 /obj/machinery/atmospherics/pipe/simple/visible/yellow,
-/turf/exterior/open,
+/turf/open,
 /area/crux/engineering/atmos)
 "bkF" = (
 /obj/structure/lattice,
 /obj/machinery/atmospherics/pipe/simple/visible/green,
-/turf/exterior/open,
+/turf/open,
 /area/crux/engineering/atmos)
 "bkG" = (
 /obj/machinery/atmospherics/pipe/manifold/visible/green{
@@ -6669,7 +6669,7 @@
 	dir = 4
 	},
 /obj/structure/lattice,
-/turf/exterior/open,
+/turf/open,
 /area/crux/engineering/atmos)
 "boL" = (
 /obj/machinery/atmospherics/pipe/simple/visible/red{
@@ -7004,7 +7004,7 @@
 	dir = 4
 	},
 /obj/structure/lattice,
-/turf/exterior/open,
+/turf/open,
 /area/crux/engineering/atmos)
 "bpH" = (
 /obj/machinery/atmospherics/pipe/simple/visible/red{
@@ -7483,7 +7483,7 @@
 /area/crux/hallway/secondary/eva_hallway)
 "bri" = (
 /obj/structure/railing,
-/turf/simulated/open,
+/turf/open,
 /area/crux/hallway/secondary/eva_hallway)
 "brj" = (
 /obj/effect/floor_decal/industrial/warning{
@@ -23716,7 +23716,7 @@
 /obj/machinery/atmospherics/pipe/zpipe/down/scrubbers{
 	dir = 4
 	},
-/turf/simulated/open,
+/turf/open,
 /area/crux/maintenance/substation/central)
 "bZE" = (
 /obj/structure/cable/green{
@@ -25297,12 +25297,12 @@
 	icon_state = "32-2"
 	},
 /obj/machinery/door/firedoor,
-/turf/simulated/open,
+/turf/open,
 /area/crux/maintenance/engineering)
 "ccT" = (
 /obj/structure/lattice,
 /obj/machinery/door/firedoor,
-/turf/simulated/open,
+/turf/open,
 /area/crux/maintenance/engineering)
 "ccU" = (
 /obj/structure/disposalpipe/broken{
@@ -27126,7 +27126,7 @@
 /obj/machinery/atmospherics/pipe/zpipe/down/scrubbers{
 	dir = 4
 	},
-/turf/simulated/open,
+/turf/open,
 /area/crux/maintenance/research_medical)
 "cgV" = (
 /obj/structure/table/steel,
@@ -34666,7 +34666,7 @@
 /obj/structure/railing{
 	dir = 4
 	},
-/turf/simulated/open,
+/turf/open,
 /area/crux/hallway/primary/seconddeck/stairwell)
 "cxF" = (
 /obj/machinery/atmospherics/unary/vent_scrubber/on{
@@ -38958,14 +38958,14 @@
 /area/crux/supply/lockerroom)
 "cFQ" = (
 /obj/structure/railing,
-/turf/simulated/open,
+/turf/open,
 /area/crux/supply/lockerroom)
 "cFR" = (
 /obj/structure/railing,
 /obj/structure/railing{
 	dir = 4
 	},
-/turf/simulated/open,
+/turf/open,
 /area/crux/supply/lockerroom)
 "cFS" = (
 /obj/machinery/ai_status_display{
@@ -47422,7 +47422,7 @@
 /area/crux/supply/delivery)
 "cXA" = (
 /obj/structure/catwalk,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "cXB" = (
 /obj/structure/cable{
@@ -48954,7 +48954,7 @@
 /obj/structure/railing/mapped{
 	dir = 4
 	},
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "dcH" = (
 /obj/machinery/atmospherics/pipe/simple/hidden/supply,
@@ -49423,7 +49423,7 @@
 /area/crux/hallway/primary/seconddeck/south)
 "dfg" = (
 /obj/structure/railing,
-/turf/simulated/open,
+/turf/open,
 /area/crux/hallway/primary/seconddeck/south)
 "dfi" = (
 /turf/simulated/wall,
@@ -50471,7 +50471,7 @@
 /obj/machinery/atmospherics/pipe/zpipe/down/scrubbers{
 	dir = 1
 	},
-/turf/simulated/open,
+/turf/open,
 /area/crux/maintenance/substation/cargo)
 "dVx" = (
 /obj/machinery/holomap{
@@ -50763,7 +50763,7 @@
 /area/crux/engineering/storage)
 "ebK" = (
 /obj/structure/railing,
-/turf/simulated/open,
+/turf/open,
 /area/crux/science)
 "ebL" = (
 /turf/simulated/floor/tiled/steel_grid,
@@ -50776,7 +50776,7 @@
 	dir = 5
 	},
 /obj/structure/closet/firecloset,
-/turf/simulated/open,
+/turf/open,
 /area/crux/science)
 "ebN" = (
 /obj/machinery/atmospherics/pipe/simple/hidden/supply{
@@ -51530,7 +51530,7 @@
 /obj/machinery/shipsensors,
 /obj/structure/lattice,
 /obj/structure/catwalk,
-/turf/exterior/open,
+/turf/open,
 /area/crux/hallway/primary/seconddeck/ascenter)
 "eea" = (
 /obj/machinery/computer/ship/sensors,
@@ -51690,7 +51690,7 @@
 "hct" = (
 /obj/structure/catwalk,
 /obj/structure/railing/mapped,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "hdM" = (
 /obj/machinery/recharge_station,
@@ -51952,7 +51952,7 @@
 /turf/simulated/floor/tiled/monotile,
 /area/crux/hallway/primary/seconddeck/south)
 "lSe" = (
-/turf/exterior/open,
+/turf/open,
 /area/crux/engineering/atmos)
 "lYx" = (
 /obj/machinery/light/small{
@@ -52034,7 +52034,7 @@
 /area/crux/habitation/library)
 "mBa" = (
 /obj/machinery/atmospherics/unary/vent_scrubber/on,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "mIL" = (
 /obj/structure/railing/mapped,
@@ -52043,7 +52043,7 @@
 "mRF" = (
 /obj/machinery/atmospherics/pipe/simple/visible/red,
 /obj/structure/lattice,
-/turf/exterior/open,
+/turf/open,
 /area/crux/engineering/atmos)
 "mRX" = (
 /obj/effect/floor_decal/corner/grey/diagonal{
@@ -52244,7 +52244,7 @@
 	dir = 8
 	},
 /obj/structure/railing/mapped,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "pjp" = (
 /obj/structure/closet/secure_closet/freezer/meat,
@@ -52357,7 +52357,7 @@
 /obj/structure/catwalk,
 /obj/structure/railing/mapped,
 /obj/structure/ladder,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "qBZ" = (
 /obj/item/stool/padded,
@@ -52796,7 +52796,7 @@
 /obj/structure/railing/mapped{
 	dir = 8
 	},
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/level_one)
 "woR" = (
 /obj/structure/kitchenspike,

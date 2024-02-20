@@ -1,19 +1,19 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "a" = (
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/ocean_over)
 "A" = (
 /turf/unsimulated/dark_filler,
 /area/crux/outside/ocean_over)
 "F" = (
 /obj/abstract/level_data_spawner/crux_ocean,
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/ocean_over)
 "L" = (
 /obj/abstract/map_data{
 	height = 3
 	},
-/turf/exterior/open,
+/turf/open,
 /area/crux/outside/ocean_over)
 
 (1,1,1) = {"

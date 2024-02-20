@@ -11,8 +11,8 @@
 	// Firedoors can be mapped over maintenance shafts.
 	UT_turf_exceptions_by_door_type = list(
 		/obj/machinery/door/firedoor = list(
-			/turf/simulated/open,
-			/turf/exterior/open
+			/turf/open,
+			/turf/open
 		)
 	)
 	abstract_type = /datum/level_data/crux
