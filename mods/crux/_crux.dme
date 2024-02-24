@@ -2,6 +2,7 @@
 #define MODPACK_CRUX
 #include "_crux.dm"
 #include "datum/cultures.dm"
+#include "datum/generators.dm"
 #include "datum/languages.dm"
 #include "datum/species.dm"
 #include "overrides/clothing.dm"

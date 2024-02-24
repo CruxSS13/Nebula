@@ -15,11 +15,8 @@
 	#include "datum/turbolifts.dm"
 
 	#include "atoms/cameras.dm"
-	#include "atoms/flora.dm"
-	#include "atoms/mobs.dm"
-	#include "atoms/machinery.dm"
 	#include "atoms/telecoms.dm"
-	#include "atoms/guns.dm"
+	#include "atoms/mobs.dm"
 
 	#include "areas/_areas.dm"
 	#include "areas/bridge.dm"
@@ -41,18 +38,12 @@
 	#include "areas/supply.dm"
 	#include "areas/turbolift.dm"
 
-	#include "jobs/jobs.dm"
-	#include "jobs/departments.dm"
-
 	#include "submaps/_submaps.dm"
 	#include "submaps/engine/engine_supermatter.dm"
+	#include "submaps/pois/poi.dm"
 
-	#include "crux_cryo.dm"
 	#include "crux_overmap.dm"
-	#include "crux_generators.dm"
 	#include "crux_levels.dm"
-	#include "crux_testing.dm"
-
 
 	#include "crux-station-0.dmm"
 	#include "crux-station-1.dmm"
@@ -64,7 +55,6 @@
 	#include "crux-ocean-2.dmm"
 
 	#include "crux-wilderness-1.dmm"
-	#include "submaps/pois/poi.dm"
 
 	#define USING_MAP_DATUM /datum/map/crux
 

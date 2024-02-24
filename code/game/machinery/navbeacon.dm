@@ -279,3 +279,15 @@ Transponder Codes:<UL>"}
 /obj/machinery/navbeacon/Hydroponics
 	location = "Hydroponics"
 	codes = list("delivery" = 1, "dir" = 2)
+
+/obj/machinery/navbeacon/delivery/north
+	codes = list("delivery" = 1, "dir" = NORTH)
+
+/obj/machinery/navbeacon/delivery/south
+	codes = list("delivery" = 1, "dir" = SOUTH)
+
+/obj/machinery/navbeacon/delivery/east
+	codes = list("delivery" = 1, "dir" = EAST)
+
+/obj/machinery/navbeacon/delivery/west
+	codes = list("delivery" = 1, "dir" = WEST)
