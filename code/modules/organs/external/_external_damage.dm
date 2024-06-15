@@ -31,7 +31,7 @@
 		owner.bodytemperature += burn
 		burn = 0
 		if(prob(25))
-			owner.visible_message("<span class='warning'>\The [owner]'s crystalline [name] shines with absorbed energy!</span>")
+			owner.visible_message(SPAN_WARNING("\The [owner]'s crystalline [name] shines with absorbed energy!"))
 
 	if(used_weapon)
 		add_autopsy_data(used_weapon, brute + burn)
@@ -68,7 +68,7 @@
 	if((status & ORGAN_BROKEN) && brute)
 		jostle_bone(brute)
 		if(can_feel_pain() && prob(40))
-			owner.emote("scream")	//getting hit on broken hand hurts
+			owner.emote(/decl/emote/audible/scream)	//getting hit on broken hand hurts
 
 	// If the limbs can break, make sure we don't exceed the maximum damage a limb can take before breaking
 	var/datum/wound/created_wound
@@ -118,7 +118,7 @@
 		owner.update_bandages()
 
 	if(owner && update_damstate())
-		owner.update_damage_icon()
+		owner.update_damage_overlays()
 
 	if(created_wound && isobj(used_weapon))
 		var/obj/O = used_weapon
@@ -197,16 +197,9 @@
 
 	return update_damstate()
 
-// Brute/burn
-/obj/item/organ/external/proc/get_brute_damage()
-	return brute_dam
-
-/obj/item/organ/external/proc/get_burn_damage()
-	return burn_dam
-
 // Geneloss/cloneloss.
 /obj/item/organ/external/proc/get_genetic_damage()
-	if(bodytype.body_flags & BODY_FLAG_NO_DNA)
+	if(!bodytype || (bodytype.body_flags & BODY_FLAG_NO_DNA))
 		return 0
 	if(BP_IS_PROSTHETIC(src))
 		return 0
@@ -282,7 +275,7 @@
 			return
 	pain = max(0,min(max_damage,pain+amount))
 	if(owner && ((amount > 15 && prob(20)) || (amount > 30 && prob(60))))
-		owner.emote("scream")
+		owner.emote(/decl/emote/audible/scream)
 	return pain-last_pain
 
 /obj/item/organ/external/proc/stun_act(var/stun_amount, var/agony_amount)

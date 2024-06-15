@@ -1,11 +1,10 @@
-/obj/item/storage/backpack/messenger/corvid_couriers
+/obj/item/backpack/messenger/corvid_couriers
 	name = "corvid messenger bag"
 	desc = "A small green-grey messenger bag with a blue Corvid Couriers logo on it."
 	icon = 'icons/obj/items/storage/backpack/corvid.dmi'
 	icon_state = ICON_STATE_WORLD
-	storage_slots = 7
 	w_class = ITEM_SIZE_SMALL
-	max_w_class = ITEM_SIZE_SMALL
+	storage = /datum/storage/backpack/crow
 	material = /decl/material/solid/organic/cloth
 
 /mob/living/simple_animal/crow
@@ -15,16 +14,15 @@
 	pass_flags = PASS_FLAG_TABLE
 	mob_size = MOB_SIZE_SMALL
 
-	speak = list("Caw.", "Caw?", "Caw!", "CAW.")
-	speak_emote = list("caws")
-	emote_hear = list("caws")
-	emote_see = list("hops")
+	emote_speech = list("Caw.", "Caw?", "Caw!", "CAW.")
+	speak_emote  = list("caws")
+	emote_hear   = list("caws")
+	emote_see    = list("hops")
 
 	natural_weapon = /obj/item/natural_weapon/crow_claws
 
 	stop_automated_movement = TRUE
 	universal_speak = TRUE
-	pass_flags = PASS_FLAG_TABLE
 
 
 /mob/living/simple_animal/crow/get_overlay_state_modifier()
@@ -49,7 +47,7 @@
 	add_inventory_slot(new /datum/inventory_slot/back/simple)
 	add_inventory_slot(new /datum/inventory_slot/id)
 	add_held_item_slot(new /datum/inventory_slot/gripper/mouth/simple)
-	equip_to_slot_or_del(new /obj/item/storage/backpack/messenger/corvid_couriers(src), slot_back_str)
+	equip_to_slot_or_del(new /obj/item/backpack/messenger/corvid_couriers(src), slot_back_str)
 	update_icon()
 
 /mob/living/simple_animal/crow/get_dexterity(var/silent)

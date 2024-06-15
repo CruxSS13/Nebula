@@ -4,12 +4,17 @@
 	icon = 'icons/obj/ammo.dmi'
 	icon_state = "pistolcasing"
 	randpixel = 10
-	obj_flags = OBJ_FLAG_CONDUCTIBLE
+	obj_flags = OBJ_FLAG_CONDUCTIBLE | OBJ_FLAG_HOLLOW
 	slot_flags = SLOT_LOWER_BODY | SLOT_EARS
 	throwforce = 1
 	w_class = ITEM_SIZE_TINY
-	obj_flags = OBJ_FLAG_HOLLOW
 	material = /decl/material/solid/metal/brass
+	material_alteration = MAT_FLAG_ALTERATION_COLOR | MAT_FLAG_ALTERATION_NAME
+	drop_sound = list(
+		'sound/weapons/guns/casingfall1.ogg',
+		'sound/weapons/guns/casingfall2.ogg',
+		'sound/weapons/guns/casingfall3.ogg'
+	)
 
 	var/leaves_residue = 1
 	var/caliber = ""					//Which kind of guns it can be loaded into
@@ -18,7 +23,11 @@
 	var/spent_icon = "pistolcasing-spent"
 	var/bullet_color = COLOR_COPPER
 	var/marking_color
-	drop_sound = list('sound/weapons/guns/casingfall1.ogg','sound/weapons/guns/casingfall2.ogg','sound/weapons/guns/casingfall3.ogg')
+
+/obj/item/ammo_casing/get_contained_external_atoms()
+	. = ..()
+	if(. && BB)
+		LAZYREMOVE(., BB)
 
 /obj/item/ammo_casing/Initialize()
 	if(ispath(projectile_type))

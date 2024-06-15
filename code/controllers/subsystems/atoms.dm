@@ -8,10 +8,6 @@ SUBSYSTEM_DEF(atoms)
 	init_order = SS_INIT_ATOMS
 	flags = SS_NO_FIRE | SS_NEEDS_SHUTDOWN
 
-	// override and GetArguments() exists for mod-override/downstream hook functionality.
-	// Useful for total-overhaul type modifications.
-	var/adjust_init_arguments = FALSE
-
 	var/atom_init_stage = INITIALIZATION_INSSATOMS
 	var/old_init_stage
 
@@ -66,6 +62,7 @@ SUBSYSTEM_DEF(atoms)
 		for(var/I in late_loaders)
 			var/atom/A = I
 			A.LateInitialize(arglist(late_loaders[A]))
+			CHECK_TICK
 		report_progress("Late initialized [late_loaders.len] atom\s")
 		late_loaders.Cut()
 

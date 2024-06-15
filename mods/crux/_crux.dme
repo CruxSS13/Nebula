@@ -14,7 +14,6 @@
 #include "species/tza/culture.dm"
 #include "species/tza/markings.dm"
 #include "species/tza/organs.dm"
-#include "species/tza/pheremones.dm"
 #include "species/tza/species.dm"
 #include "species/yulomnn/bodytype.dm"
 #include "species/yulomnn/culture.dm"

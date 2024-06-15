@@ -129,7 +129,6 @@
 /obj/item/radio/Destroy()
 	QDEL_NULL(wires)
 	QDEL_NULL_LIST(encryption_keys)
-	global.listening_objects -= src
 	set_frequency(null) // clean up the radio connection
 	channels = null
 	. = ..()
@@ -498,7 +497,7 @@
 
 /obj/item/radio/CouldUseTopic(var/mob/user)
 	..()
-	if(iscarbon(user))
+	if(isliving(user))
 		playsound(src, "button", 10)
 
 /obj/item/radio/off

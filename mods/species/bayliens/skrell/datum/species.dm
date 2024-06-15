@@ -1,3 +1,8 @@
+/decl/butchery_data/humanoid/skrell
+	meat_name = "calamari"
+	meat_type = /obj/item/chems/food/butchery/meat/fish/octopus/skrell
+	bone_material = /decl/material/solid/organic/bone/cartilage
+
 /decl/species/skrell
 	name = SPECIES_SKRELL
 	name_plural = SPECIES_SKRELL
@@ -20,8 +25,8 @@
 	Skrell value cooperation and have very communal lifestyles, and despite their diplomatic fluency and innate curiosity are very leery of outside \
 	interference in their customs and values."
 
-	meat_type = /obj/item/chems/food/fish/octopus/skrell
-	bone_material = /decl/material/solid/organic/bone/cartilage
+	butchery_data = /decl/butchery_data/humanoid/skrell
+
 	available_pronouns = list(
 		/decl/pronouns/skrell
 	)
@@ -32,7 +37,7 @@
 	burn_mod = 0.9
 	oxy_mod = 1.3
 	toxins_mod = 0.8
-	siemens_coefficient = 1.3
+	shock_vulnerability = 1.3
 	warning_low_pressure = WARNING_LOW_PRESSURE * 1.4
 	hazard_low_pressure = HAZARD_LOW_PRESSURE * 2
 	warning_high_pressure = WARNING_HIGH_PRESSURE / 0.8125
@@ -55,11 +60,6 @@
 		/decl/blood_type/skrell/yzminus,
 		/decl/blood_type/skrell/noplus,
 		/decl/blood_type/skrell/nominus
-	)
-	appearance_descriptors = list(
-		/datum/appearance_descriptor/height = 1,
-		/datum/appearance_descriptor/build = 0.8,
-		/datum/appearance_descriptor/headtail_length = 1
 	)
 
 	available_cultural_info = list(
@@ -111,10 +111,7 @@
 	if(water >= 40 && H.hydration < 400) //skrell passively absorb water.
 		H.hydration += 1
 
-/decl/species/skrell/get_gender(var/mob/living/carbon/human/H)
-	return istype(H) && (H.appearance_descriptors["headtail length"] == 1 ? MALE : FEMALE)
-
-/decl/species/skrell/handle_trail(mob/living/carbon/human/H, turf/simulated/T, old_loc)
+/decl/species/skrell/handle_trail(mob/living/carbon/human/H, turf/T, old_loc)
 	var/obj/item/shoes = H.get_equipped_item(slot_shoes_str)
 	if(!shoes)
 		var/list/bloodDNA
@@ -123,10 +120,12 @@
 			bloodDNA = list(blood_data["blood_DNA"] = blood_data["blood_type"])
 		else
 			bloodDNA = list()
-		T.AddTracks(/obj/effect/decal/cleanable/blood/tracks/footprints/skrellprints, bloodDNA, H.dir, 0, H.get_skin_colour() + "25") // Coming (8c is the alpha value)
-		if(istype(old_loc, /turf/simulated))
-			var/turf/simulated/old_turf = old_loc
-			old_turf.AddTracks(/obj/effect/decal/cleanable/blood/tracks/footprints/skrellprints, bloodDNA, 0, H.dir, H.get_skin_colour() + "25") // Going (8c is the alpha value)
+		if(T.simulated)
+			T.AddTracks(/obj/effect/decal/cleanable/blood/tracks/footprints/skrellprints, bloodDNA, H.dir, 0, H.get_skin_colour() + "25") // Coming (8c is the alpha value)
+		if(isturf(old_loc))
+			var/turf/old_turf = old_loc
+			if(old_turf.simulated)
+				old_turf.AddTracks(/obj/effect/decal/cleanable/blood/tracks/footprints/skrellprints, bloodDNA, 0, H.dir, H.get_skin_colour() + "25") // Going (8c is the alpha value)
 
 /decl/species/skrell/check_background()
 	return TRUE

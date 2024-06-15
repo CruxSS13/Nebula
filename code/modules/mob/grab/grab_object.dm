@@ -1,11 +1,11 @@
 /obj/item/grab
-	name = "grab"
-	canremove =    FALSE
-	item_flags =   ITEM_FLAG_NO_BLUDGEON
-	w_class =      ITEM_SIZE_NO_CONTAINER
-	pickup_sound = null
-	drop_sound =   null
-	equip_sound =  null
+	name              = "grab"
+	canremove         = FALSE
+	item_flags        = ITEM_FLAG_NO_BLUDGEON
+	w_class           = ITEM_SIZE_NO_CONTAINER
+	pickup_sound      = null
+	drop_sound        = null
+	equip_sound       = null
 	is_spawnable_type = FALSE
 
 	var/atom/movable/affecting             // Atom being targeted by this grab.
@@ -39,7 +39,7 @@
 
 	var/mob/living/affecting_mob = get_affecting_mob()
 	if(affecting_mob)
-		affecting_mob.UpdateLyingBuckledAndVerbStatus()
+		affecting_mob.update_posture()
 		if(ishuman(affecting_mob))
 			var/mob/living/carbon/human/H = affecting_mob
 			var/obj/item/uniform = H.get_equipped_item(slot_w_uniform_str)
@@ -75,6 +75,11 @@
 	if(affecting_mob && assailant?.a_intent == I_HURT)
 		upgrade(TRUE)
 
+/obj/item/grab/mob_can_unequip(mob/user, slot, disable_warning = FALSE, dropping = FALSE)
+	if(dropping)
+		return TRUE
+	return FALSE
+
 /obj/item/grab/examine(mob/user)
 	. = ..()
 	var/mob/M = get_affecting_mob()
@@ -94,8 +99,12 @@
 		else
 			upgrade()
 
-/obj/item/grab/attack(mob/M, mob/living/user)
-	return FALSE
+/obj/item/grab/use_on_mob(mob/living/target, mob/living/user, animate = TRUE)
+	if(affecting == target)
+		var/datum/extension/abilities/abilities = get_extension(user, /datum/extension/abilities)
+		if(abilities?.do_grabbed_invocation(target))
+			return TRUE
+	. = ..()
 
 /obj/item/grab/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
 	if(QDELETED(src) || !current_grab || !assailant || proximity_flag) // Close-range is handled in resolve_attackby().
@@ -142,7 +151,7 @@
 */
 
 /obj/item/grab/proc/on_target_change(obj/screen/zone_selector/zone, old_sel, new_sel)
-	if(src != assailant.get_active_hand())
+	if(src != assailant.get_active_held_item())
 		return // Note that because of this condition, there's no guarantee that target_zone = old_sel
 	if(target_zone == new_sel)
 		return
@@ -232,10 +241,10 @@
 
 /obj/item/grab/on_update_icon()
 	. = ..()
-	if(current_grab.icon)
-		icon = current_grab.icon
-	if(current_grab.icon_state)
-		icon_state = current_grab.icon_state
+	if(current_grab.grab_icon)
+		icon = current_grab.grab_icon
+	if(current_grab.grab_icon_state)
+		icon_state = current_grab.grab_icon_state
 
 /obj/item/grab/proc/throw_held()
 	return current_grab.throw_held(src)

@@ -7,6 +7,11 @@
 	color_blend = ICON_MULTIPLY
 	uid = "acc_hair_taj_rattail"
 
+/decl/sprite_accessory/hair/taj/get_hidden_substitute()
+	if(accessory_flags & VERY_SHORT)
+		return src
+	return GET_DECL(/decl/sprite_accessory/hair/bald)
+
 /decl/sprite_accessory/hair/taj/straight
 	name = "Tajaran Straight Hair"
 	icon_state = "hair_straight"
@@ -209,7 +214,7 @@
 	name = "Patches (Body)"
 	icon_state = "patches"
 	body_parts = list(BP_CHEST, BP_GROIN)
-	flags = HAIR_LOSS_VULNERABLE
+	accessory_flags = HAIR_LOSS_VULNERABLE
 	uid = "acc_marking_taj_patches"
 
 /decl/sprite_accessory/marking/tajaran/patches/left_arm
@@ -235,7 +240,7 @@
 /decl/sprite_accessory/marking/tajaran/tiger
 	name = "Tiger Stripes (Head)"
 	icon_state = "tiger"
-	flags = HAIR_LOSS_VULNERABLE
+	accessory_flags = HAIR_LOSS_VULNERABLE
 	uid = "acc_marking_taj_tiger_head"
 
 /decl/sprite_accessory/marking/tajaran/tiger/body
@@ -266,7 +271,7 @@
 /decl/sprite_accessory/marking/tajaran/spots
 	name = "Spots (Head)"
 	icon_state = "spots"
-	flags = HAIR_LOSS_VULNERABLE
+	accessory_flags = HAIR_LOSS_VULNERABLE
 	uid = "acc_marking_taj_spots_head"
 
 /decl/sprite_accessory/marking/tajaran/spots/body
@@ -298,7 +303,7 @@
 	name = "Pawsocks (Left Arm)"
 	icon_state = "pawsocks"
 	body_parts = list(BP_L_ARM, BP_L_HAND)
-	flags = HAIR_LOSS_VULNERABLE
+	accessory_flags = HAIR_LOSS_VULNERABLE
 	uid = "acc_marking_taj_pawsocks_leftarm"
 
 /decl/sprite_accessory/marking/tajaran/pawsocks/right_arm
@@ -320,5 +325,5 @@
 	name = "Belly"
 	icon_state = "belly"
 	body_parts = list(BP_CHEST, BP_GROIN)
-	flags = HAIR_LOSS_VULNERABLE
+	accessory_flags = HAIR_LOSS_VULNERABLE
 	uid = "acc_marking_taj_belly"

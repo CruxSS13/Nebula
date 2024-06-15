@@ -5,38 +5,40 @@ var/global/const/DRINK_ICON_DEFAULT = ""
 var/global/const/DRINK_ICON_NOISY = "noise"
 
 /obj/item/chems/drinks/glass2
+
 	name = "glass" // Name when empty
 	base_name = "glass"
 	desc = "A generic drinking glass." // Description when empty
 	icon = 'icons/obj/drink_glasses/square.dmi'
 	icon_state = null
 	base_icon = "square" // Base icon name
-	/// The icon state prefix used for overlay/addon sprites. If unset, defaults to base_icon.
-	var/overlay_base_icon = null
 	filling_states = @"[20,40,60,80,100]"
 	volume = 30
 	material = /decl/material/solid/glass
-
 	drop_sound = 'sound/foley/bottledrop1.ogg'
 	pickup_sound = 'sound/foley/bottlepickup1.ogg'
-
-	var/list/extras = list() // List of extras. Two extras maximum
-
-	var/rim_pos // Position of the rim for fruit slices. list(y, x_left, x_right)
-	var/filling_overlayed //if filling should go on top of the icon (e.g. opaque cups)
-	var/static/list/filling_icons_cache = list()
-
 	center_of_mass =@'{"x":16,"y":9}'
-
 	amount_per_transfer_from_this = 5
 	possible_transfer_amounts = @"[5,10,15,30]"
 	atom_flags = ATOM_FLAG_OPEN_CONTAINER
 	presentation_flags = PRESENTATION_FLAG_NAME | PRESENTATION_FLAG_DESC
-	temperature_coefficient = 4
-	obj_flags = OBJ_FLAG_HOLLOW
+	w_class = ITEM_SIZE_SMALL
 
+	/// The icon state prefix used for overlay/addon sprites. If unset, defaults to base_icon.
+	var/overlay_base_icon = null
+	var/list/extras = list() // List of extras. Two extras maximum
+	var/rim_pos // Position of the rim for fruit slices. list(y, x_left, x_right)
+	var/filling_overlayed //if filling should go on top of the icon (e.g. opaque cups)
+	var/static/list/filling_icons_cache = list()
 	var/custom_name
 	var/custom_desc
+
+// Reverse the matter effect of the hollow flag, keep the force effect.
+// Glasses are so tiny that their effective matter is ten times lower than forks/knives due to OBJ_FLAG_HOLLOW.
+/obj/item/chems/drinks/glass2/get_matter_amount_modifier()
+	. = ..()
+	if(obj_flags & OBJ_FLAG_HOLLOW)
+		. /= HOLLOW_OBJECT_MATTER_MULTIPLIER
 
 /obj/item/chems/drinks/glass2/examine(mob/M)
 	. = ..()
@@ -44,7 +46,7 @@ var/global/const/DRINK_ICON_NOISY = "noise"
 	for(var/I in extras)
 		if(istype(I, /obj/item/glass_extra))
 			to_chat(M, "There is \a [I] in \the [src].")
-		else if(istype(I, /obj/item/chems/food/fruit_slice))
+		else if(istype(I, /obj/item/chems/food/processed_grown/slice))
 			to_chat(M, "There is \a [I] on the rim.")
 		else
 			to_chat(M, "There is \a [I] somewhere on the glass. Somehow.")
@@ -106,10 +108,6 @@ var/global/const/DRINK_ICON_NOISY = "noise"
 /obj/item/chems/drinks/glass2/get_base_desc()
 	. = custom_desc || ..()
 
-/obj/item/chems/drinks/glass2/on_reagent_change()
-	temperature_coefficient = 4 / max(1, reagents?.total_volume)
-	..()
-
 /obj/item/chems/drinks/glass2/proc/can_add_extra(obj/item/glass_extra/GE)
 	if(!("[overlay_base_icon]_[GE.glass_addition]left" in icon_states(icon)))
 		return FALSE
@@ -126,7 +124,7 @@ var/global/const/DRINK_ICON_NOISY = "noise"
 		if(istype(extra, /obj/item/glass_extra))
 			var/obj/item/glass_extra/GE = extra
 			LAZYADD(extra_text, GE.glass_desc)
-		else if(istype(extra, /obj/item/chems/food/fruit_slice))
+		else if(istype(extra, /obj/item/chems/food/processed_grown/slice))
 			LAZYADD(extra_text, "There is \a [extra] on the rim.")
 	if(length(extra_text))
 		to_chat(user, SPAN_NOTICE(jointext(extra_text," ")))
@@ -195,7 +193,7 @@ var/global/const/DRINK_ICON_NOISY = "noise"
 			var/image/I = image(icon, src, "[overlay_base_icon]_[GE.glass_addition][side]")
 			I.color = GE.color
 			underlays += I
-		else if(rim_pos && istype(item, /obj/item/chems/food/fruit_slice))
+		else if(rim_pos && istype(item, /obj/item/chems/food/processed_grown/slice))
 			var/obj/FS = item
 			var/image/I = image(FS)
 
@@ -212,7 +210,7 @@ var/global/const/DRINK_ICON_NOISY = "noise"
 		side = "right"
 
 /obj/item/chems/drinks/glass2/attackby(obj/item/W, mob/user)
-	if(istype(W, /obj/item/kitchen/utensil/spoon))
+	if(istype(W, /obj/item/utensil/spoon))
 		if(user.a_intent == I_HURT)
 			user.visible_message("<span class='warning'>[user] bashes \the [src] with a spoon, shattering it to pieces! What a rube.</span>")
 			playsound(src, "shatter", 30, 1)

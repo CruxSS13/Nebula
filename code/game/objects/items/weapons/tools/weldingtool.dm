@@ -52,7 +52,7 @@
 	if(welding)
 		update_icon()
 
-/obj/item/weldingtool/adjust_mob_overlay(mob/living/user_mob, bodytype, image/overlay, slot, bodypart, use_fallback_if_icon_missing = TRUE, skip_offset = FALSE)
+/obj/item/weldingtool/adjust_mob_overlay(mob/living/user_mob, bodytype, image/overlay, slot, bodypart, use_fallback_if_icon_missing = TRUE)
 	if(overlay && welding && check_state_in_icon("[overlay.icon_state]-lit", overlay.icon))
 		overlay.add_overlay(emissive_overlay(overlay.icon, "[overlay.icon_state]-lit"))
 	. = ..()
@@ -262,7 +262,7 @@
 	if(get_fuel() < amount)
 		. = FALSE //Try to burn as much as possible anyways
 	if(tank)
-		tank.reagents.remove_reagent(/decl/material/liquid/fuel, amount)
+		tank.remove_from_reagents(/decl/material/liquid/fuel, amount)
 
 //Returns whether or not the welding tool is currently on.
 /obj/item/weldingtool/proc/isOn()
@@ -293,10 +293,10 @@
 /obj/item/weldingtool/proc/update_physical_damage()
 	if(isOn())
 		force   = tank ? tank.lit_force : initial(force)
-		damtype = BURN
+		atom_damage_type = BURN
 	else
-		damtype = BRUTE
 		force   = tank? tank.unlit_force : initial(force)
+		atom_damage_type = BRUTE
 
 /obj/item/weldingtool/proc/turn_on(var/mob/user)
 	if (!status)
@@ -342,27 +342,22 @@
 	else
 		return turn_on(user)
 
-/obj/item/weldingtool/attack(mob/living/M, mob/living/user, target_zone)
-	if(ishuman(M))
-		var/mob/living/carbon/human/H = M
-		var/obj/item/organ/external/S = GET_EXTERNAL_ORGAN(H, target_zone)
-
+/obj/item/weldingtool/use_on_mob(mob/living/target, mob/living/user, animate = TRUE)
+	if(ishuman(target))
+		var/mob/living/carbon/human/H = target
+		var/obj/item/organ/external/S = GET_EXTERNAL_ORGAN(H, user?.get_target_zone())
 		if(!S || !S.is_robotic() || user.a_intent != I_HELP)
 			return ..()
-
 		if(BP_IS_BRITTLE(S))
-			to_chat(user, SPAN_WARNING("\The [M]'s [S.name] is hard and brittle - \the [src]  cannot repair it."))
+			to_chat(user, SPAN_WARNING("\The [target]'s [S.name] is hard and brittle - \the [src]  cannot repair it."))
 			return TRUE
-
 		if(!welding)
-			to_chat(user, SPAN_WARNING("You'll need to turn [src] on to patch the damage on [M]'s [S.name]!"))
+			to_chat(user, SPAN_WARNING("You'll need to turn [src] on to patch the damage on [target]'s [S.name]!"))
 			return TRUE
-
 		if(S.robo_repair(15, BRUTE, "some dents", src, user))
 			weld(1, user)
 			return TRUE
-	else
-		return ..()
+	return ..()
 
 /obj/item/weldingtool/get_autopsy_descriptors()
 	if(isOn())
@@ -402,7 +397,7 @@
 	throwforce        = 5
 	volume            = 20
 	show_reagent_name = TRUE
-	health            = 40
+	current_health    = 40
 	max_health        = 40
 	material          = /decl/material/solid/metal/steel
 	var/can_refuel    = TRUE
@@ -411,7 +406,7 @@
 	var/lit_force     = 11
 
 /obj/item/chems/welder_tank/populate_reagents()
-	reagents.add_reagent(/decl/material/liquid/fuel, reagents.maximum_volume)
+	add_to_reagents(/decl/material/liquid/fuel, reagents.maximum_volume)
 
 /obj/item/chems/welder_tank/examine(mob/user, distance)
 	. = ..()
@@ -533,7 +528,7 @@
 /obj/item/chems/welder_tank/experimental/Process()
 	if(REAGENT_VOLUME(reagents, /decl/material/liquid/fuel) < reagents.maximum_volume)
 		var/gen_amount = ((world.time-last_gen)/25)
-		reagents.add_reagent(/decl/material/liquid/fuel, gen_amount)
+		add_to_reagents(/decl/material/liquid/fuel, gen_amount)
 		last_gen = world.time
 
 #undef WELDING_TOOL_HOTSPOT_TEMP_ACTIVE

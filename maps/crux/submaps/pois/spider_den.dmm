@@ -1,53 +1,53 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "a" = (
-/obj/item/clothing/accessory/toggleable/hawaii/random,
+/obj/item/clothing/shirt/hawaii/random,
 /obj/random/accessory,
 /obj/item/remains,
 /obj/random/medical/pillbottle,
-/obj/item/pickaxe/diamonddrill,
-/turf/exterior/barren,
+/obj/item/tool/drill/diamond,
+/turf/floor/natural/barren,
 /area/space)
 "b" = (
 /mob/living/simple_animal/hostile/giant_spider,
-/turf/exterior/barren,
+/turf/floor/natural/barren,
 /area/space)
 "l" = (
-/turf/exterior/wall/random,
+/turf/wall/natural/random,
 /area/space)
 "m" = (
 /obj/item/toy/plushie/spider,
-/turf/exterior/barren,
+/turf/floor/natural/barren,
 /area/space)
 "w" = (
 /obj/effect/decal/cleanable/spiderling_remains,
-/turf/exterior/barren,
+/turf/floor/natural/barren,
 /area/space)
 "D" = (
 /obj/effect/spider/eggcluster,
-/turf/exterior/barren,
+/turf/floor/natural/barren,
 /area/space)
 "E" = (
 /obj/effect/spider/stickyweb,
-/turf/exterior/barren,
+/turf/floor/natural/barren,
 /area/space)
 "R" = (
 /mob/living/simple_animal/hostile/giant_spider/nurse,
-/turf/exterior/barren,
+/turf/floor/natural/barren,
 /area/space)
 "S" = (
 /obj/effect/spider/stickyweb,
 /obj/effect/spider/stickyweb,
-/turf/exterior/barren,
+/turf/floor/natural/barren,
 /area/space)
 "W" = (
 /obj/item/remains,
 /obj/random/energy,
 /obj/item/clothing/suit/armor/vest/ert,
-/obj/item/clothing/accessory/armor/helmcover/green,
-/turf/exterior/barren,
+/obj/item/clothing/armor_attachment/helmcover/green,
+/turf/floor/natural/barren,
 /area/space)
 "Z" = (
-/turf/exterior/barren,
+/turf/floor/natural/barren,
 /area/space)
 
 (1,1,1) = {"

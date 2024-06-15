@@ -70,7 +70,7 @@
 		return
 	else //and if it's beating, let's see if it should
 		var/should_stop = prob(80) && owner.get_blood_circulation() < BLOOD_VOLUME_SURVIVE //cardiovascular shock, not enough liquid to pump
-		should_stop = should_stop || prob(max(0, owner.getBrainLoss() - owner.get_max_health() * 0.75)) //brain failing to work heart properly
+		should_stop = should_stop || prob(max(0, owner.get_damage(BRAIN) - owner.get_max_health() * 0.75)) //brain failing to work heart properly
 		should_stop = should_stop || (prob(5) && pulse == PULSE_THREADY) //erratic heart patterns, usually caused by oxyloss
 		if(should_stop) // The heart has stopped due to going into traumatic or cardiovascular shock.
 			to_chat(owner, "<span class='danger'>Your heart has stopped!</span>")
@@ -189,6 +189,10 @@
 	return is_usable() && (pulse > PULSE_NONE || BP_IS_PROSTHETIC(src) || (owner.status_flags & FAKEDEATH))
 
 /obj/item/organ/internal/heart/listen()
+
+	if(!owner || (status & (ORGAN_DEAD|ORGAN_CUT_AWAY)))
+		return "no pulse"
+
 	if(BP_IS_PROSTHETIC(src) && is_working())
 		if(is_bruised())
 			return "sputtering pump"
@@ -213,9 +217,6 @@
 			pulsesound = "extremely fast and faint"
 
 	. = "[pulsesound] pulse"
-
-/obj/item/organ/internal/heart/get_mechanical_assisted_descriptor()
-	return "pacemaker-assisted [name]"
 
 /obj/item/organ/internal/heart/rejuvenate(ignore_organ_aspects)
 	. = ..()

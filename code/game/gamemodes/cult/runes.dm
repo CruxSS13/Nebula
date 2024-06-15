@@ -126,7 +126,7 @@
 		if(!iscultist(target) && target.loc == get_turf(src)) // They hesitated, resisted, or can't join, and they are still on the rune - burn them
 			if(target.stat == CONSCIOUS)
 				target.take_overall_damage(0, 10)
-				switch(target.getFireLoss())
+				switch(target.get_damage(BURN))
 					if(0 to 25)
 						to_chat(target, "<span class='danger'>Your blood boils as you force yourself to resist the corruption invading every corner of your mind.</span>")
 					if(25 to 45)
@@ -151,6 +151,8 @@
 /obj/effect/rune/teleport/Initialize()
 	. = ..()
 	var/area/A = get_area(src)
+	if(!A)
+		return INITIALIZE_HINT_QDEL
 	destination = A.proper_name
 	var/decl/special_role/cultist/cult = GET_DECL(/decl/special_role/cultist)
 	cult.teleport_runes += src
@@ -159,8 +161,9 @@
 	var/decl/special_role/cultist/cult = GET_DECL(/decl/special_role/cultist)
 	cult.teleport_runes -= src
 	var/turf/T = get_turf(src)
-	for(var/atom/movable/A in contents)
-		A.forceMove(T)
+	if(T)
+		for(var/atom/movable/A in contents)
+			A.forceMove(T)
 	return ..()
 
 /obj/effect/rune/teleport/examine(mob/user)
@@ -180,17 +183,17 @@
 			var/warning = 0
 			while(user.loc == src)
 				user.take_organ_damage(0, 2)
-				if(user.getFireLoss() > 50)
+				if(user.get_damage(BURN) > 50)
 					to_chat(user, "<span class='danger'>Your body can't handle the heat anymore!</span>")
 					leaveRune(user)
 					return
 				if(warning == 0)
 					to_chat(user, "<span class='warning'>You feel the immerse heat of the realm of Nar-Sie...</span>")
 					++warning
-				if(warning == 1 && user.getFireLoss() > 15)
+				if(warning == 1 && user.get_damage(BURN) > 15)
 					to_chat(user, "<span class='warning'>Your burns are getting worse. You should return to your realm soon...</span>")
 					++warning
-				if(warning == 2 && user.getFireLoss() > 35)
+				if(warning == 2 && user.get_damage(BURN) > 35)
 					to_chat(user, "<span class='warning'>The heat! It burns!</span>")
 					++warning
 				sleep(10)
@@ -247,15 +250,16 @@
 /obj/effect/rune/wall/cast(var/mob/living/user)
 	var/t
 	if(wall)
-		if(wall.health >= wall.max_health)
+		var/wall_max_health = wall.get_max_health()
+		if(wall.current_health >= wall_max_health)
 			to_chat(user, "<span class='notice'>The wall doesn't need mending.</span>")
 			return
-		t = wall.max_health - wall.health
-		wall.health += t
+		t = wall_max_health - wall.current_health
+		wall.current_health += t
 	else
 		wall = new /obj/effect/cultwall(get_turf(src), bcolor)
 		wall.rune = src
-		t = wall.health
+		t = wall.current_health
 	user.remove_blood_simple(t / 50)
 	speak_incantation(user, "Khari[pick("'","`")]d! Eske'te tannin!")
 	to_chat(user, "<span class='warning'>Your blood flows into the rune, and you feel that the very space over the rune thickens.</span>")
@@ -285,9 +289,10 @@
 /obj/effect/cultwall/examine(mob/user)
 	. = ..()
 	if(iscultist(user))
-		if(health == max_health)
+		var/current_max_health = get_max_health()
+		if(current_health == current_max_health)
 			to_chat(user, "<span class='notice'>It is fully intact.</span>")
-		else if(health > max_health * 0.5)
+		else if(current_health > current_max_health * 0.5)
 			to_chat(user, "<span class='warning'>It is damaged.</span>")
 		else
 			to_chat(user, "<span class='danger'>It is about to dissipate.</span>")
@@ -307,19 +312,19 @@
 		qdel(src)
 	else if(I.force)
 		user.visible_message("<span class='notice'>\The [user] hits \the [src] with \the [I].</span>", "<span class='notice'>You hit \the [src] with \the [I].</span>")
-		take_damage(I.force)
+		take_damage(I.force, I.atom_damage_type)
 		user.setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
 		user.do_attack_animation(src)
 
 /obj/effect/cultwall/bullet_act(var/obj/item/projectile/Proj)
-	if(!(Proj.damage_type == BRUTE || Proj.damage_type == BURN))
+	if(!(Proj.atom_damage_type == BRUTE || Proj.atom_damage_type == BURN))
 		return
-	take_damage(Proj.damage)
+	take_damage(Proj.damage, Proj.atom_damage_type)
 	..()
 
-/obj/effect/cultwall/proc/take_damage(var/amount)
-	health -= amount
-	if(health <= 0)
+/obj/effect/cultwall/take_damage(damage, damage_type = BRUTE, damage_flags, inflicter, armor_pen = 0)
+	current_health -= damage
+	if(current_health <= 0)
 		visible_message("<span class='warning'>\The [src] dissipates.</span>")
 		qdel(src)
 
@@ -362,8 +367,8 @@
 /obj/effect/rune/defile/cast(var/mob/living/user)
 	speak_incantation(user, "Ia! Ia! Zasan therium viortia!")
 	for(var/turf/T in range(1, src))
-		if(T.holy)
-			T.holy = 0
+		if(is_holy_turf(T))
+			T.turf_flags &= ~TURF_FLAG_HOLY
 		else
 			T.on_defilement()
 	visible_message("<span class='warning'>\The [src] embeds into the floor and walls around it, changing them!</span>", "You hear liquid flow.")
@@ -419,14 +424,14 @@
 		user.equip_to_slot_or_del(new /obj/item/clothing/shoes/cult(user), slot_shoes_str)
 
 	O = user.get_equipped_item(slot_back_str)
-	if(istype(O, /obj/item/storage) && !istype(O, /obj/item/storage/backpack/cultpack) && user.try_unequip(O))
-		var/obj/item/storage/backpack/cultpack/C = new /obj/item/storage/backpack/cultpack(user)
+	if(O.storage && !istype(O, /obj/item/backpack/cultpack) && user.try_unequip(O))
+		var/obj/item/backpack/cultpack/C = new /obj/item/backpack/cultpack(user)
 		user.equip_to_slot_or_del(C, slot_back_str)
 		if(C)
 			for(var/obj/item/I in O)
 				I.forceMove(C)
 	else if(!O)
-		var/obj/item/storage/backpack/cultpack/C = new /obj/item/storage/backpack/cultpack(user)
+		var/obj/item/backpack/cultpack/C = new /obj/item/backpack/cultpack(user)
 		user.equip_to_slot_or_del(C, slot_back_str)
 
 	user.update_icon()
@@ -469,7 +474,7 @@
 		if(ishuman(victim))
 			var/mob/living/carbon/human/H = victim
 			if(H.is_asystole())
-				H.adjustBrainLoss(2 + casters.len)
+				H.take_damage(2 + casters.len, BRAIN)
 		sleep(40)
 	if(victim && victim.loc == T && victim.stat == DEAD)
 		var/decl/special_role/cultist/cult = GET_DECL(/decl/special_role/cultist)
@@ -544,9 +549,9 @@
 		statuses += "you regain lost blood"
 		if(!charges)
 			return statuses
-	if(user.getBruteLoss() || user.getFireLoss())
-		var/healbrute = user.getBruteLoss()
-		var/healburn = user.getFireLoss()
+	if(user.get_damage(BRUTE) || user.get_damage(BURN))
+		var/healbrute = user.get_damage(BRUTE)
+		var/healburn = user.get_damage(BURN)
 		if(healbrute < healburn)
 			healbrute = min(healbrute, charges / 2)
 			charges -= healbrute
@@ -561,9 +566,9 @@
 		statuses += "your wounds mend"
 		if(!charges)
 			return statuses
-	if(user.getToxLoss())
-		use = min(user.getToxLoss(), charges)
-		user.adjustToxLoss(-use)
+	if(user.get_damage(TOX))
+		use = min(user.get_damage(TOX), charges)
+		user.heal_damage(TOX, use)
 		charges -= use
 		statuses += "your body stings less"
 		if(!charges)
@@ -613,8 +618,8 @@
 		for(var/mob/living/M in cultists)
 			M.say("Ia! Ia! Zasan therium viortia! Razan gilamrua kioha!")
 		for(var/turf/T in range(5, src))
-			if(T.holy)
-				T.holy = 0
+			if(is_holy_turf(T))
+				T.turf_flags &= ~TURF_FLAG_HOLY
 			else
 				T.on_defilement()
 	visible_message("<span class='warning'>\The [src] embeds into the floor and walls around it, changing them!</span>", "You hear liquid flow.")
@@ -679,13 +684,12 @@
 		if(N)
 			continue
 		affected |= M
-		if(iscarbon(M))
-			var/mob/living/carbon/C = M
-			SET_STATUS_MAX(C, STAT_BLURRY, 50)
-			SET_STATUS_MAX(C, STAT_WEAK, 3)
-			SET_STATUS_MAX(C, STAT_STUN, 5)
-		else if(issilicon(M))
+		if(issilicon(M))
 			SET_STATUS_MAX(M, STAT_WEAK, 10)
+		else
+			SET_STATUS_MAX(M, STAT_BLURRY, 50)
+			SET_STATUS_MAX(M, STAT_WEAK, 3)
+			SET_STATUS_MAX(M, STAT_STUN, 5)
 
 	admin_attacker_log_many_victims(user, affected, "Used a confuse rune.", "Was victim of a confuse rune.", "used a confuse rune on")
 	qdel(src)

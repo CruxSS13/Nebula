@@ -6,7 +6,7 @@
 /turf/unsimulated/dark_filler,
 /area/crux/outside/ocean/deep)
 "M" = (
-/turf/exterior/seafloor/flooded,
+/turf/floor/natural/seafloor/flooded,
 /area/crux/outside/ocean/deep)
 "V" = (
 /obj/abstract/level_data_spawner/crux_ocean_shallows,

@@ -44,7 +44,7 @@
 		/obj/item/frame/apc/kit = 10,
 		/obj/item/frame/air_alarm/kit = 10,
 		/obj/item/cell = 10,
-		/obj/item/storage/belt/utility
+		/obj/item/belt/utility
 	)
 	contraband = list(/obj/item/cell/high = 3)
 
@@ -59,7 +59,7 @@
 	markup = 0
 	initial_access = list(access_atmospherics, access_engine_equip)
 	products = list(
-		/obj/item/storage/belt/utility = 4,
+		/obj/item/belt/utility = 4,
 		/obj/item/clothing/glasses/meson = 4,
 		/obj/item/clothing/gloves/insulated = 4,
 		/obj/item/screwdriver = 12,
@@ -115,14 +115,14 @@
 	vend_delay = 21
 	base_type = /obj/machinery/vending/materials
 	products = list(
-		/obj/item/stack/material/sheet/mapped/steel/fifty =            3,
-		/obj/item/stack/material/panel/mapped/plastic/fifty =          4,
-		/obj/item/stack/material/shiny/mapped/aluminium/fifty =        3,
-		/obj/item/stack/material/reinforced/mapped/plasteel/ten =      4,
-		/obj/item/stack/material/ingot/mapped/copper/fifty =           4,
-		/obj/item/stack/material/pane/mapped/glass/fifty =             4,
-		/obj/item/stack/material/reinforced/mapped/fiberglass/fifty =  4
+		/obj/item/stack/material/sheet/mapped/steel/fifty                 = 3,
+		/obj/item/stack/material/panel/mapped/plastic/fifty               = 4,
+		/obj/item/stack/material/sheet/shiny/mapped/aluminium/fifty       = 3,
+		/obj/item/stack/material/sheet/reinforced/mapped/plasteel/ten     = 4,
+		/obj/item/stack/material/ingot/mapped/copper/fifty                = 4,
+		/obj/item/stack/material/pane/mapped/glass/fifty                  = 4,
+		/obj/item/stack/material/sheet/reinforced/mapped/fiberglass/fifty = 4
 	)
 	contraband = list(
-		/obj/item/stack/material/reinforced/mapped/ocp/ten = 3
+		/obj/item/stack/material/sheet/reinforced/mapped/ocp/ten          = 3
 	)

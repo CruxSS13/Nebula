@@ -28,7 +28,7 @@
 		if(!do_after(user,200, L))
 			return
 		user.visible_message("<span class='danger'>\The [user] plunges the knife down into \the [a]!</span>")
-		L.adjustBruteLoss(20)
+		L.take_damage(20)
 		if(altar.linked_god)
 			altar.linked_god.adjust_power_min(2 * multiplier,0,"from a delicious sacrifice!")
 
@@ -74,4 +74,4 @@
 	amount_per_transfer_from_this = 10
 
 /obj/item/chems/drinks/zombiedrink/populate_reagents()
-	reagents.add_reagent(/decl/material/liquid/zombie, reagents.maximum_volume)
+	add_to_reagents(/decl/material/liquid/zombie, reagents.maximum_volume)

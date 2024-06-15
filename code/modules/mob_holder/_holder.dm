@@ -5,7 +5,6 @@
 	icon = 'icons/obj/items/holder.dmi'
 	icon_state = ICON_STATE_WORLD
 	slot_flags = SLOT_HEAD | SLOT_HOLSTER
-	origin_tech = null
 	pixel_y = 8
 	origin_tech = @'{"biotech":1}'
 	use_single_icon = TRUE
@@ -20,10 +19,10 @@
 
 /obj/item/holder/on_update_icon()
 	SHOULD_CALL_PARENT(FALSE)
-	clear_vis_contents(src)
+	clear_vis_contents()
 	for(var/atom/movable/AM in src)
 		AM.vis_flags |= (VIS_INHERIT_ID|VIS_INHERIT_LAYER|VIS_INHERIT_PLANE)
-		add_vis_contents(src, AM)
+		add_vis_contents(AM)
 
 // No scooping mobs and handing them to people who can't scoop them.
 /obj/item/holder/equipped(mob/user, slot)
@@ -35,7 +34,7 @@
 			break
 
 // Grab our inhands from the mob we're wrapping, if they have any.
-/obj/item/holder/get_mob_overlay(mob/user_mob, slot, bodypart, use_fallback_if_icon_missing = TRUE, force_skip_offset = FALSE, skip_offset = FALSE)
+/obj/item/holder/get_mob_overlay(mob/user_mob, slot, bodypart, use_fallback_if_icon_missing = TRUE, skip_adjustment = FALSE)
 	var/mob/M = locate() in contents
 	if(istype(M))
 		icon =  M.get_holder_icon()
@@ -60,7 +59,7 @@
 	destroy_all()
 
 /obj/item/holder/Destroy()
-	clear_vis_contents(src)
+	clear_vis_contents()
 	for(var/atom/movable/AM in src)
 		unregister_all_movement(last_holder, AM)
 		AM.vis_flags = initial(AM.vis_flags)
@@ -120,14 +119,17 @@
 	for(var/mob/M in contents)
 		M.show_stripping_window(usr)
 
-/obj/item/holder/attack(mob/target, mob/user)
+/obj/item/holder/use_on_mob(mob/living/target, mob/living/user, animate = TRUE)
+
 	// Devour on click on self with holder
-	if(target == user && iscarbon(user))
-		var/mob/living/carbon/M = user
+	if(target == user && isliving(user))
+		var/mob/living/M = user
 		for(var/mob/victim in src.contents)
 			M.devour(victim)
 		update_state()
-	..()
+		return TRUE
+
+	return ..()
 
 /obj/item/holder/proc/sync(var/mob/living/M)
 	SetName(M.name)

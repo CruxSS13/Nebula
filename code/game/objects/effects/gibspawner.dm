@@ -1,5 +1,23 @@
+/mob/proc/spawn_gibber(atom/location = loc)
+	var/gibber_type = get_gibber_type()
+	if(!gibber_type)
+		return
+	if(ispath(gibber_type, /obj/effect/gibspawner))
+		return new gibber_type(location, get_blood_type(), get_unique_enzymes(), get_flesh_color(), get_blood_color())
+	. = new gibber_type(location)
+	if(!istype(., /obj/effect/decal/cleanable/blood/gibs))
+		return
+	var/obj/effect/decal/cleanable/blood/gibs/gib = .
+	gib.fleshcolor = get_flesh_color()
+	gib.basecolor  = get_blood_color()
+	var/gib_unique_enzymes = get_unique_enzymes()
+	var/gib_blood_type = get_blood_type()
+	if(gib_unique_enzymes && gib_blood_type)
+		LAZYSET(gib.blood_DNA, gib_unique_enzymes, gib_blood_type)
+	gib.update_icon()
+
 /obj/effect/gibspawner
-	var/sparks = 0 //whether sparks spread on Gib()
+	var/sparks = 0 //whether sparks spread on spawn_gibs()
 	var/list/gibtypes = list()
 	var/list/gibamounts = list()
 	var/list/gibdirections = list() //of lists
@@ -18,13 +36,12 @@
 		blood_type = _blood_type
 	if(_unique_enzymes)
 		unique_enzymes = _unique_enzymes
-	Gib(loc)
+	spawn_gibs(loc)
 	return INITIALIZE_HINT_QDEL
 
-/obj/effect/gibspawner/proc/Gib(atom/location)
+/obj/effect/gibspawner/proc/spawn_gibs(atom/location)
 	if(gibtypes.len != gibamounts.len || gibamounts.len != gibdirections.len)
-		log_error("<span class='warning'>Gib list length mismatch!</span>")
-		return
+		CRASH("Gib list length mismatch!")
 
 	if(sparks)
 		spark_at(location, amount = 2, cardinal_only = TRUE)

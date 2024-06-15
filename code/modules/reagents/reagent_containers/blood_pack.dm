@@ -1,9 +1,9 @@
-/obj/item/storage/box/bloodpacks
+/obj/item/box/bloodpacks
 	name = "blood packs box"
 	desc = "This box contains blood packs."
 	icon_state = "sterile"
 
-/obj/item/storage/box/bloodpacks/WillContain()
+/obj/item/box/bloodpacks/WillContain()
 	return list(/obj/item/chems/ivbag = 7)
 
 /obj/item/chems/ivbag
@@ -87,7 +87,7 @@
 
 /obj/item/chems/ivbag/blood/populate_reagents()
 	if(blood_fill_type)
-		reagents.add_reagent(blood_fill_type, reagents.maximum_volume, get_initial_blood_data())
+		add_to_reagents(blood_fill_type, reagents.maximum_volume, get_initial_blood_data())
 
 /obj/item/chems/ivbag/blood/nanoblood
 	label_text = "synthetic"

@@ -20,7 +20,7 @@
 
 /decl/hierarchy/outfit/zombie_science
 	name = "Job - Dead Scientist"
-	uniform = /obj/item/clothing/under/color/white
+	uniform = /obj/item/clothing/jumpsuit/white
 	suit = /obj/item/clothing/suit/bio_suit/anomaly
 	head = /obj/item/clothing/head/bio_hood/anomaly
 
@@ -40,7 +40,7 @@
 	desc += "Label is smudged, and there's crusted blood fingerprints on it."
 
 /obj/item/chems/glass/beaker/vial/random_podchem/populate_reagents()
-	reagents.add_reagent(pick(/decl/material/liquid/random, /decl/material/liquid/zombie/science, /decl/material/liquid/retrovirals), 5)
+	add_to_reagents(pick(/decl/material/liquid/random, /decl/material/liquid/zombie/science, /decl/material/liquid/retrovirals), 5)
 
 /obj/structure/backup_server
 	name = "backup server"

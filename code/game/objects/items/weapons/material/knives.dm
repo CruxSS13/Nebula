@@ -23,7 +23,7 @@
 /obj/item/knife/Initialize(ml, material_key)
 	. = ..()
 	if(!has_extension(src, /datum/extension/tool))
-		set_extension(src, /datum/extension/tool/variable, list(
+		set_extension(src, /datum/extension/tool/variable/simple, list(
 			TOOL_SCALPEL =     TOOL_QUALITY_MEDIOCRE,
 			TOOL_SAW =         TOOL_QUALITY_BAD,
 			TOOL_RETRACTOR =   TOOL_QUALITY_BAD,
@@ -37,37 +37,18 @@
 			handle_color = pick(valid_handle_colors)
 		add_overlay(overlay_image(icon, "[get_world_inventory_state()]_handle", handle_color, flags=RESET_COLOR|RESET_ALPHA))
 
-/obj/item/knife/attack(mob/living/carbon/M, mob/living/carbon/user, target_zone)
-	if(!istype(M))
-		return ..()
+/obj/item/knife/use_on_mob(mob/living/target, mob/living/user, animate = TRUE)
 
-	if(user.a_intent != I_HELP)
-		if(user.get_target_zone() == BP_EYES)
-			if((MUTATION_CLUMSY in user.mutations) && prob(50))
-				M = user
-			return eyestab(M, user)
-
+	if(user.a_intent != I_HELP && user.get_target_zone() == BP_EYES)
+		if((MUTATION_CLUMSY in user.mutations) && prob(50))
+			target = user
+		return eyestab(target, user)
 	return ..()
 
 /obj/item/knife/can_take_wear_damage()
 	return FALSE //Prevents knives from shattering/breaking from usage
 
-//table knives
-/obj/item/knife/table
-	name = "table knife"
-	desc = "A simple table knife, used to cut up individual portions of food."
-	icon = 'icons/obj/items/weapon/knives/table.dmi'
-	material = /decl/material/solid/metal/aluminium
-	material_force_multiplier = 0.1
-	sharp = FALSE
-	attack_verb = list("prodded")
-	w_class = ITEM_SIZE_SMALL
-	material_alteration = MAT_FLAG_ALTERATION_COLOR
-
-/obj/item/knife/table/plastic
-	material = /decl/material/solid/organic/plastic
-
-/obj/item/knife/table/primitive
+/obj/item/knife/primitive
 	name = "dueling knife"
 	desc = "A length of leather-bound wood studded with razor-sharp teeth. How crude."
 	icon = 'icons/obj/items/weapon/knives/savage.dmi'
@@ -75,7 +56,7 @@
 	material_alteration = MAT_FLAG_ALTERATION_NAME
 	w_class = ITEM_SIZE_NORMAL
 
-/obj/item/knife/table/primitive/get_autopsy_descriptors()
+/obj/item/knife/primitive/get_autopsy_descriptors()
 	. = ..()
 	. += "serrated"
 

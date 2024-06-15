@@ -4,7 +4,7 @@
 	icon_state = "horns"
 	species_allowed = list(SPECIES_YULOMNN)
 	color_blend = ICON_MULTIPLY
-	flags = VERY_SHORT
+	accessory_flags = VERY_SHORT
 	uid = "acc_hair_yulo_horns"
 
 /decl/sprite_accessory/hair/yulomnn/hood

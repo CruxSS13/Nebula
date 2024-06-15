@@ -37,13 +37,13 @@
 	var/scent = pick(valid_scents)
 	var/smelly = pick(scent_intensity)
 	icon_state = "soap-[shape]"
-	color = pick(valid_colors)
+	set_color(pick(valid_colors))
 	decal_name = pick(decals)
 	desc = "\A [shape] bar of soap. It smells [smelly] of [scent]."
 	update_icon()
 
 /obj/item/soap/proc/wet()
-	reagents.add_reagent(/decl/material/liquid/cleaner, SOAP_CLEANER_ON_WET)
+	add_to_reagents(/decl/material/liquid/cleaner, SOAP_CLEANER_ON_WET)
 
 /obj/item/soap/Crossed(atom/movable/AM)
 	if(!isliving(AM))
@@ -87,7 +87,7 @@
 		user.update_personal_goal(/datum/goal/clean, 1)
 
 //attack_as_weapon
-/obj/item/soap/attack(mob/living/target, mob/living/user, var/target_zone)
+/obj/item/soap/use_on_mob(mob/living/target, mob/living/user, animate = TRUE)
 	if(ishuman(target) && user?.a_intent != I_HURT)
 		var/mob/living/carbon/human/victim = target
 		if(user.get_target_zone() == BP_MOUTH && victim.check_has_mouth())

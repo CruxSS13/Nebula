@@ -167,23 +167,14 @@
 	if(!isturf(target))
 		return
 
-	var/datum/gas_mixture/air_sample = air.remove_ratio(mingle_volume/air.volume)
-	air_sample.volume = mingle_volume
+	var/datum/gas_mixture/air_sample = air.remove_volume(mingle_volume)
 
 	if(target.zone)
-		//Have to consider preservation of group statuses
-		var/datum/gas_mixture/turf_copy = new
-
-		turf_copy.copy_from(target.zone.air)
-		turf_copy.volume = target.zone.air.volume //Copy a good representation of the turf from parent group
-
-		equalize_gases(list(air_sample, turf_copy))
+		//Copy a good representation of the turf from parent group
+		var/datum/gas_mixture/turf_sample = target.zone.air.remove_volume(CELL_VOLUME)
+		equalize_gases(list(air_sample, turf_sample))
 		air.merge(air_sample)
-
-		turf_copy.subtract(target.zone.air)
-
-		target.zone.air.merge(turf_copy)
-
+		target.assume_air(turf_sample)
 	else
 		var/datum/gas_mixture/turf_air = target.return_air()
 
@@ -231,8 +222,9 @@
 		else
 			target.air.temperature += sharer_temperature_delta
 
-	else if(istype(target, /turf/exterior) && !target.blocks_air)
-		var/turf/exterior/modeled_location = target
+	else if(target.external_atmosphere_participation && !target.blocks_air)
+
+		var/turf/modeled_location = target
 		var/datum/gas_mixture/target_air = modeled_location.return_air()
 
 		var/delta_temperature = air.temperature - target_air.temperature
@@ -241,7 +233,6 @@
 		if((sharer_heat_capacity > 0) && (partial_heat_capacity > 0))
 			var/heat = thermal_conductivity*delta_temperature* \
 				(partial_heat_capacity*sharer_heat_capacity/(partial_heat_capacity+sharer_heat_capacity))
-
 			air.temperature += -heat/total_heat_capacity
 		else
 			return 1
@@ -255,7 +246,7 @@
 
 			air.temperature -= heat/total_heat_capacity
 			// Only increase the temperature of the target if it's simulated.
-			if(istype(target, /turf/simulated))
+			if(target.simulated)
 				target.temperature += heat/target.heat_capacity
 
 	if(network)
@@ -286,6 +277,6 @@
 	// Previously, the temperature would enter equilibrium at 26C or 294K.
 	// Only would happen if both sides (all 2 square meters of surface area) were exposed to sunlight.  We now assume it aligned edge on.
 	// It currently should stabilise at 129.6K or -143.6C
-	. -= surface * STEFAN_BOLTZMANN_CONSTANT * thermal_conductivity * (surface_temperature - COSMIC_RADIATION_TEMPERATURE) ** 4
+	. -= surface * STEFAN_BOLTZMANN_CONSTANT * thermal_conductivity * (surface_temperature  ** 4 - COSMIC_RADIATION_TEMPERATURE ** 4)
 
 #undef REAGENT_UNITS_PER_PIPE

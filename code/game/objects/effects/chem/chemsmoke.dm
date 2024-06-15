@@ -87,9 +87,9 @@
 	show_log = 0
 	var/datum/seed/seed
 
-/datum/effect/effect/system/smoke_spread/chem/spores/New(seed_name)
-	if(seed_name)
-		seed = SSplants.seeds[seed_name]
+/datum/effect/effect/system/smoke_spread/chem/spores/New(seed_id)
+	if(seed_id)
+		seed = SSplants.seeds[seed_id]
 	if(!seed)
 		qdel(src)
 	..()
@@ -181,7 +181,7 @@
 	var/pressure = 0
 	var/datum/gas_mixture/environment = location.return_air()
 	if(environment) pressure = environment.return_pressure()
-	smoke_duration = clamp(5, smoke_duration*pressure/(ONE_ATMOSPHERE/3), smoke_duration)
+	smoke_duration = clamp(smoke_duration*pressure/(ONE_ATMOSPHERE/3), 5, smoke_duration)
 
 	var/const/arcLength = 2.3559 //distance between each smoke cloud
 
@@ -232,7 +232,7 @@
 
 /datum/effect/effect/system/smoke_spread/chem/spores/spawnSmoke(var/turf/T, var/icon/I, var/smoke_duration, var/dist = 1)
 	var/obj/effect/effect/smoke/chem/spores = new /obj/effect/effect/smoke/chem(location)
-	spores.SetName("cloud of [seed.seed_name] [seed.seed_noun]")
+	spores.SetName("cloud of [seed.product_name] [seed.seed_noun]")
 	..(T, I, smoke_duration, dist, passed_smoke=spores)
 
 
@@ -249,7 +249,7 @@
 			for(var/D in global.cardinal)
 				var/turf/target = get_step(current, D)
 				if(wallList)
-					if(istype(target, /turf/simulated/wall))
+					if(istype(target, /turf/wall))
 						if(!(target in wallList))
 							wallList += target
 						continue

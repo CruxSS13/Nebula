@@ -1,23 +1,9 @@
-/datum/appearance_descriptor/age/nakhayl
-	standalone_value_descriptors = list(
-		"an infant"     = 1,
-		"a toddler"     = 3,
-		"a child"       = 7,
-		"an adolescent" = 13,
-		"a young adult" = 18,
-		"an adult"      = 30,
-		"middle-aged"   = 55,
-		"aging"         = 80,
-		"elderly"       = 140
-	)
-
 /decl/species/nakhayl
 	name                   = SPECIES_NAKHAYL
 	name_plural            = "Ha-Nakhay"
-	base_prosthetics_model = null
+	base_external_prosthetics_model = null
 	description            = "Gnolls!"
 	hidden_from_codex      = FALSE
-	age_descriptor         = /datum/appearance_descriptor/age/nakhayl
 	available_bodytypes    = list(/decl/bodytype/nakhayl)
 	preview_outfit         = /decl/hierarchy/outfit/job/generic/engineer
 	spawn_flags            = SPECIES_CAN_JOIN
@@ -55,13 +41,13 @@
 	)
 
 	default_emotes = list(
-		/decl/emote/human/swish,
-		/decl/emote/human/wag,
-		/decl/emote/human/sway,
-		/decl/emote/human/qwag,
-		/decl/emote/human/fastsway,
-		/decl/emote/human/swag,
-		/decl/emote/human/stopsway
+		/decl/emote/visible/tail/swish,
+		/decl/emote/visible/tail/wag,
+		/decl/emote/visible/tail/sway,
+		/decl/emote/visible/tail/qwag,
+		/decl/emote/visible/tail/fastsway,
+		/decl/emote/visible/tail/swag,
+		/decl/emote/visible/tail/stopsway
 	)
 
 /decl/species/nakhayl/handle_additional_hair_loss(var/mob/living/carbon/human/H, var/defer_body_update = TRUE)

@@ -1,21 +1,23 @@
 /obj/screen/storage
 	name = "storage"
+	icon = 'icons/mob/screen/storage.dmi'
 	user_incapacitation_flags = INCAPACITATION_DISRUPTED
 	screen_loc = ui_storage_default
 	layer = HUD_BASE_LAYER
 	requires_owner = FALSE
+	requires_ui_style = FALSE
 	var/weakref/storage_master_ref
 
-/obj/screen/storage/Initialize(mapload, mob/_owner, ui_style, ui_color, ui_alpha, obj/item/storage/_storage_master)
+/obj/screen/storage/Initialize(mapload, mob/_owner, ui_style, ui_color, ui_alpha, ui_cat, datum/storage/_storage_master)
 	. = ..()
 	storage_master_ref = _storage_master && weakref(_storage_master)
 
 /obj/screen/storage/handle_click(mob/user, params)
-	var/obj/item/storage/storage_master = storage_master_ref?.resolve()
-	if(istype(storage_master) && !QDELETED(storage_master))
-		var/obj/item/I = user.get_active_hand()
+	var/datum/storage/storage_master = storage_master_ref?.resolve()
+	if(istype(storage_master) && !QDELETED(storage_master) && isatom(storage_master.holder))
+		var/obj/item/I = user.get_active_held_item()
 		if(I)
-			user.ClickOn(storage_master)
+			user.ClickOn(storage_master.holder)
 		return TRUE
 	return FALSE
 
@@ -33,27 +35,27 @@
 
 /obj/screen/storage/close
 	name       = "close"
+	icon       = 'icons/effects/markers.dmi'
 	icon_state = "x"
 	layer      = HUD_BASE_LAYER
 
 /obj/screen/storage/close/handle_click(mob/user, params)
-	var/obj/item/storage/storage_master = storage_master_ref?.resolve()
+	var/datum/storage/storage_master = storage_master_ref?.resolve()
 	if(istype(storage_master) && !QDELETED(storage_master))
 		storage_master.close(user)
 		return TRUE
 	return FALSE
 
-/obj/screen/stored_start
+/obj/screen/stored
+	layer = HUD_BASE_LAYER
+	requires_owner = FALSE
+	requires_ui_style = FALSE
+
+/obj/screen/stored/start
 	icon_state = "stored_start"
-	layer = HUD_BASE_LAYER
-	requires_owner = FALSE
 
-/obj/screen/stored_cont
+/obj/screen/stored/cont
 	icon_state = "stored_continue"
-	layer = HUD_BASE_LAYER
-	requires_owner = FALSE
 
-/obj/screen/stored_end
+/obj/screen/stored/end
 	icon_state = "stored_end"
-	layer = HUD_BASE_LAYER
-	requires_owner = FALSE

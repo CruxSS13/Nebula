@@ -3,15 +3,15 @@
 	real_name = "opossum"
 	desc = "It's an opossum, a small scavenging marsupial."
 	icon = 'icons/mob/simple_animal/possum.dmi'
-	speak = list("Hiss!","Aaa!","Aaa?")
-	speak_emote = list("hisses")
-	emote_hear = list("hisses")
-	emote_see = list("forages for trash", "lounges")
+	speak_emote  = list("hisses")
+	emote_speech = list("Hiss!","Aaa!","Aaa?")
+	emote_hear   = list("hisses")
+	emote_see    = list("forages for trash", "lounges")
 	pass_flags = PASS_FLAG_TABLE
-	speak_chance = 1
+	speak_chance = 0.5
 	turns_per_move = 3
 	see_in_dark = 6
-	mob_default_max_health = 50
+	max_health = 50
 	response_harm = "stamps on"
 	density = FALSE
 	minbodytemp = 223
@@ -29,18 +29,20 @@
 
 /datum/ai/opossum
 	expected_type = /mob/living/simple_animal/opossum
+
 /datum/ai/opossum/do_process(time_elapsed)
 	. = ..()
 	if(!prob(1))
 		return
 	var/mob/living/simple_animal/opossum/poss = body
-	poss.resting = (poss.stat == UNCONSCIOUS)
-	if(poss.resting)
+	if(poss.stat == UNCONSCIOUS)
+		poss.set_posture(/decl/posture/lying)
 		poss.wander = FALSE
 		poss.speak_chance = 0
 		poss.set_stat(UNCONSCIOUS)
 		poss.is_angry = FALSE
 	else
+		poss.set_posture(/decl/posture/standing)
 		poss.wander = initial(poss.wander)
 		poss.speak_chance = initial(poss.speak_chance)
 		poss.set_stat(CONSCIOUS)
@@ -62,19 +64,19 @@
 	update_icon()
 
 /mob/living/simple_animal/opossum/proc/respond_to_damage()
-	if(!resting && stat == CONSCIOUS)
+	if(!current_posture.prone && stat == CONSCIOUS)
 		if(!is_angry)
 			is_angry = TRUE
 			custom_emote(src, "hisses!")
 		else
-			resting = TRUE
+			set_posture(/decl/posture/lying/deliberate)
 			custom_emote(src, "dies!")
 		update_icon()
 
 /mob/living/simple_animal/opossum/on_update_icon()
 	..()
 	if(stat == CONSCIOUS && is_angry)
-		if(resting)
+		if(current_posture.prone)
 			icon_state = "world-dead"
 		else
 			icon_state = "world-aaa"
@@ -88,6 +90,7 @@
 	name = "Poppy the Safety Possum"
 	desc = "It's an opossum, a small scavenging marsupial. It's wearing appropriate personal protective equipment, though."
 	icon = 'icons/mob/simple_animal/poppy_possum.dmi'
+	can_buckle = TRUE
 	var/aaa_words = list("delaminat", "meteor", "fire", "breach")
 
 /mob/living/simple_animal/opossum/poppy/hear_broadcast(decl/language/language, mob/speaker, speaker_name, message)

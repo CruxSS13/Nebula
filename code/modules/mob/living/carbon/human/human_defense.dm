@@ -71,10 +71,10 @@ meteor_act
 		var/obj/item/clothing/gear = get_equipped_item(slot)
 		if(!istype(gear))
 			continue
-		if(gear.accessories.len)
-			for(var/obj/item/clothing/accessory/bling in gear.accessories)
-				if(bling.body_parts_covered & def_zone.body_part)
-					var/armor = get_extension(bling, /datum/extension/armor)
+		if(LAZYLEN(gear.accessories))
+			for(var/obj/item/clothing/accessory in gear.accessories)
+				if(accessory.body_parts_covered & def_zone.body_part)
+					var/armor = get_extension(accessory, /datum/extension/armor)
 					if(armor)
 						. += armor
 		if(gear.body_parts_covered & def_zone.body_part)
@@ -90,7 +90,7 @@ meteor_act
 	if (!def_zone)
 		return 1.0
 
-	var/siemens_coefficient = max(species.siemens_coefficient,0)
+	var/siemens_coefficient = max(species.get_shock_vulnerability(src), 0)
 	for(var/slot in global.standard_clothing_slots)
 		var/obj/item/clothing/C = get_equipped_item(slot)
 		if(istype(C) && (C.body_parts_covered & def_zone.body_part)) // Is that body part being targeted covered?
@@ -111,16 +111,6 @@ meteor_act
 		var/obj/item/gear = get_equipped_item(slot)
 		if(istype(gear) && (gear.body_parts_covered & SLOT_FACE) && !(gear.item_flags & ITEM_FLAG_FLEXIBLEMATERIAL))
 			return gear
-
-/mob/living/carbon/human/proc/check_shields(var/damage = 0, var/atom/damage_source = null, var/mob/attacker = null, var/def_zone = null, var/attack_text = "the attack")
-	var/list/checking_slots = get_held_items()
-	var/obj/item/suit = get_equipped_item(slot_wear_suit_str)
-	if(suit)
-		LAZYDISTINCTADD(checking_slots, suit)
-	for(var/obj/item/shield in checking_slots)
-		if(shield.handle_shield(src, damage, damage_source, attacker, def_zone, attack_text))
-			return TRUE
-	return FALSE
 
 /mob/living/carbon/human/resolve_item_attack(obj/item/I, mob/living/user, var/target_zone)
 
@@ -173,7 +163,7 @@ meteor_act
 	if(!affecting)
 		return 0
 
-	var/blocked = get_blocked_ratio(hit_zone, I.damtype, I.damage_flags(), I.armor_penetration, I.force)
+	var/blocked = get_blocked_ratio(hit_zone, I.atom_damage_type, I.damage_flags(), I.armor_penetration, I.force)
 	// Handle striking to cripple.
 	if(user.a_intent == I_DISARM)
 		effective_force *= 0.66 //reduced effective force...
@@ -190,19 +180,19 @@ meteor_act
 		forcesay(global.hit_appends)	//forcesay checks stat already
 		radio_interrupt_cooldown = world.time + (RADIO_INTERRUPT_DEFAULT * 0.8) //getting beat on can briefly prevent radio use
 
-	if((I.damtype == BRUTE || I.damtype == PAIN) && prob(25 + (effective_force * 2)))
+	if((I.atom_damage_type == BRUTE || I.atom_damage_type == PAIN) && prob(25 + (effective_force * 2)))
 		if(!stat)
 			if(headcheck(hit_zone))
 				//Harder to score a stun but if you do it lasts a bit longer
 				if(prob(effective_force))
 					apply_effect(20, PARALYZE, blocked)
-					if(lying)
+					if(current_posture.prone)
 						visible_message("<span class='danger'>[src] [species.knockout_message]</span>")
 			else
 				//Easier to score a stun but lasts less time
 				if(prob(effective_force + 5))
 					apply_effect(3, WEAKEN, blocked)
-					if(lying)
+					if(current_posture.prone)
 						visible_message("<span class='danger'>[src] has been knocked down!</span>")
 
 		//Apply blood
@@ -213,7 +203,7 @@ meteor_act
 	return 1
 
 /mob/living/carbon/human/proc/attack_bloody(obj/item/W, mob/attacker, var/effective_force, var/hit_zone)
-	if(W.damtype != BRUTE)
+	if(W.atom_damage_type != BRUTE)
 		return
 
 	if(!should_have_organ(BP_HEART))
@@ -229,7 +219,7 @@ meteor_act
 	//getting the weapon bloodied is easier than getting the target covered in blood, so run prob() again
 	if(prob(33 + W.sharp*10))
 		var/turf/location = loc
-		if(istype(location, /turf/simulated))
+		if(istype(location) && location.simulated)
 			location.add_blood(src)
 		if(ishuman(attacker))
 			var/mob/living/carbon/human/H = attacker
@@ -255,13 +245,13 @@ meteor_act
 				bloody_body(src)
 
 /mob/living/carbon/human/proc/projectile_hit_bloody(obj/item/projectile/P, var/effective_force, var/hit_zone, var/obj/item/organ/external/organ)
-	if(P.damage_type != BRUTE || P.nodamage)
+	if(P.atom_damage_type != BRUTE || P.nodamage)
 		return
 	if(!(P.sharp || prob(effective_force*4)))
 		return
 	if(prob(effective_force))
 		var/turf/location = loc
-		if(istype(location, /turf/simulated))
+		if(istype(location) && location.simulated)
 			location.add_blood(src)
 		if(hit_zone)
 			organ = GET_EXTERNAL_ORGAN(src, hit_zone)
@@ -274,7 +264,7 @@ meteor_act
 /mob/living/carbon/human/proc/attack_joint(var/obj/item/organ/external/organ, var/obj/item/W, var/effective_force, var/dislocate_mult, var/blocked)
 	if(!organ || organ.is_dislocated() || !(organ.limb_flags & ORGAN_FLAG_CAN_DISLOCATE) || blocked >= 100)
 		return 0
-	if(W.damtype != BRUTE)
+	if(W.atom_damage_type != BRUTE)
 		return 0
 
 	//want the dislocation chance to be such that the limb is expected to dislocate after dealing a fraction of the damage needed to break the limb
@@ -297,84 +287,15 @@ meteor_act
 	affecting.status |= ORGAN_SABOTAGED
 	return 1
 
-//this proc handles being hit by a thrown atom
 /mob/living/carbon/human/hitby(atom/movable/AM, var/datum/thrownthing/TT)
-
-	if(istype(AM,/obj/))
-		var/obj/O = AM
-
-		if(in_throw_mode && !get_active_hand() && TT.speed <= THROWFORCE_SPEED_DIVISOR)	//empty active hand and we're in throw mode
-			if(!incapacitated())
-				if(isturf(O.loc))
-					put_in_active_hand(O)
-					visible_message("<span class='warning'>[src] catches [O]!</span>")
-					throw_mode_off()
-					process_momentum(AM, TT)
-					return
-
-		var/dtype = O.damtype
-		var/throw_damage = O.throwforce*(TT.speed/THROWFORCE_SPEED_DIVISOR)
-
-		var/zone = BP_CHEST
-		if (TT.target_zone)
-			zone = check_zone(TT.target_zone, src)
-		else
-			zone = ran_zone()	//Hits a random part of the body, -was already geared towards the chest
-
-		//check if we hit
-		var/miss_chance = max(15*(TT.dist_travelled-2),0)
-		zone = get_zone_with_miss_chance(zone, src, miss_chance, ranged_attack=1)
-
-		if(zone && TT.thrower && TT.thrower != src)
-			var/shield_check = check_shields(throw_damage, O, TT.thrower, zone, "[O]")
-			if(shield_check == PROJECTILE_FORCE_MISS)
-				zone = null
-			else if(shield_check)
-				return
-
-		var/obj/item/organ/external/affecting = (zone && GET_EXTERNAL_ORGAN(src, zone))
-		if(!affecting)
-			visible_message(SPAN_NOTICE("\The [O] misses \the [src] narrowly!"))
-			return
-
-		var/datum/wound/created_wound
-		visible_message(SPAN_DANGER("\The [src] has been hit in \the [affecting.name] by \the [O]."))
-		created_wound = apply_damage(throw_damage, dtype, zone, O.damage_flags(), O, O.armor_penetration)
-
-		if(TT.thrower)
-			var/client/assailant = TT.thrower.client
-			if(assailant)
-				admin_attack_log(TT.thrower, src, "Threw \an [O] at their victim.", "Had \an [O] thrown at them", "threw \an [O] at")
-
-		//thrown weapon embedded object code.
-		if(dtype == BRUTE && istype(O,/obj/item))
-			var/obj/item/I = O
-			if (!is_robot_module(I))
-				var/sharp = I.can_embed()
-				var/damage = throw_damage //the effective damage used for embedding purposes, no actual damage is dealt here
-				damage *= (1 - get_blocked_ratio(zone, BRUTE, O.damage_flags(), O.armor_penetration, I.force))
-
-				//blunt objects should really not be embedding in things unless a huge amount of force is involved
-				var/embed_chance = sharp? damage/I.w_class : damage/(I.w_class*3)
-				var/embed_threshold = sharp? 5*I.w_class : 15*I.w_class
-
-				//Sharp objects will always embed if they do enough damage.
-				//Thrown sharp objects have some momentum already and have a small chance to embed even if the damage is below the threshold
-				if((sharp && prob(damage/(10*I.w_class)*100)) || (damage > embed_threshold && prob(embed_chance)))
-					affecting.embed(I, supplied_wound = created_wound)
-					I.has_embedded()
-
+	// empty active hand and we're in throw mode, so we can catch it
+	if(isobj(AM) && in_throw_mode && !get_active_held_item() && TT.speed <= THROWFORCE_SPEED_DIVISOR && !incapacitated() && isturf(AM.loc))
+		put_in_active_hand(AM)
+		visible_message(SPAN_NOTICE("\The [src] catches \the [AM]!"))
+		toggle_throw_mode(FALSE)
 		process_momentum(AM, TT)
-
-	else
-		..()
-
-/mob/living/carbon/human/embed(var/obj/O, var/def_zone=null, var/datum/wound/supplied_wound)
-	if(!def_zone) ..()
-
-	var/obj/item/organ/external/affecting = GET_EXTERNAL_ORGAN(src, def_zone)
-	if(affecting)
-		affecting.embed(O, supplied_wound = supplied_wound)
+		return FALSE
+	return ..()
 
 /mob/living/carbon/human/proc/bloody_hands(var/mob/living/source, var/amount = 2)
 	var/obj/item/clothing/gloves/gloves = get_equipped_item(slot_gloves_str)
@@ -458,7 +379,7 @@ meteor_act
 
 	if(status_flags & GODMODE)	return 0	//godmode
 
-	if(species.siemens_coefficient == -1)
+	if(species.get_shock_vulnerability(src) == -1)
 		if(stored_shock_by_ref["\ref[src]"])
 			stored_shock_by_ref["\ref[src]"] += shock_damage
 		else

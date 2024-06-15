@@ -84,7 +84,6 @@ var/global/list/admin_verbs_admin = list(
 	/client/proc/change_human_appearance_admin,	// Allows an admin to change the basic appearance of human-based mobs ,
 	/client/proc/change_human_appearance_self,	// Allows the human-based mob itself change its basic appearance ,
 	/client/proc/change_security_level,
-	/client/proc/view_chemical_reaction_logs,
 	/client/proc/makePAI,
 	/client/proc/fixatmos,
 	/client/proc/list_traders,
@@ -115,7 +114,6 @@ var/global/list/admin_verbs_fun = list(
 	/datum/admins/proc/toggle_aliens,
 	/datum/admins/proc/toggle_space_ninja,
 	/client/proc/cmd_admin_add_freeform_ai_law,
-	/client/proc/cmd_admin_add_random_ai_law,
 	/client/proc/toggle_random_events,
 	/client/proc/editappear,
 	/client/proc/roll_dices,
@@ -219,7 +217,8 @@ var/global/list/admin_verbs_debug = list(
 	/client/proc/spawn_ore_pile,
 	/datum/admins/proc/force_initialize_weather,
 	/datum/admins/proc/force_weather_state,
-	/datum/admins/proc/force_kill_weather
+	/datum/admins/proc/force_kill_weather,
+	/client/proc/force_reload_theme_css,
 	)
 
 var/global/list/admin_verbs_paranoid_debug = list(
@@ -271,10 +270,8 @@ var/global/list/admin_verbs_hideable = list(
 	/datum/admins/proc/toggle_aliens,
 	/datum/admins/proc/toggle_space_ninja,
 	/client/proc/cmd_admin_add_freeform_ai_law,
-	/client/proc/cmd_admin_add_random_ai_law,
 	/client/proc/cmd_admin_create_centcom_report,
 	/client/proc/toggle_random_events,
-	/client/proc/cmd_admin_add_random_ai_law,
 	/client/proc/set_holiday,
 	/datum/admins/proc/startnow,
 	/datum/admins/proc/endnow,
@@ -736,15 +733,6 @@ var/global/list/admin_verbs_mod = list(
 
 
 //---- bs12 verbs ----
-
-/client/proc/mod_panel()
-	set name = "Moderator Panel"
-	set category = "Admin"
-/*	if(holder)
-		holder.mod_panel()*/
-//	SSstatistics.add_field_details("admin_verb","MP") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
-	return
-
 /client/proc/editappear()
 	set name = "Edit Appearance"
 	set category = "Fun"
@@ -763,12 +751,12 @@ var/global/list/admin_verbs_mod = list(
 	var/update_hair = FALSE
 	var/new_facial = input("Please select facial hair color.", "Character Generation") as color
 	if(new_facial)
-		M.set_facial_hair_colour(new_facial, skip_update = TRUE)
+		SET_FACIAL_HAIR_COLOUR(M, new_facial, TRUE)
 		update_hair = TRUE
 
 	var/new_hair = input("Please select hair color.", "Character Generation") as color
 	if(new_hair)
-		M.set_hair_colour(new_hair, skip_update = TRUE)
+		SET_HAIR_COLOUR(M, new_hair, TRUE)
 		update_hair = TRUE
 
 	var/new_eyes = input("Please select eye color.", "Character Generation") as color
@@ -788,13 +776,13 @@ var/global/list/admin_verbs_mod = list(
 	// hair
 	var/new_hairstyle = input(usr, "Select a hair style", "Grooming") as null|anything in decls_repository.get_decl_paths_of_subtype(/decl/sprite_accessory/hair)
 	if(new_hairstyle)
-		M.set_hairstyle(new_hairstyle, skip_update = TRUE)
+		SET_HAIR_STYLE(M, new_hairstyle, TRUE)
 		update_hair = TRUE
 
 	// facial hair
 	var/new_fstyle = input(usr, "Select a facial hair style", "Grooming")  as null|anything in decls_repository.get_decl_paths_of_subtype(/decl/sprite_accessory/facial_hair)
 	if(new_fstyle)
-		M.set_facial_hairstyle(new_fstyle, skip_update = TRUE)
+		SET_FACIAL_HAIR_STYLE(M, new_fstyle, TRUE)
 		update_hair = TRUE
 
 	var/new_gender = alert(usr, "Please select gender.", "Character Generation", "Male", "Female", "Neuter")
@@ -810,13 +798,6 @@ var/global/list/admin_verbs_mod = list(
 		M.update_hair()
 	M.update_body()
 	M.check_dna(M)
-
-/client/proc/playernotes()
-	set name = "Show Player Info"
-	set category = "Admin"
-	if(holder)
-		holder.PlayerNotes()
-	return
 
 /client/proc/free_slot_submap()
 	set name = "Free Job Slot (Submap)"
@@ -938,3 +919,11 @@ var/global/list/admin_verbs_mod = list(
 
 		if("Cancel")
 			return
+
+/client/proc/force_reload_theme_css()
+	set category = "Debug"
+	set name     = "Reload UI Theme CSS"
+	set desc     = "Forces the client to reload its UI theme css file."
+	if(!check_rights(R_DEBUG))
+		return
+	ReloadThemeCss(src)

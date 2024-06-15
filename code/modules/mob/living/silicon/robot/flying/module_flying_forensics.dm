@@ -13,7 +13,7 @@
 	)
 	equipment = list(
 		/obj/item/forensics/sample_kit/swabs,
-		/obj/item/storage/evidence,
+		/obj/item/evidence,
 		/obj/item/forensics/sample_kit,
 		/obj/item/forensics/sample_kit/powder,
 		/obj/item/gripper/clerical,
@@ -44,5 +44,5 @@
 	if(luminol.reagents.total_volume < luminol.volume)
 		var/adding = min(luminol.volume-luminol.reagents.total_volume, 2*amount)
 		if(adding > 0)
-			luminol.reagents.add_reagent(/decl/material/liquid/luminol, adding)
+			luminol.add_to_reagents(/decl/material/liquid/luminol, adding)
 	..()

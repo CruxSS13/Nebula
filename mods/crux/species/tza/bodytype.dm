@@ -1,3 +1,16 @@
+/datum/appearance_descriptor/age/tza
+	chargen_min_index = 3
+	chargen_max_index = 6
+	standalone_value_descriptors = list(
+		"a larva"        = 1,
+		"a nymph"        = 2,
+		"a juvenile"     = 3,
+		"an adolescent"  = 5,
+		"a young adult"  = 12,
+		"a full adult"   = 20,
+		"senescent"      = 35
+	)
+
 /decl/bodytype/tza
 	name = "mantid worker"
 	bodytype_category = BODYTYPE_TZA
@@ -10,7 +23,17 @@
 	appearance_flags  = HAS_EYE_COLOR | HAS_SKIN_COLOR
 	base_color        = COLOR_SILVER
 	base_eye_color    = COLOR_SABER_AXE
-	base_markings     = list(/decl/sprite_accessory/marking/tza/highlights = COLOR_PALE_PINK)
+	age_descriptor    = /datum/appearance_descriptor/age/tza
+	appearance_descriptors = list(
+		/datum/appearance_descriptor/height      = 0.8,
+		/datum/appearance_descriptor/body_length = 0.6
+	)
+
+	default_sprite_accessories = list(
+		SAC_MARKINGS = list(
+			/decl/sprite_accessory/marking/tza/highlights = COLOR_PALE_PINK
+		)
+	)
 
 	has_limbs = list(
 		BP_CHEST =  list("path" = /obj/item/organ/external/chest/insectoid),
@@ -32,13 +55,14 @@
 	)
 
 	has_organ = list(
-		BP_HEART =             /obj/item/organ/internal/heart/insectoid,
-		BP_STOMACH =           /obj/item/organ/internal/stomach/insectoid,
-		BP_LUNGS =             /obj/item/organ/internal/lungs/insectoid,
-		BP_LIVER =             /obj/item/organ/internal/liver/insectoid,
-		BP_KIDNEYS =           /obj/item/organ/internal/kidneys/insectoid,
-		BP_BRAIN =             /obj/item/organ/internal/brain/insectoid,
-		BP_EYES =              /obj/item/organ/internal/eyes/insectoid
+		BP_HEART           = /obj/item/organ/internal/heart/insectoid,
+		BP_STOMACH         = /obj/item/organ/internal/stomach/insectoid,
+		BP_LUNGS           = /obj/item/organ/internal/lungs/insectoid,
+		BP_LIVER           = /obj/item/organ/internal/liver/insectoid,
+		BP_KIDNEYS         = /obj/item/organ/internal/kidneys/insectoid,
+		BP_BRAIN           = /obj/item/organ/internal/brain/insectoid,
+		BP_EYES            = /obj/item/organ/internal/eyes/insectoid,
+		BP_PHEROMONE_GLAND = /obj/item/organ/internal/pheromone_gland
 	)
 
 	limb_mapping = list(

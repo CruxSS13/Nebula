@@ -13,7 +13,7 @@
 
 	// Get our actual value (loading from text etc. may change data type)
 	var/decl/config/config_option = GET_DECL(config_decl)
-	if((config_option.config_flags & CONFIG_FLAG_NUM) && istext(new_value))
+	if((config_option.config_flags & (CONFIG_FLAG_NUM|CONFIG_FLAG_BOOL)) && istext(new_value))
 		new_value = text2num(new_value)
 	else if((config_option.config_flags & (CONFIG_FLAG_ENUM|CONFIG_FLAG_TEXT)) && isnum(new_value))
 		new_value = num2text(new_value)
@@ -79,6 +79,8 @@
 	else
 		if((config_flags & (CONFIG_FLAG_NUM|CONFIG_FLAG_ENUM)) && !isnum(default_value))
 			. += "has numeric or enum flag but not numeric default_value"
+		else if((config_flags & CONFIG_FLAG_BOOL) && default_value != TRUE && default_value != FALSE)
+			. += "has bool flag but not TRUE (1) or FALSE (0) default_value"
 		else if((config_flags & CONFIG_FLAG_TEXT) && !istext(default_value))
 			. += "has text flag but not text default_value"
 		else if((config_flags & CONFIG_FLAG_LIST) && !islist(default_value))
@@ -116,14 +118,15 @@
 	SHOULD_CALL_PARENT(TRUE)
 	return
 
-/decl/config/proc/get_config_file_text()
-	. = list()
+/decl/config/proc/get_comment_desc_text()
 	if(desc)
 		if(islist(desc))
 			for(var/config_line in desc)
-				. += "## [config_line]"
+				LAZYADD(., "## [config_line]")
 		else
-			. += "## [desc]"
+			LAZYADD(., "## [desc]")
+
+/decl/config/proc/get_comment_value_text()
 	if(config_flags & CONFIG_FLAG_HAS_VALUE)
 		if(compare_values(value, default_value))
 			. += "#[uppertext(uid)] [serialize_default_value()]"
@@ -133,6 +136,19 @@
 		. += uppertext(uid)
 	else
 		. += "#[uppertext(uid)]"
+
+/decl/config/proc/get_config_file_text()
+
+	. = list()
+
+	var/add_desc = get_comment_desc_text()
+	if(!isnull(add_desc))
+		. += add_desc
+
+	var/add_value = get_comment_value_text()
+	if(!isnull(add_value))
+		. += add_value
+
 	return jointext(., "\n")
 
 /decl/config/proc/serialize_value()

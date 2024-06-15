@@ -1,10 +1,9 @@
 /decl/grab/normal
-	name = "grab"
-	icon = 'icons/mob/screen1.dmi'
-	help_action = "inspect"
-	disarm_action = "pin"
-	grab_action = "jointlock"
-	harm_action = "dislocate"
+	name              = "grab"
+	help_action       = "inspect"
+	disarm_action     = "pin"
+	grab_action       = "jointlock"
+	harm_action       = "dislocate"
 	var/drop_headbutt = 1
 
 /decl/grab/normal/on_hit_help(var/obj/item/grab/G, var/atom/A, var/proximity)
@@ -21,7 +20,7 @@
 
 	var/mob/living/affecting = G.get_affecting_mob()
 	var/mob/living/assailant = G.assailant
-	if(affecting && A && A == affecting && !affecting.lying)
+	if(affecting && A && A == affecting && !affecting.current_posture.prone)
 
 		affecting.visible_message(SPAN_DANGER("\The [assailant] is trying to pin \the [affecting] to the ground!"))
 		if(do_mob(assailant, affecting, action_cooldown - 1))
@@ -148,7 +147,7 @@
 	if(!attacker.skill_check(SKILL_COMBAT, SKILL_BASIC))
 		return
 
-	if(target.lying)
+	if(target.current_posture.prone)
 		return
 
 	var/damage = 20
@@ -229,7 +228,7 @@
 	if(user.a_intent != I_HURT)
 		return 0 // Not trying to hurt them.
 
-	if(!W.edge || !W.force || W.damtype != BRUTE)
+	if(!W.edge || !W.force || W.atom_damage_type != BRUTE)
 		return 0 //unsuitable weapon
 	user.visible_message("<span class='danger'>\The [user] begins to slit [affecting]'s throat with \the [W]!</span>")
 
@@ -251,7 +250,7 @@
 	var/total_damage = 0
 	for(var/i in 1 to 3)
 		var/damage = min(W.force*1.5, 20)*damage_mod
-		affecting.apply_damage(damage, W.damtype, BP_HEAD, damage_flags, armor_pen = 100, used_weapon=W)
+		affecting.apply_damage(damage, W.atom_damage_type, BP_HEAD, damage_flags, armor_pen = 100, used_weapon=W)
 		total_damage += damage
 
 	if(total_damage)
@@ -273,7 +272,7 @@
 		return
 	if(user.a_intent != I_HURT)
 		return 0 // Not trying to hurt them.
-	if(!W.edge || !W.force || W.damtype != BRUTE)
+	if(!W.edge || !W.force || W.atom_damage_type != BRUTE)
 		return 0 //unsuitable weapon
 	var/obj/item/organ/external/O = G.get_targeted_organ()
 	if(!O || !(O.limb_flags & ORGAN_FLAG_HAS_TENDON) || (O.status & ORGAN_TENDON_CUT))

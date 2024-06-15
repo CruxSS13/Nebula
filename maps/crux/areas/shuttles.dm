@@ -29,7 +29,7 @@
 
 /area/crux/shuttle/escape_pod1/station
 	icon_state = "shuttle2"
-	base_turf = /turf/simulated/floor/airless
+	base_turf = /turf/floor/airless
 
 /area/crux/shuttle/escape_pod2
 	name = "\improper Escape Pod Two"
@@ -37,7 +37,7 @@
 
 /area/crux/shuttle/escape_pod2/station
 	icon_state = "shuttle2"
-	base_turf = /turf/simulated/floor/airless
+	base_turf = /turf/floor/airless
 
 /area/crux/shuttle/escape_pod7
 	name = "\improper Escape Pod Seven"
@@ -45,7 +45,7 @@
 
 /area/crux/shuttle/escape_pod7/station
 	icon_state = "shuttle2"
-	base_turf = /turf/simulated/floor/reinforced/airless
+	base_turf = /turf/floor/reinforced/airless
 
 /area/crux/shuttle/escape_pod8
 	name = "\improper Escape Pod Eight"
@@ -53,7 +53,7 @@
 
 /area/crux/shuttle/escape_pod8/station
 	icon_state = "shuttle2"
-	base_turf = /turf/simulated/floor/reinforced/airless
+	base_turf = /turf/floor/reinforced/airless
 
 //Large Escape Pods
 
@@ -63,7 +63,7 @@
 
 /area/crux/shuttle/large_escape_pod1/station
 	icon_state = "shuttle2"
-	base_turf = /turf/simulated/floor/airless
+	base_turf = /turf/floor/airless
 
 /area/crux/shuttle/large_escape_pod2
 	name = "\improper Large Escape Pod Two"
@@ -71,4 +71,4 @@
 
 /area/crux/shuttle/large_escape_pod2/station
 	icon_state = "shuttle2"
-	base_turf = /turf/simulated/floor/airless
+	base_turf = /turf/floor/airless

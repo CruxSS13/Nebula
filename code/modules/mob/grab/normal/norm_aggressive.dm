@@ -1,18 +1,18 @@
 /decl/grab/normal/aggressive
-	name = "aggressive grab"
-	upgrab =   /decl/grab/normal/neck
-	downgrab = /decl/grab/normal/passive
-	shift = 12
-	stop_move = 1
-	reverse_facing = 0
-	shield_assailant = 0
-	point_blank_mult = 1.5
-	damage_stage = 1
-	same_tile = 0
-	can_throw = 1
-	force_danger = 1
-	breakability = 3
-	icon_state = "reinforce1"
+	name               = "aggressive grab"
+	upgrab             = /decl/grab/normal/neck
+	downgrab           = /decl/grab/normal/passive
+	shift              = 12
+	stop_move          = 1
+	reverse_facing     = 0
+	shield_assailant   = 0
+	point_blank_mult   = 1.5
+	damage_stage       = 1
+	same_tile          = 0
+	can_throw          = 1
+	force_danger       = 1
+	breakability       = 3
+	grab_icon_state    = "reinforce1"
 	break_chance_table = list(5, 20, 40, 80, 100)
 
 /decl/grab/normal/aggressive/process_effect(var/obj/item/grab/G)
@@ -21,7 +21,7 @@
 		if(G.target_zone in list(BP_L_HAND, BP_R_HAND))
 			affecting_mob.drop_held_items()
 		// Keeps those who are on the ground down
-		if(affecting_mob.lying)
+		if(affecting_mob.current_posture.prone)
 			SET_STATUS_MAX(affecting_mob, STAT_WEAK, 4)
 
 /decl/grab/normal/aggressive/can_upgrade(var/obj/item/grab/G)

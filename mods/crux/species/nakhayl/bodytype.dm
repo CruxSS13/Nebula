@@ -1,3 +1,16 @@
+/datum/appearance_descriptor/age/nakhayl
+	standalone_value_descriptors = list(
+		"an infant"     = 1,
+		"a toddler"     = 3,
+		"a child"       = 7,
+		"an adolescent" = 13,
+		"a young adult" = 18,
+		"an adult"      = 30,
+		"middle-aged"   = 55,
+		"aging"         = 80,
+		"elderly"       = 140
+	)
+
 /decl/bodytype/nakhayl
 	name                 = "humanoid"
 	bodytype_category    = BODYTYPE_GNOLL
@@ -7,18 +20,23 @@
 	icon_deformed        = 'mods/crux/icons/species/nakhayl/deformed_body.dmi'
 	bandages_icon        = 'icons/mob/bandage.dmi'
 	eye_icon             = 'mods/crux/icons/species/nakhayl/eyes.dmi'
-	lip_icon             = 'mods/crux/icons/species/nakhayl/lips.dmi'
+	cosmetics_icon       = 'mods/crux/icons/species/nakhayl/cosmetics.dmi'
 	health_hud_intensity = 1.75
 	bodytype_flag        = BODY_FLAG_GNOLL
-	appearance_flags     = HAS_HAIR_COLOR | HAS_LIPS | HAS_UNDERWEAR | HAS_SKIN_COLOR | HAS_EYE_COLOR
-	base_hair_color      = "#46321c"
+	appearance_flags     = HAS_UNDERWEAR | HAS_SKIN_COLOR | HAS_EYE_COLOR
 	base_color           = "#ae7d32"
 	base_eye_color       = "#00aa00"
-	default_h_style      = /decl/sprite_accessory/hair/nakhayl/mohawk
-	base_markings        = list(
-		/decl/sprite_accessory/marking/nakhayl/belly      = "#b6b0a8",
-		/decl/sprite_accessory/marking/nakhayl/spots/body = "#1b1207",
-		/decl/sprite_accessory/marking/nakhayl/ears       = "#1b1207"
+	age_descriptor         = /datum/appearance_descriptor/age/nakhayl
+
+	default_sprite_accessories = list(
+		SAC_HAIR = list(
+			/decl/sprite_accessory/hair/nakhayl/mohawk        = "#46321c"
+		),
+		SAC_MARKINGS = list(
+			/decl/sprite_accessory/marking/nakhayl/belly      = "#b6b0a8",
+			/decl/sprite_accessory/marking/nakhayl/spots/body = "#1b1207",
+			/decl/sprite_accessory/marking/nakhayl/ears       = "#1b1207"
+		)
 	)
 
 	eye_darksight_range                   = 7

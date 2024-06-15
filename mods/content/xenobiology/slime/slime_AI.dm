@@ -60,7 +60,6 @@
 
 /datum/ai/slime/do_process(time_elapsed)
 	. = ..()
-
 	if(attacked > 0)
 		attacked = clamp(attacked--, 0, 50)
 
@@ -143,7 +142,7 @@
 
 		if(!current_target)
 			if(prob(1))
-				for(var/mob/living/slime/frenemy in range(1, src))
+				for(var/mob/living/slime/frenemy in range(1, body))
 					if(frenemy != body && body.Adjacent(frenemy))
 						body.a_intent_change((frenemy.slime_type == slime.slime_type) ? I_HELP : I_HURT)
 						body.UnarmedAttack(frenemy)
@@ -153,7 +152,7 @@
 			if(issilicon(current_target))
 				body.a_intent_change(I_HURT)
 				do_attack = TRUE
-			else if(current_target.client && !current_target.lying && prob(60 + slime.powerlevel * 4))
+			else if(current_target.client && !current_target.current_posture.prone && prob(60 + slime.powerlevel * 4))
 				body.a_intent_change(I_DISARM)
 				do_attack = TRUE
 			else if(slime.check_valid_feed_target(current_target) == FEED_RESULT_VALID)
@@ -193,7 +192,7 @@
 
 	if(prob(1))
 		if(prob(50))
-			body.emote(pick("bounce","sway","light","vibrate","jiggle"))
+			body.emote(pick(/decl/emote/visible/bounce, /decl/emote/visible/sway, /decl/emote/visible/lightup, /decl/emote/visible/vibrate, /decl/emote/visible/jiggle))
 		else
 			var/list/possible_comments
 			var/list/all_slime_comments = decls_repository.get_decls_of_subtype(/decl/slime_comment)

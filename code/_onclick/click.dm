@@ -98,12 +98,12 @@
 
 	if(in_throw_mode)
 		if(isturf(A) || isturf(A.loc))
-			throw_item(A)
+			mob_throw_item(A)
 			trigger_aiming(TARGET_CAN_CLICK)
 			return 1
-		throw_mode_off()
+		toggle_throw_mode(FALSE)
 
-	var/obj/item/W = get_active_hand()
+	var/obj/item/W = get_active_held_item()
 
 	if(W == A) // Handle attack_self
 		W.attack_self(src)
@@ -114,16 +114,18 @@
 	//Atoms on your person
 	// A is your location but is not a turf; or is on you (backpack); or is on something on you (box in backpack); sdepth is needed here because contents depth does not equate inventory storage depth.
 	var/sdepth = A.storage_depth(src)
-	var/can_wield_item = check_dexterity(DEXTERITY_WIELD_ITEM, silent = TRUE)
+	var/check_dexterity_val = A.storage ? DEXTERITY_NONE : (istype(W) ? W.needs_attack_dexterity : DEXTERITY_WIELD_ITEM)
+	var/can_wield_item = W && (!check_dexterity_val || check_dexterity(check_dexterity_val))
 	if((!isturf(A) && A == loc) || (sdepth != -1 && sdepth <= 1))
-		if(W && can_wield_item)
+		if(can_wield_item)
 			var/resolved = W.resolve_attackby(A, src, params)
 			if(!resolved && A && W)
 				W.afterattack(A, src, 1, params) // 1 indicates adjacency
-		else
+			setClickCooldown(DEFAULT_QUICK_COOLDOWN)
+		else if(!W)
 			if(ismob(A)) // No instant mob attacking
-				setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
-			UnarmedAttack(A, 1)
+				setClickCooldown(DEFAULT_QUICK_COOLDOWN)
+			UnarmedAttack(A, TRUE)
 
 		trigger_aiming(TARGET_CAN_CLICK)
 		return 1
@@ -136,15 +138,16 @@
 	sdepth = A.storage_depth_turf()
 	if(isturf(A) || isturf(A.loc) || (sdepth != -1 && sdepth <= 1))
 		if(A.Adjacent(src)) // see adjacent.dm
-			if(W && can_wield_item)
+			if(can_wield_item)
 				// Return 1 in attackby() to prevent afterattack() effects (when safely moving items for example)
 				var/resolved = W.resolve_attackby(A,src, params)
 				if(!resolved && A && W)
 					W.afterattack(A, src, 1, params) // 1: clicking something Adjacent
-			else
+				setClickCooldown(DEFAULT_QUICK_COOLDOWN)
+			else if(!W)
 				if(ismob(A)) // No instant mob attacking
-					setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
-				UnarmedAttack(A, 1)
+					setClickCooldown(DEFAULT_QUICK_COOLDOWN)
+				UnarmedAttack(A, TRUE)
 
 			trigger_aiming(TARGET_CAN_CLICK)
 			return
@@ -186,11 +189,17 @@
 	return
 
 /mob/living/UnarmedAttack(var/atom/A, var/proximity_flag)
+
 	if(GAME_STATE < RUNLEVEL_GAME)
 		to_chat(src, "You cannot attack people before the game has started.")
 		return TRUE
 
-	if(stat || try_maneuver(A))
+	if(stat || try_maneuver(A) || !proximity_flag)
+		return TRUE
+
+	// Handle any prepared ability/spell/power invocations.
+	var/datum/extension/abilities/abilities = get_extension(src, /datum/extension/abilities)
+	if(abilities?.do_melee_invocation(A))
 		return TRUE
 
 	// Special glove functions:
@@ -218,7 +227,15 @@
 	return FALSE
 
 /mob/living/RangedAttack(var/atom/A, var/params)
-	return try_maneuver(A)
+	if(try_maneuver(A))
+		return TRUE
+
+	// Handle any prepared ability/spell/power invocations.
+	var/datum/extension/abilities/abilities = get_extension(src, /datum/extension/abilities)
+	if(abilities?.do_ranged_invocation(A))
+		return TRUE
+
+	return FALSE
 
 /*
 	Restrained ClickOn
@@ -280,7 +297,7 @@
 	A.AltClick(src)
 
 /atom/proc/AltClick(var/mob/user)
-	if(try_handle_interactions(user, get_alt_interactions(user)))
+	if(try_handle_interactions(user, get_alt_interactions(user), user?.get_active_held_item()))
 		return TRUE
 	if(user?.get_preference_value(/datum/client_preference/show_turf_contents) == PREF_ALT_CLICK)
 		. = show_atom_list_for_turf(user, get_turf(src))

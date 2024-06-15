@@ -166,13 +166,13 @@
 
 /obj/item/organ/internal/voxstack/Initialize(mapload, material_key, datum/dna/given_dna, decl/bodytype/new_bodytype)
 	var/decl/species/dna_species = given_dna && get_species_by_key(given_dna.species)
-	. = ..(mapload, material_key, given_dna, dna_species?.base_prosthetics_model)
+	. = ..(mapload, material_key, given_dna, dna_species?.base_internal_prosthetics_model)
 	do_backup()
 
 /obj/item/organ/internal/voxstack/examine(mob/user)
 	. = ..()
 
-	var/user_vox = isspecies(user, SPECIES_VOX)
+	var/user_vox = user.get_species_name() == SPECIES_VOX // TODO use bodytype flags instead so subspecies are included
 	if (istype(backup))
 		var/owner_viable = find_dead_player(stored_ckey, TRUE)
 		if (user_vox)
@@ -200,9 +200,9 @@
 	return 	(!istype(backup) || backup == owner.mind || (backup.current && backup.current.stat != DEAD))
 
 /obj/item/organ/internal/voxstack/on_add_effects()
-	if(!..() || prompting) // Don't spam the player with twenty dialogs because someone doesn't know what they're doing or panicking.
+	. = ..()
+	if(prompting) // Don't spam the player with twenty dialogs because someone doesn't know what they're doing or panicking.
 		return FALSE
-
 	//Need spawn here so that this interactive bit doesn't lock up init
 	if(owner && !backup_inviable())
 		prompt_revive_callback(owner)

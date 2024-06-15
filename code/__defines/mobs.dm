@@ -98,11 +98,14 @@
 #define COMPANY_ALIGNMENTS		list(COMPANY_LOYAL,COMPANY_SUPPORTATIVE,COMPANY_NEUTRAL,COMPANY_SKEPTICAL,COMPANY_OPPOSED)
 
 // Defines mob sizes, used by lockers and to determine what is considered a small sized mob, etc.
-#define MOB_SIZE_LARGE  		40
-#define MOB_SIZE_MEDIUM 		20
-#define MOB_SIZE_SMALL 		10
-#define MOB_SIZE_TINY 		5
-#define MOB_SIZE_MINISCULE	1
+#define MOB_SIZE_LARGE     40
+#define MOB_SIZE_MEDIUM    20
+#define MOB_SIZE_SMALL     10
+#define MOB_SIZE_TINY      5
+#define MOB_SIZE_MINISCULE 1
+
+#define MOB_SIZE_MIN       MOB_SIZE_MINISCULE
+#define MOB_SIZE_MAX       MOB_SIZE_LARGE
 
 // Defines how strong the species is compared to humans. Think like strength in D&D
 #define STR_VHIGH       2
@@ -141,14 +144,14 @@
 #define DRONE_SPAWN_DELAY  round(get_config_value(/decl/config/num/respawn_delay) / 3)
 
 // Incapacitation flags, used by the mob/proc/incapacitated() proc
-#define INCAPACITATION_NONE 0
-#define INCAPACITATION_RESTRAINED 1
-#define INCAPACITATION_BUCKLED_PARTIALLY 2
-#define INCAPACITATION_BUCKLED_FULLY 4
-#define INCAPACITATION_STUNNED 8
-#define INCAPACITATION_FORCELYING 16 //needs a better name - represents being knocked down BUT still conscious.
-#define INCAPACITATION_KNOCKOUT 32
-#define INCAPACITATION_WEAKENED 64
+#define INCAPACITATION_NONE              0
+#define INCAPACITATION_RESTRAINED        BITFLAG(0)
+#define INCAPACITATION_BUCKLED_PARTIALLY BITFLAG(1)
+#define INCAPACITATION_BUCKLED_FULLY     BITFLAG(2)
+#define INCAPACITATION_STUNNED           BITFLAG(3)
+#define INCAPACITATION_FORCELYING        BITFLAG(4) //needs a better name - represents being knocked down BUT still conscious.
+#define INCAPACITATION_KNOCKOUT          BITFLAG(5)
+#define INCAPACITATION_WEAKENED          BITFLAG(6)
 
 #define INCAPACITATION_UNRESISTING (INCAPACITATION_KNOCKOUT|INCAPACITATION_STUNNED)
 #define INCAPACITATION_DISRUPTED   (INCAPACITATION_UNRESISTING|INCAPACITATION_WEAKENED)
@@ -185,7 +188,6 @@
 #define BP_VOICE             "vocal synthesiser"
 #define BP_STACK             "stack"
 #define BP_OPTICS            "optics"
-#define BP_SYSTEM_CONTROLLER "system controller"
 
 //Augmetations
 #define BP_AUGMENT_R_ARM        "right arm augment"
@@ -299,15 +301,16 @@
 
 #define DEXTERITY_NONE            0
 #define DEXTERITY_SIMPLE_MACHINES BITFLAG(0)
+// TODO: let HOLD equip items to hand just not other slots
 #define DEXTERITY_HOLD_ITEM       BITFLAG(1)
 #define DEXTERITY_WIELD_ITEM      BITFLAG(2)
 #define DEXTERITY_EQUIP_ITEM      BITFLAG(3)
 #define DEXTERITY_KEYBOARDS       BITFLAG(4)
 #define DEXTERITY_TOUCHSCREENS    BITFLAG(5)
 // TODO: actually get grab code to check this one.
-#define DEXTERITY_GRAPPLE         BITFLAG(6)
-#define DEXTERITY_WEAPONS         BITFLAG(7)
-#define DEXTERITY_COMPLEX_TOOLS   BITFLAG(8)
+#define DEXTERITY_GRAPPLE         BITFLAG(6) // Can the mob grab other mobs?
+#define DEXTERITY_WEAPONS         BITFLAG(7) // Can the mob use guns?
+#define DEXTERITY_COMPLEX_TOOLS   BITFLAG(8) // Can the mob use complex items like flashlights, handcuffs, etc?
 #define DEXTERITY_BASE (DEXTERITY_SIMPLE_MACHINES|DEXTERITY_HOLD_ITEM|DEXTERITY_WIELD_ITEM|DEXTERITY_EQUIP_ITEM)
 #define DEXTERITY_FULL (DEXTERITY_BASE|DEXTERITY_KEYBOARDS|DEXTERITY_TOUCHSCREENS|DEXTERITY_GRAPPLE|DEXTERITY_WEAPONS|DEXTERITY_COMPLEX_TOOLS)
 
@@ -340,7 +343,8 @@ var/global/list/dexterity_levels = list(
 #define MOB_ICON_HAS_REST_STATE      BITFLAG(2)
 #define MOB_ICON_HAS_SLEEP_STATE     BITFLAG(3)
 #define MOB_ICON_HAS_GIB_STATE       BITFLAG(4)
-#define MOB_ICON_HAS_PARALYZED_STATE BITFLAG(5)
+#define MOB_ICON_HAS_DUST_STATE      BITFLAG(5)
+#define MOB_ICON_HAS_PARALYZED_STATE BITFLAG(6)
 #define NEUTER_ANIMATE "animate singular neutral"
 
 // Equipment Overlays Indices //
@@ -385,3 +389,25 @@ var/global/list/dexterity_levels = list(
 // Enum for type of consumption, largely just cosmetic currently.
 #define EATING_METHOD_EAT   0
 #define EATING_METHOD_DRINK 1
+
+#define SAC_HAIR        /decl/sprite_accessory_category/hair
+#define SAC_FACIAL_HAIR /decl/sprite_accessory_category/facial_hair
+#define SAC_COSMETICS   /decl/sprite_accessory_category/cosmetics
+#define SAC_MARKINGS    /decl/sprite_accessory_category/markings
+#define SAC_HORNS       /decl/sprite_accessory_category/horns
+#define SAC_FRILLS      /decl/sprite_accessory_category/frills
+
+// Helpers for setting mob appearance. They are extremely ugly, hence the helpers.
+#define SET_HAIR_STYLE(TARGET, STYLE, SKIP_UPDATE)          (TARGET.set_organ_sprite_accessory_by_category((STYLE), SAC_HAIR, null, TRUE, FALSE, BP_HEAD, SKIP_UPDATE))
+#define GET_HAIR_STYLE(TARGET)                              (TARGET.get_organ_sprite_accessory_by_category(SAC_HAIR, BP_HEAD))
+#define SET_HAIR_COLOUR(TARGET, COLOUR, SKIP_UPDATE)        (TARGET.set_organ_sprite_accessory_by_category(null, SAC_HAIR, (COLOUR), FALSE, TRUE, BP_HEAD, SKIP_UPDATE))
+#define GET_HAIR_COLOUR(TARGET)                             (TARGET.get_organ_sprite_accessory(GET_HAIR_STYLE(TARGET), BP_HEAD))
+
+#define SET_FACIAL_HAIR_STYLE(TARGET, STYLE, SKIP_UPDATE)   (TARGET.set_organ_sprite_accessory_by_category((STYLE), SAC_FACIAL_HAIR, null, TRUE, FALSE, BP_HEAD, SKIP_UPDATE))
+#define GET_FACIAL_HAIR_STYLE(TARGET)                       (TARGET.get_organ_sprite_accessory_by_category(SAC_FACIAL_HAIR, BP_HEAD))
+#define SET_FACIAL_HAIR_COLOUR(TARGET, COLOUR, SKIP_UPDATE) (TARGET.set_organ_sprite_accessory_by_category(null, SAC_FACIAL_HAIR, (COLOUR), FALSE, TRUE, BP_HEAD, SKIP_UPDATE))
+#define GET_FACIAL_HAIR_COLOUR(TARGET)                      (TARGET.get_organ_sprite_accessory(GET_FACIAL_HAIR_STYLE(TARGET), BP_HEAD))
+
+// Used in death() to skip message broadcast.
+#define SKIP_DEATH_MESSAGE "no message"
+

@@ -104,6 +104,12 @@
 
 	var/list/original_access // Used to restore access after emagging/mending
 
+/obj/item/rig/get_stored_inventory()
+	. = ..()
+	if(length(.))
+		for(var/obj/thing in list(boots, chest, helmet, gloves, air_supply, cell))
+			. -= thing
+
 /obj/item/rig/get_cell()
 	return cell
 
@@ -579,7 +585,7 @@
 		for(var/slot in update_rig_slots)
 			wearer.update_equipment_overlay(slot)
 
-/obj/item/rig/adjust_mob_overlay(mob/living/user_mob, bodytype, image/overlay, slot, bodypart, use_fallback_if_icon_missing = TRUE, skip_offset = FALSE)
+/obj/item/rig/adjust_mob_overlay(mob/living/user_mob, bodytype, image/overlay, slot, bodypart, use_fallback_if_icon_missing = TRUE)
 	if(overlay && slot == slot_back_str && !offline && equipment_overlay_icon && LAZYLEN(installed_modules))
 		for(var/obj/item/rig_module/module in installed_modules)
 			if(module.suit_overlay)
@@ -905,7 +911,7 @@
 	if(!ai_can_move_suit(user, check_user_module = 1))
 		return
 	wearer.lay_down()
-	to_chat(user, "<span class='notice'>\The [wearer] is now [wearer.resting ? "resting" : "getting up"].</span>")
+	to_chat(user, "<span class='notice'>\The [wearer] is now [wearer.current_posture.prone ? "resting" : "getting up"].</span>")
 
 /obj/item/rig/proc/forced_move(var/direction, var/mob/user)
 	if(malfunctioning)

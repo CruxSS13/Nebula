@@ -4,7 +4,7 @@
 	icon = 'icons/obj/items/weapon/swords/cult.dmi'
 	material_alteration = MAT_FLAG_ALTERATION_COLOR | MAT_FLAG_ALTERATION_NAME
 
-/obj/item/sword/cultblade/attack(mob/living/M, mob/living/user, var/target_zone)
+/obj/item/sword/cultblade/use_on_mob(mob/living/target, mob/living/user, animate = TRUE)
 
 	var/decl/special_role/godcult = GET_DECL(/decl/special_role/godcultist)
 	if(iscultist(user) || (user.mind in godcult.current_antagonists))
@@ -32,7 +32,7 @@
 	var/spooky = pick('sound/hallucinations/growl1.ogg', 'sound/hallucinations/growl2.ogg', 'sound/hallucinations/growl3.ogg', 'sound/hallucinations/wail.ogg')
 	playsound(loc, spooky, 50, 1)
 
-	return 1
+	return TRUE
 
 /obj/item/sword/cultblade/on_picked_up(mob/living/user)
 	if(!iscultist(user))
@@ -71,9 +71,9 @@
 
 /obj/item/clothing/suit/cultrobes
 	name = "cult robes"
-	icon = 'icons/clothing/suit/cult.dmi'
+	icon = 'icons/clothing/suits/cult.dmi'
 	desc = "A set of durable robes worn by the followers of Nar-Sie."
-	body_parts_covered = SLOT_UPPER_BODY|SLOT_LOWER_BODY|SLOT_LEGS|SLOT_ARMS
+	body_parts_covered = SLOT_UPPER_BODY|SLOT_LOWER_BODY|SLOT_LEGS|SLOT_ARMS|SLOT_TAIL
 	allowed = list(/obj/item/book/tome,/obj/item/sword/cultblade)
 	armor = list(
 		ARMOR_MELEE = ARMOR_MELEE_RESISTANT,
@@ -86,13 +86,13 @@
 	siemens_coefficient = 0.6
 
 /obj/item/clothing/suit/cultrobes/alt
-	icon = 'icons/clothing/suit/cult_alt.dmi'
+	icon = 'icons/clothing/suits/cult_alt.dmi'
 
 /obj/item/clothing/suit/cultrobes/magusred
 	name = "magus robes"
 	desc = "A set of plated robes worn by the followers of Nar-Sie."
-	icon = 'icons/clothing/suit/wizard/magusred.dmi'
-	body_parts_covered = SLOT_UPPER_BODY|SLOT_LOWER_BODY|SLOT_LEGS|SLOT_FEET|SLOT_ARMS|SLOT_HANDS
+	icon = 'icons/clothing/suits/wizard/magusred.dmi'
+	body_parts_covered = SLOT_UPPER_BODY|SLOT_LOWER_BODY|SLOT_LEGS|SLOT_FEET|SLOT_ARMS|SLOT_HANDS|SLOT_TAIL
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT
 	armor = list(
 		ARMOR_MELEE = ARMOR_MELEE_VERY_HIGH,
@@ -136,7 +136,7 @@
 		ARMOR_RAD = ARMOR_RAD_MINOR
 	)
 	siemens_coefficient = 0.2
-	body_parts_covered = SLOT_UPPER_BODY|SLOT_LOWER_BODY|SLOT_LEGS|SLOT_ARMS|SLOT_HANDS
+	body_parts_covered = SLOT_UPPER_BODY|SLOT_LOWER_BODY|SLOT_LEGS|SLOT_ARMS|SLOT_HANDS|SLOT_TAIL
 
 /obj/item/clothing/suit/space/cult/Initialize()
 	. = ..()

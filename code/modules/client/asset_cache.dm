@@ -238,6 +238,27 @@ var/global/template_file_name = "all_templates.json"
 	if(nano_asset)
 		nano_asset.recompute_and_resend_templates()
 
+/**
+ * Fonts loader
+ * Fonts for the ui, browser, and nanoui.
+ * Since the rsc compiler tends to be finnicky.
+ */
+/datum/asset/fonts
+	var/fonts_path = "fonts/"
+	var/list/font_files = list()
+
+/datum/asset/fonts/register()
+	var/list/filenames = flist(fonts_path)
+	for(var/filename in filenames)
+		//#TODO: Maybe send only .ttf and .woff files? Not sure if including licenses/readmes is needed for caching?
+		if(copytext(filename, length(filename)) != "/")
+			if(fexists(fonts_path + filename))
+				font_files[filename] = fcopy_rsc(fonts_path + filename)
+				register_asset(filename, font_files[filename])
+
+/datum/asset/fonts/send(client)
+	send_asset_list(client, font_files, FALSE)
+
 /*
 	Asset cache
 */
@@ -248,6 +269,7 @@ var/global/template_file_name = "all_templates.json"
 	for(var/type in subtypesof(/datum/asset) - /datum/asset/simple)
 		var/datum/asset/A = new type()
 		A.register()
+		CHECK_TICK
 
 	for(var/client/C in global.clients) // This is also called in client/New, but as we haven't initialized the cache until now, and it's possible the client is already connected, we risk doing it twice.
 		// Doing this to a client too soon after they've connected can cause issues, also the proc we call sleeps.

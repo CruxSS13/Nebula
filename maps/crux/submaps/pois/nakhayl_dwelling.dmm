@@ -3,66 +3,66 @@
 /obj/machinery/light/small{
 	dir = 1
 	},
-/turf/simulated/floor/wood,
+/turf/floor/wood,
 /area/space)
 "bs" = (
 /obj/structure/table/woodentable,
-/turf/simulated/floor/carpet/green,
+/turf/floor/carpet/green,
 /area/space)
 "bV" = (
 /obj/machinery/light/small,
-/turf/simulated/floor/wood,
+/turf/floor/wood,
 /area/space)
 "cv" = (
 /obj/structure/railing{
 	dir = 8
 	},
 /obj/machinery/door/window/westright,
-/turf/simulated/floor/wood,
+/turf/floor/wood,
 /area/space)
 "cJ" = (
 /obj/item/robot_harvester,
-/turf/simulated/floor/tiled/old_tile,
+/turf/floor/tiled/old_tile,
 /area/space)
 "dk" = (
 /obj/structure/railing{
 	dir = 8
 	},
 /obj/machinery/door/window/westleft,
-/turf/simulated/floor/wood,
+/turf/floor/wood,
 /area/space)
 "dl" = (
 /obj/structure/railing,
 /obj/machinery/door/window/southleft,
-/turf/simulated/floor/wood,
+/turf/floor/wood,
 /area/space)
 "dJ" = (
 /obj/machinery/light/small{
 	dir = 8
 	},
-/turf/simulated/floor/tiled/old_tile,
+/turf/floor/tiled/old_tile,
 /area/space)
 "ez" = (
 /obj/structure/flora/bush/fernybush,
 /obj/structure/flora/bush/fernybush,
-/turf/exterior/wildgrass,
+/turf/floor/natural/grass/wild,
 /area/space)
 "fg" = (
-/turf/simulated/floor/carpet/blue,
+/turf/floor/carpet/blue,
 /area/space)
 "fN" = (
 /obj/machinery/light/small{
 	dir = 1
 	},
-/turf/simulated/floor/tiled/old_tile,
+/turf/floor/tiled/old_tile,
 /area/space)
 "hy" = (
-/turf/simulated/floor/carpet/blue3,
+/turf/floor/carpet/blue3,
 /area/space)
 "jx" = (
 /obj/structure/table/steel,
 /obj/item/robot_parts/chest,
-/turf/simulated/floor/tiled/old_tile,
+/turf/floor/tiled/old_tile,
 /area/space)
 "jS" = (
 /obj/structure/railing{
@@ -71,185 +71,185 @@
 /obj/structure/window/basic{
 	dir = 1
 	},
-/turf/simulated/floor/wood,
+/turf/floor/wood,
 /area/space)
 "kw" = (
 /obj/structure/bed/padded,
 /obj/item/bedsheet/blue,
-/turf/simulated/floor/wood,
+/turf/floor/wood,
 /area/space)
 "tL" = (
 /obj/structure/table/woodentable,
 /obj/item/modular_computer/tablet,
-/turf/simulated/floor/carpet/blue,
+/turf/floor/carpet/blue,
 /area/space)
 "ub" = (
 /obj/structure/table/woodentable,
 /obj/machinery/microwave,
-/turf/simulated/floor/carpet/green,
+/turf/floor/carpet/green,
 /area/space)
 "uC" = (
 /obj/structure/closet/secure_closet/freezer/fridge,
-/turf/simulated/floor/wood,
+/turf/floor/wood,
 /area/space)
 "vg" = (
-/turf/exterior/wildgrass,
+/turf/floor/natural/grass/wild,
 /area/space)
 "vA" = (
-/turf/simulated/floor/carpet/green,
+/turf/floor/carpet/green,
 /area/space)
 "AG" = (
 /obj/structure/railing,
 /obj/machinery/door/window/southright,
-/turf/simulated/floor/wood,
+/turf/floor/wood,
 /area/space)
 "BQ" = (
 /obj/structure/railing{
 	dir = 4
 	},
 /obj/machinery/door/window/eastleft,
-/turf/simulated/floor/tiled/old_tile,
+/turf/floor/tiled/old_tile,
 /area/space)
 "Cn" = (
 /obj/structure/flora/bush/fernybush,
-/turf/exterior/wildgrass,
+/turf/floor/natural/grass/wild,
 /area/space)
 "DE" = (
-/turf/simulated/floor/wood,
+/turf/floor/wood,
 /area/space)
 "DG" = (
 /obj/machinery/light/small{
 	dir = 4
 	},
-/turf/simulated/floor/wood,
+/turf/floor/wood,
 /area/space)
 "Gg" = (
 /obj/structure/railing{
 	dir = 1
 	},
 /obj/machinery/door/window/northright,
-/turf/simulated/floor/wood,
+/turf/floor/wood,
 /area/space)
 "Hv" = (
-/turf/simulated/wall/wood,
+/turf/wall/wood,
 /area/space)
 "HA" = (
 /obj/structure/door/wood,
-/turf/simulated/floor/wood,
+/turf/floor/wood,
 /area/space)
 "Im" = (
 /obj/machinery/light/small,
 /obj/structure/table/steel,
 /obj/item/robot_parts/head,
-/turf/simulated/floor/tiled/old_tile,
+/turf/floor/tiled/old_tile,
 /area/space)
 "Kr" = (
 /obj/machinery/cooker/oven,
-/turf/simulated/floor/carpet/green,
+/turf/floor/carpet/green,
 /area/space)
 "Mh" = (
 /obj/machinery/light/small,
-/turf/simulated/floor/carpet/green,
+/turf/floor/carpet/green,
 /area/space)
 "Mq" = (
 /obj/structure/table/bench,
-/turf/simulated/floor/tiled/old_tile,
+/turf/floor/tiled/old_tile,
 /area/space)
 "MX" = (
 /obj/structure/railing{
 	dir = 4
 	},
 /obj/machinery/door/window/eastright,
-/turf/simulated/floor/tiled/old_tile,
+/turf/floor/tiled/old_tile,
 /area/space)
 "Og" = (
 /obj/item/stack/material/puck/mapped/uranium/forty,
-/turf/exterior/wildgrass,
+/turf/floor/natural/grass/wild,
 /area/space)
 "Oq" = (
 /obj/structure/door/wood,
-/turf/simulated/floor/tiled/old_tile,
+/turf/floor/tiled/old_tile,
 /area/space)
 "Qr" = (
 /obj/structure/bed/chair/wood{
 	dir = 8
 	},
-/turf/simulated/floor/wood,
+/turf/floor/wood,
 /area/space)
 "Qv" = (
 /obj/machinery/light/small{
 	dir = 1
 	},
-/turf/simulated/floor/carpet/green,
+/turf/floor/carpet/green,
 /area/space)
 "QX" = (
 /obj/structure/railing{
 	dir = 1
 	},
 /obj/machinery/door/window/northleft,
-/turf/simulated/floor/wood,
+/turf/floor/wood,
 /area/space)
 "Rv" = (
 /obj/structure/table/woodentable,
-/obj/item/flame/lighter/random{
+/obj/item/flame/fuelled/lighter/random{
 	pixel_x = -7;
 	pixel_y = 11
 	},
 /obj/item/chems/food/can/beef,
-/turf/simulated/floor/carpet/blue,
+/turf/floor/carpet/blue,
 /area/space)
 "RE" = (
 /obj/machinery/light/small{
 	dir = 1
 	},
 /obj/item/clothing/shoes/color/red,
-/turf/simulated/floor/wood,
+/turf/floor/wood,
 /area/space)
 "RG" = (
 /mob/living/silicon/robot/drone,
-/turf/simulated/floor/tiled/old_tile,
+/turf/floor/tiled/old_tile,
 /area/space)
 "Uk" = (
 /obj/random/pottedplant,
-/turf/simulated/floor/wood,
+/turf/floor/wood,
 /area/space)
 "Uq" = (
 /obj/structure/railing,
 /obj/structure/window/basic,
-/turf/simulated/floor/wood,
+/turf/floor/wood,
 /area/space)
 "UO" = (
 /obj/structure/table/woodentable,
-/turf/simulated/floor/carpet/blue,
+/turf/floor/carpet/blue,
 /area/space)
 "Xj" = (
 /obj/item/towel/brown,
-/turf/simulated/floor/carpet/green,
+/turf/floor/carpet/green,
 /area/space)
 "YU" = (
 /obj/item/remains/robot,
-/turf/simulated/floor/tiled/old_tile,
+/turf/floor/tiled/old_tile,
 /area/space)
 "YX" = (
-/turf/simulated/floor/tiled/old_tile,
+/turf/floor/tiled/old_tile,
 /area/space)
 "ZQ" = (
 /obj/structure/bed/chair/wood{
 	dir = 4
 	},
-/turf/simulated/floor/wood,
+/turf/floor/wood,
 /area/space)
 "ZU" = (
 /obj/structure/bed/chair/wood{
 	dir = 4
 	},
-/obj/item/clothing/under/color/blue,
-/turf/simulated/floor/wood,
+/obj/item/clothing/jumpsuit/blue,
+/turf/floor/wood,
 /area/space)
 "ZZ" = (
 /obj/item/robot_parts/l_leg,
 /obj/item/robot_parts/r_arm,
-/turf/simulated/floor/tiled/old_tile,
+/turf/floor/tiled/old_tile,
 /area/space)
 
 (1,1,1) = {"

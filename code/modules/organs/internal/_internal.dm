@@ -57,6 +57,9 @@
 		affected.update_internal_organs_cost()
 
 /obj/item/organ/internal/do_uninstall(in_place, detach, ignore_children, update_icon)
+
+	var/mob/living/victim = owner // cleared in parent proc
+
 	//Make sure we're removed from whatever parent organ we have, either in a mob or not
 	var/obj/item/organ/external/affected
 	if(owner)
@@ -69,6 +72,7 @@
 	if(affected)
 		LAZYREMOVE(affected.internal_organs, src)
 		affected.update_internal_organs_cost()
+
 	. = ..()
 
 	//Remove it from the implants if we are fully removing, or add it to the implants if we are detaching
@@ -77,6 +81,9 @@
 			LAZYDISTINCTADD(affected.implants, src)
 		else
 			LAZYREMOVE(affected.implants, src)
+
+	if(transfer_brainmob_with_organ && istype(victim))
+		transfer_key_to_brainmob(victim, update_brainmob = TRUE)
 
 //#TODO: Remove rejuv hacks
 /obj/item/organ/internal/remove_rejuv()
@@ -97,8 +104,8 @@
 /obj/item/organ/internal/proc/is_bruised()
 	return damage >= min_bruised_damage
 
-/obj/item/organ/internal/proc/set_max_damage(var/ndamage)
-	max_damage = FLOOR(ndamage)
+/obj/item/organ/internal/set_max_damage(var/ndamage)
+	. = ..()
 	min_broken_damage = FLOOR(0.75 * max_damage)
 	min_bruised_damage = FLOOR(0.25 * max_damage)
 	if(damage_threshold_count > 0)
@@ -109,9 +116,9 @@
 
 /obj/item/organ/internal/proc/take_internal_damage(amount, var/silent=0)
 	if(BP_IS_PROSTHETIC(src))
-		damage = clamp(0, src.damage + (amount * 0.8), max_damage)
+		damage = clamp(src.damage + (amount * 0.8), 0, max_damage)
 	else
-		damage = clamp(0, src.damage + amount, max_damage)
+		damage = clamp(src.damage + amount, 0, max_damage)
 
 		//only show this if the organ is not robotic
 		if(owner && can_feel_pain() && parent_organ && (amount > 5 || prob(10)))
@@ -150,6 +157,9 @@
 	if(owner && damage && !(status & ORGAN_DEAD))
 		handle_damage_effects()
 
+/obj/item/organ/internal/proc/has_limited_healing()
+	return !min_regeneration_cutoff_threshold || past_damage_threshold(min_regeneration_cutoff_threshold)
+
 /obj/item/organ/internal/proc/handle_damage_effects()
 	SHOULD_CALL_PARENT(TRUE)
 	if(organ_can_heal())
@@ -157,9 +167,7 @@
 		// Determine the lowest our damage can go with the current state.
 		// If we're under the min regeneration cutoff threshold, we can always heal to zero.
 		// If we don't have one set, we can only heal to the nearest threshold value.
-		var/min_heal_val = 0
-		if(!min_regeneration_cutoff_threshold || past_damage_threshold(min_regeneration_cutoff_threshold))
-			min_heal_val = (get_current_damage_threshold() * damage_threshold_value)
+		var/min_heal_val = has_limited_healing() ? (get_current_damage_threshold() * damage_threshold_value) : 0
 
 		// We clamp/round here so that we don't accidentally heal past the threshold and
 		// cheat our way into a full second threshold of healing.
@@ -290,9 +298,3 @@
 		var/mob/living/brainmob = get_brainmob(create_if_missing = FALSE)
 		if(brainmob?.key)
 			transfer_key_from_mob_to_mob(brainmob, owner)
-
-/obj/item/organ/internal/do_uninstall(in_place, detach, ignore_children, update_icon)
-	var/mob/living/victim = owner // cleared in parent proc
-	. = ..()
-	if(transfer_brainmob_with_organ && istype(victim))
-		transfer_key_to_brainmob(victim, update_brainmob = TRUE)

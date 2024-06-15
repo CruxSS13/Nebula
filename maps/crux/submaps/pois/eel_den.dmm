@@ -1,30 +1,30 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "a" = (
-/turf/exterior/seafloor/flooded,
+/turf/floor/natural/seafloor/flooded,
 /area/space)
 "c" = (
-/obj/item/chems/food/fish,
+/obj/item/chems/food/butchery/meat/fish,
 /obj/item/bone/skull,
-/obj/item/chems/food/fish,
-/obj/item/chems/food/fish,
-/turf/exterior/seafloor/flooded,
+/obj/item/chems/food/butchery/meat/fish,
+/obj/item/chems/food/butchery/meat/fish,
+/turf/floor/natural/seafloor/flooded,
 /area/space)
 "g" = (
 /mob/living/simple_animal/hostile/leech,
-/turf/exterior/seafloor/flooded,
+/turf/floor/natural/seafloor/flooded,
 /area/space)
 "r" = (
 /obj/item/remains,
 /obj/item/tank/oxygen,
-/obj/item/hatchet,
-/turf/exterior/seafloor/flooded,
+/obj/item/tool/axe/hatchet,
+/turf/floor/natural/seafloor/flooded,
 /area/space)
 "H" = (
-/turf/exterior/wall/flooded,
+/turf/wall/natural/flooded,
 /area/space)
 "W" = (
 /obj/structure/flora/bush/stalkybush,
-/turf/exterior/seafloor/flooded,
+/turf/floor/natural/seafloor/flooded,
 /area/space)
 
 (1,1,1) = {"

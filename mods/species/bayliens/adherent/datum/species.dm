@@ -13,16 +13,14 @@
 /decl/species/adherent
 	name = SPECIES_ADHERENT
 	name_plural = "Adherents"
-	base_prosthetics_model = null
+	base_external_prosthetics_model = null
 
 	description = "The Vigil is a loose collection of floating squid-like machines made of a crystalline composite. \
 	They once served their creators faithfully, but were left orphaned by a stellar apocalypse."
 	hidden_from_codex = FALSE
 	silent_steps = TRUE
 
-	meat_type = null
-	bone_material = null
-	skin_material = null
+	butchery_data = /decl/butchery_data/crystal
 
 	blood_types = list(/decl/blood_type/coolant)
 
@@ -39,10 +37,8 @@
 	)
 	cyborg_noun =             null
 
-	siemens_coefficient =     0
+	shock_vulnerability =     0
 	rarity_value =            6
-
-	age_descriptor = /datum/appearance_descriptor/age/adherent
 
 	warning_low_pressure =    50
 	hazard_low_pressure =     -1
@@ -55,7 +51,7 @@
 	spawn_flags =   SPECIES_CAN_JOIN
 
 	flesh_color = "#90edeb"
-	hud_type = /datum/hud_data/adherent
+	species_hud = /datum/hud_data/adherent
 
 	available_cultural_info = list(
 		TAG_CULTURE = list(

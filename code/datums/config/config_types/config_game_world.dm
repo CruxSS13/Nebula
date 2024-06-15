@@ -20,7 +20,9 @@
 		/decl/config/toggle/on/cult_ghostwriter,
 		/decl/config/toggle/allow_holidays,
 		/decl/config/toggle/humans_need_surnames,
-		/decl/config/toggle/roundstart_level_generation
+		/decl/config/toggle/roundstart_level_generation,
+		/decl/config/toggle/lights_start_on,
+		/decl/config/toggle/on/cisnormativity
 	)
 
 /decl/config/num/exterior_ambient_light
@@ -96,19 +98,19 @@
 
 /decl/config/toggle/on/welder_vision
 	uid = "welder_vision"
-	desc = "Uncomment to disable the restrictive weldervision overlay."
+	desc = "Toggles the restrictive weldervision overlay when wearing welding goggles or a welding helmet."
 
 /decl/config/toggle/on/allow_ic_printing
 	uid = "allow_ic_printing"
-	desc = "Uncomment this to prevent players from printing copy/pasted circuits."
+	desc = "Determines if players can print copy/pasted integrated circuits."
 
 /decl/config/toggle/on/cult_ghostwriter
 	uid = "cult_ghostwriter"
-	desc = "Uncomment to allow ghosts to write in blood during Cult rounds."
+	desc = "Determines if ghosts are permitted to write in blood during cult rounds."
 
 /decl/config/toggle/allow_holidays
 	uid = "allow_holidays"
-	desc = "Remove the # to allow special 'Easter-egg' events on special holidays such as seasonal holidays and stuff like 'Talk Like a Pirate Day' :3 YAARRR"
+	desc = "Determines if special 'Easter-egg' events are active on special holidays such as seasonal holidays and stuff like 'Talk Like a Pirate Day' :3 YAARRR"
 
 /decl/config/toggle/allow_holidays/update_post_value_set()
 	. = ..()
@@ -125,3 +127,11 @@
 /decl/config/toggle/roundstart_level_generation
 	uid = "roundstart_level_generation"
 	desc = "Enable/Disable random level generation. Will behave strangely if turned off with a map that expects it on."
+
+/decl/config/toggle/lights_start_on
+	uid = "lights_start_on"
+	desc = "If true, most lightswitches start on by default. Otherwise, they start off."
+
+/decl/config/toggle/on/cisnormativity
+	uid = "cisnormativity"
+	desc = "If true, when bodytype is changed in character creation, selected pronouns are also changed."

@@ -3,16 +3,16 @@
 	name = "space bear"
 	desc = "RawrRawr!!"
 	icon = 'icons/mob/simple_animal/bear_space.dmi'
-	speak = list("RAWR!","Rawr!","GRR!","Growl!")
-	speak_emote = list("growls", "roars")
-	emote_hear = list("rawrs","grumbles","grawls")
-	emote_see = list("stares ferociously", "stomps")
-	speak_chance = 1
+	speak_emote  = list("growls", "roars")
+	emote_speech = list("RAWR!","Rawr!","GRR!","Growl!")
+	emote_hear   = list("rawrs","grumbles","grawls")
+	emote_see    = list("stares ferociously", "stomps")
+	speak_chance = 0.5
 	turns_per_move = 5
 	see_in_dark = 6
 	response_harm = "pokes"
 	stop_automated_movement_when_pulled = 0
-	mob_default_max_health = 60
+	max_health = 60
 	natural_weapon = /obj/item/natural_weapon/claws/strong
 	can_escape = TRUE
 	faction = "russian"
@@ -23,11 +23,7 @@
 	max_gas = null
 	minbodytemp = 0
 
-	meat_type = /obj/item/chems/food/bearmeat
-	meat_amount = 10
-	bone_amount = 20
-	skin_amount = 20
-	skin_material = /decl/material/solid/organic/skin/fur/heavy
+	butchery_data = /decl/butchery_data/animal/space_bear
 
 	var/stance_step = 0
 
@@ -108,7 +104,7 @@
 /mob/living/simple_animal/hostile/bear/LoseTarget()
 	..(5)
 
-/mob/living/simple_animal/hostile/bear/AttackingTarget()
+/mob/living/simple_animal/hostile/bear/attack_target(mob/target)
 	if(!Adjacent(target_mob))
 		return
 	custom_emote(1, pick( list("slashes at [target_mob]", "bites [target_mob]") ) )
@@ -123,5 +119,5 @@
 		return H
 	else if(isliving(target_mob))
 		var/mob/living/L = target_mob
-		L.adjustBruteLoss(damage)
+		L.take_damage(damage)
 		return L

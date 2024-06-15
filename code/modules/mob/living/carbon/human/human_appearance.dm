@@ -1,50 +1,13 @@
 /mob/living/carbon/human
-	var/_h_style
-	var/_f_style
-	var/_hair_colour
-	var/_facial_hair_colour
-	var/_eye_colour
 	var/_skin_colour
-	var/_lip_colour
 
 /mob/living/carbon/human/proc/change_appearance(var/flags = APPEARANCE_ALL_HAIR, var/location = src, var/mob/user = src, var/check_species_whitelist = 1, var/list/species_whitelist = list(), var/list/species_blacklist = list(), var/datum/topic_state/state = global.default_topic_state)
 	var/datum/nano_module/appearance_changer/AC = new(location, src, check_species_whitelist, species_whitelist, species_blacklist)
 	AC.flags = flags
 	AC.ui_interact(user, state = state)
 
-/mob/living/carbon/human/get_lip_colour()
-	return _lip_colour
-
-/mob/living/carbon/human/get_eye_colour()
-	return _eye_colour
-
 /mob/living/carbon/human/get_skin_colour()
 	return _skin_colour
-
-/mob/living/carbon/human/get_hairstyle()
-	return _h_style
-
-/mob/living/carbon/human/get_hair_colour()
-	return _hair_colour
-
-/mob/living/carbon/human/get_facial_hairstyle()
-	return _f_style
-
-/mob/living/carbon/human/get_facial_hair_colour()
-	return _facial_hair_colour
-
-/mob/living/carbon/human/set_lip_colour(var/new_color, var/skip_update = FALSE)
-	if((. = ..()))
-		_lip_colour = new_color
-		if(!skip_update)
-			update_body()
-
-/mob/living/carbon/human/set_eye_colour(var/new_color, var/skip_update = FALSE)
-	if((. = ..()))
-		_eye_colour = new_color
-		if(!skip_update)
-			update_eyes()
-			update_body()
 
 /mob/living/carbon/human/set_skin_colour(var/new_color, var/skip_update = FALSE)
 	if((. = ..()))
@@ -53,35 +16,11 @@
 			force_update_limbs()
 			update_body()
 
-/mob/living/carbon/human/set_hair_colour(var/new_color, var/skip_update = FALSE)
-	if((. = ..()))
-		_hair_colour = new_color
-		if(!skip_update)
-			update_hair()
-
-/mob/living/carbon/human/set_hairstyle(var/new_hairstyle, var/skip_update = FALSE)
-	if((. = ..()))
-		_h_style = new_hairstyle
-		if(!skip_update)
-			update_hair()
-
-/mob/living/carbon/human/set_facial_hair_colour(var/new_color, var/skip_update = FALSE)
-	if((. = ..()))
-		_facial_hair_colour = new_color
-		if(!skip_update)
-			update_hair()
-
-/mob/living/carbon/human/set_facial_hairstyle(var/new_facial_hairstyle, var/skip_update = FALSE)
-	if((. = ..()))
-		_f_style = new_facial_hairstyle
-		if(!skip_update)
-			update_hair()
-
 /mob/living/carbon/human/proc/change_species(var/new_species, var/new_bodytype = null)
 	if(!new_species)
 		return
 
-	if(species == new_species)
+	if(species?.name == new_species)
 		return
 
 	if(!(new_species in get_all_species()))
@@ -105,14 +44,12 @@
 	if (antag && antag.required_language)
 		add_language(antag.required_language)
 		set_default_language(antag.required_language)
-	reset_hair()
 	try_refresh_visible_overlays()
 	return 1
 
 /mob/living/carbon/human/set_gender(var/new_gender, var/update_body = FALSE)
 	. = ..()
 	if(. && update_body)
-		reset_hair()
 		update_body()
 		update_dna()
 
@@ -121,19 +58,29 @@
 	set_gender(pronouns.name, TRUE)
 
 /mob/living/carbon/human/proc/reset_hair()
-	var/list/valid_hairstyles = get_valid_hairstyle_types()
+	var/decl/bodytype/root_bodytype = get_bodytype()
+	var/decl/sprite_accessory_category/hair/hair_category = GET_DECL(SAC_HAIR)
+	var/list/valid_hairstyles = species?.get_available_accessories(root_bodytype, SAC_HAIR)
 	if(length(valid_hairstyles))
-		set_hairstyle(pick(valid_hairstyles), skip_update = TRUE)
+		var/body_default_hairstyles = LAZYACCESS(root_bodytype?.default_sprite_accessories, SAC_HAIR)
+		// Forgive us, but we need to set both hair color AND style at the same time...
+		set_organ_sprite_accessory_by_category(pick(valid_hairstyles), SAC_HAIR, GET_HAIR_COLOUR(src) || body_default_hairstyles?[body_default_hairstyles[1]] || hair_category.default_accessory_color, TRUE, TRUE, BP_HEAD, TRUE)
 	else
 		//this shouldn't happen
-		set_hairstyle(get_bodytype()?.default_h_style || /decl/sprite_accessory/hair/bald, skip_update = TRUE)
+		var/new_hair = LAZYACCESS(root_bodytype?.default_sprite_accessories, SAC_HAIR) || /decl/sprite_accessory/hair/bald
+		if(new_hair)
+			set_organ_sprite_accessory_by_category(new_hair[1], SAC_HAIR, new_hair[new_hair[1]] || hair_category.default_accessory_color, TRUE, TRUE, BP_HEAD, TRUE)
 
-	var/list/valid_facial_hairstyles =  get_valid_facial_hairstyle_types()
+	var/decl/sprite_accessory_category/facial_hair/facial_hair_category = GET_DECL(SAC_FACIAL_HAIR)
+	var/list/valid_facial_hairstyles = species?.get_available_accessories(root_bodytype, SAC_FACIAL_HAIR)
 	if(length(valid_facial_hairstyles))
-		set_facial_hairstyle(pick(valid_facial_hairstyles), skip_update = TRUE)
+		var/body_default_facial_hairstyles = LAZYACCESS(root_bodytype?.default_sprite_accessories, SAC_FACIAL_HAIR)
+		set_organ_sprite_accessory_by_category(pick(valid_facial_hairstyles), SAC_FACIAL_HAIR, GET_FACIAL_HAIR_COLOUR(src) || body_default_facial_hairstyles?[body_default_facial_hairstyles[1]] || facial_hair_category.default_accessory_color, TRUE, TRUE, BP_HEAD, TRUE)
 	else
 		//this shouldn't happen
-		set_facial_hairstyle(get_bodytype()?.default_f_style || /decl/sprite_accessory/facial_hair/shaved, skip_update = TRUE)
+		var/new_facial_hair = LAZYACCESS(root_bodytype?.default_sprite_accessories, SAC_FACIAL_HAIR) || /decl/sprite_accessory/facial_hair/shaved
+		if(new_facial_hair)
+			set_organ_sprite_accessory_by_category(new_facial_hair[1], SAC_FACIAL_HAIR, new_facial_hair[new_facial_hair[1]] || facial_hair_category.default_accessory_color, TRUE, TRUE, BP_HEAD, TRUE)
 
 	update_hair()
 
@@ -167,12 +114,6 @@
 		valid_species += current_species_name
 
 	return valid_species
-
-/mob/living/carbon/human/proc/get_valid_hairstyle_types()
-	return species.get_hair_style_types(get_bodytype())
-
-/mob/living/carbon/human/proc/get_valid_facial_hairstyle_types()
-	return species.get_facial_hair_style_types(get_bodytype())
 
 /mob/living/carbon/human/proc/force_update_limbs()
 	for(var/obj/item/organ/external/O in get_external_organs())

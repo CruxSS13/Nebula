@@ -2,19 +2,21 @@
 // Abstract Class
 //
 
-var/global/list/protected_objects = list(/obj/machinery,
-										 /obj/structure/table,
-										 /obj/structure/cable,
-										 /obj/structure/window,
-										 /obj/structure/wall_frame,
-										 /obj/structure/grille,
-										 /obj/structure/catwalk,
-										 /obj/structure/ladder,
-										 /obj/structure/stairs,
-										 /obj/structure/sign,
-										 /obj/structure/railing,
-										 /obj/item/modular_computer,
-										 /obj/item/projectile/animate)
+var/global/list/protected_objects = list(
+	/obj/machinery,
+	/obj/structure/table,
+	/obj/structure/cable,
+	/obj/structure/window,
+	/obj/structure/wall_frame,
+	/obj/structure/grille,
+	/obj/structure/catwalk,
+	/obj/structure/ladder,
+	/obj/structure/stairs,
+	/obj/structure/sign,
+	/obj/structure/railing,
+	/obj/item/modular_computer,
+	/obj/item/projectile/animate
+)
 
 /mob/living/simple_animal/hostile/mimic
 	name = "crate"
@@ -22,9 +24,9 @@ var/global/list/protected_objects = list(/obj/machinery,
 	icon =  'icons/obj/closets/bases/crate.dmi'
 	color = COLOR_STEEL
 	icon_state = "crate"
-	meat_type = /obj/item/chems/food/fish
+	butchery_data = null
 	speed = 4
-	mob_default_max_health = 100
+	max_health = 100
 	harm_intent_damage = 5
 	natural_weapon = /obj/item/natural_weapon/bite
 	min_gas = null
@@ -94,36 +96,31 @@ var/global/list/protected_objects = list(/obj/machinery,
 		return TRUE
 	return FALSE
 
-/mob/living/simple_animal/hostile/mimic/death()
+/mob/living/simple_animal/hostile/mimic/death(gibbed)
 	if(!copy_of)
 		return
 	var/atom/movable/C = copy_of.resolve()
-	..(null, "dies!")
-	if(C)
+	. = ..()
+	if(. && C)
 		C.forceMove(src.loc)
-
 		if(istype(C,/obj/structure/closet))
 			for(var/atom/movable/M in src)
 				M.forceMove(C)
-
-		if(istype(C,/obj/item/storage))
-			var/obj/item/storage/S = C
+		if(C.storage)
 			for(var/atom/movable/M in src)
-				if(S.can_be_inserted(M,null,1))
-					S.handle_item_insertion(M)
+				if(C.storage.can_be_inserted(M, null, 1))
+					C.storage.handle_item_insertion(null, M)
 				else
 					M.forceMove(src.loc)
-
 		for(var/atom/movable/M in src)
 			M.dropInto(loc)
 		qdel(src)
-
 
 /mob/living/simple_animal/hostile/mimic/DestroySurroundings()
 	if(destroy_objects)
 		..()
 
-/mob/living/simple_animal/hostile/mimic/AttackingTarget()
+/mob/living/simple_animal/hostile/mimic/attack_target(mob/target)
 	. =..()
 	if(knockdown_people)
 		var/mob/living/L = .
@@ -138,7 +135,7 @@ var/global/list/protected_objects = list(/obj/machinery,
 	return ..()
 
 /mob/living/simple_animal/hostile/mimic/sleeping
-	wander = 0
+	wander = FALSE
 	stop_automated_movement = 1
 
 	var/awake = 0

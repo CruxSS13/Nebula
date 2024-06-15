@@ -10,7 +10,7 @@
 	lift_floor_label = "Ground Floor"
 	lift_floor_name = "Ground Floor"
 	lift_announce_str = "Arriving at Ground Floor: Main Hangars. Cargo Delivery. Telecommunications. Auxiliary Shuttle Docks. Escape Pods."
-	base_turf = /turf/simulated/floor
+	base_turf = /turf/floor
 
 /area/turbolift/crux/port_deck_two
 	name = "lift (first floor)"
@@ -23,7 +23,7 @@
 	lift_floor_label = "Ground Floor"
 	lift_floor_name = "Ground Floor"
 	lift_announce_str = "Arriving at Ground Floor: Main Hangars. Cargo Delivery. Telecommunications. Auxiliary Shuttle Docks. Escape Pods."
-	base_turf = /turf/simulated/floor
+	base_turf = /turf/floor
 
 /area/turbolift/crux/starboard_deck_two
 	name = "lift (first floor)"
@@ -36,7 +36,7 @@
 	lift_floor_label = "Ground Floor"
 	lift_floor_name = "Ground Floor"
 	lift_announce_str = "Arriving at Ground Floor: Main Hangars. Cargo Delivery. Telecommunications. Auxiliary Shuttle Docks. Escape Pods."
-	base_turf = /turf/simulated/floor
+	base_turf = /turf/floor
 
 /area/turbolift/crux/center_deck_two
 	name = "lift (first floor)"
@@ -55,7 +55,7 @@
 	lift_floor_label = "Ground Floor"
 	lift_floor_name = "Ground Floor"
 	lift_announce_str = "Arriving at Cargo Delivery."
-	base_turf = /turf/simulated/floor
+	base_turf = /turf/floor
 
 /area/turbolift/crux/cargo_deck_two
 	name = "lift (first floor)"

@@ -321,8 +321,8 @@ SUBSYSTEM_DEF(zcopy)
 			QDEL_NULL(T.mimic_underlay)
 
 		if(T.below?.flooded)
-			T.icon = 'icons/turf/exterior/water.dmi'
-			T.icon_state = "0"
+			T.icon = 'icons/effects/liquids.dmi'
+			T.icon_state = "deep_still"
 			T.color = COLOR_SILVER
 			continue
 
@@ -627,6 +627,7 @@ SUBSYSTEM_DEF(zcopy)
 		switch (appearance:plane)
 			if (DEFAULT_PLANE, FLOAT_PLANE)
 				// fine
+				EMPTY_BLOCK_GUARD
 			else
 				plane_needs_fix = TRUE
 
