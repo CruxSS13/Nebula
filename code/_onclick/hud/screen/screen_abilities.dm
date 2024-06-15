@@ -1,8 +1,9 @@
 /obj/screen/ability_master
-	name           = "Abilities"
-	icon           = 'icons/mob/screen_spells.dmi'
-	icon_state     = "grey_spell_ready"
-	screen_loc     = ui_ability_master
+	name              = "Abilities"
+	icon              = 'icons/mob/screen/spells.dmi'
+	icon_state        = "grey_spell_ready"
+	screen_loc        = ui_ability_master
+	requires_ui_style = FALSE
 	var/list/obj/screen/ability/ability_objects = list()
 	var/list/obj/screen/ability/spell_objects = list()
 	var/showing = FALSE // If we're 'open' or not.
@@ -10,7 +11,7 @@
 	var/open_state = "master_open"		// What the button looks like when it's 'open', showing the other buttons.
 	var/closed_state = "master_closed"	// Button when it's 'closed', hiding everything else.
 
-/obj/screen/ability_master/Initialize(mapload, mob/_owner, ui_style, ui_color, ui_alpha)
+/obj/screen/ability_master/Initialize(mapload, mob/_owner, ui_style, ui_color, ui_alpha, ui_cat)
 	. = ..()
 	if(. != INITIALIZE_HINT_QDEL)
 		update_abilities(0, _owner)
@@ -123,12 +124,6 @@
 			return A
 	return null
 
-/obj/screen/ability_master/proc/get_ability_by_proc_ref(proc_ref)
-	for(var/obj/screen/ability/verb_based/V in ability_objects)
-		if(V.verb_to_call == proc_ref)
-			return V
-	return null
-
 /obj/screen/ability_master/proc/get_ability_by_instance(var/obj/instance/)
 	for(var/obj/screen/ability/obj_based/O in ability_objects)
 		if(O.object == instance)
@@ -154,10 +149,11 @@
 //This is what you click to do things//
 ///////////////////////////////////////
 /obj/screen/ability
-	icon = 'icons/mob/screen_spells.dmi'
+	icon = 'icons/mob/screen/spells.dmi'
 	icon_state = "grey_spell_base"
 	maptext_x = 3
 	requires_owner = FALSE
+	requires_ui_style = FALSE
 	var/background_base_state = "grey"
 	var/ability_icon_state = null
 	var/obj/screen/ability_master/ability_master
@@ -188,43 +184,6 @@
 	to_world("[src] had activate() called.")
 	return
 
-// This checks if the ability can be used.
-/obj/screen/ability/proc/can_activate()
-	return 1
-
-//////////Verb Abilities//////////
-//Buttons to trigger verbs/procs//
-//////////////////////////////////
-
-/obj/screen/ability/verb_based
-	var/verb_to_call = null
-	var/object_used = null
-	var/arguments_to_use = list()
-
-/obj/screen/ability/verb_based/activate()
-	if(object_used && verb_to_call)
-		call(object_used,verb_to_call)(arguments_to_use)
-
-/obj/screen/ability_master/proc/add_verb_ability(var/object_given, var/verb_given, var/name_given, var/ability_icon_given, var/arguments)
-	if(!object_given)
-		message_admins("ERROR: add_verb_ability() was not given an object in its arguments.")
-	if(!verb_given)
-		message_admins("ERROR: add_verb_ability() was not given a verb/proc in its arguments.")
-	if(get_ability_by_proc_ref(verb_given))
-		return // Duplicate
-	var/obj/screen/ability/verb_based/A = new /obj/screen/ability/verb_based()
-	A.ability_master = src
-	A.object_used = object_given
-	A.verb_to_call = verb_given
-	A.ability_icon_state = ability_icon_given
-	A.SetName(name_given)
-	if(arguments)
-		A.arguments_to_use = arguments
-	ability_objects.Add(A)
-	var/mob/owner = owner_ref?.resolve()
-	if(istype(owner) && owner.client)
-		toggle_open(2) //forces the icons to refresh on screen
-
 /////////Obj Abilities////////
 //Buttons to trigger objects//
 //////////////////////////////
@@ -235,26 +194,6 @@
 /obj/screen/ability/obj_based/activate()
 	if(object)
 		object.Click()
-
-// Technomancer
-/obj/screen/ability/obj_based/technomancer
-	icon_state = "wiz_spell_base"
-	background_base_state = "wiz"
-
-/obj/screen/ability_master/proc/add_technomancer_ability(var/obj/object_given, var/ability_icon_given)
-	if(!object_given)
-		message_admins("ERROR: add_technomancer_ability() was not given an object in its arguments.")
-	if(get_ability_by_instance(object_given))
-		return // Duplicate
-	var/obj/screen/ability/obj_based/technomancer/A = new /obj/screen/ability/obj_based/technomancer()
-	A.ability_master = src
-	A.object = object_given
-	A.ability_icon_state = ability_icon_given
-	A.SetName(object_given.name)
-	ability_objects.Add(A)
-	var/mob/owner = owner_ref?.resolve()
-	if(istype(owner) && !QDELETED(owner) && owner.client)
-		toggle_open(2) //forces the icons to refresh on screen
 
 // Wizard
 /obj/screen/ability/spell

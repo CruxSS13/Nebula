@@ -80,8 +80,6 @@ var/global/list/time_prefs_fixed = list()
 	QDEL_LIST_ASSOC_VAL(char_render_holders)
 
 /datum/preferences/proc/setup()
-	if(!length(global.skills))
-		GET_DECL(/decl/hierarchy/skill)
 	player_setup = new(src)
 	gender = pick(MALE, FEMALE)
 	real_name = get_random_name()
@@ -371,9 +369,9 @@ var/global/list/time_prefs_fixed = list()
 		var/firstspace = findtext(real_name, " ")
 		var/name_length = length(real_name)
 		if(!firstspace)	//we need a surname
-			real_name += " [pick(global.last_names)]"
+			real_name += " [pick(global.using_map.last_names)]"
 		else if(firstspace == name_length)
-			real_name += "[pick(global.last_names)]"
+			real_name += "[pick(global.using_map.last_names)]"
 
 	character.fully_replace_character_name(real_name)
 
@@ -381,12 +379,6 @@ var/global/list/time_prefs_fixed = list()
 	character.blood_type = blood_type
 
 	character.set_eye_colour(eye_colour, skip_update = TRUE)
-
-	character.set_hairstyle(h_style, skip_update = TRUE)
-	character.set_hair_colour(hair_colour, skip_update = TRUE)
-
-	character.set_facial_hairstyle(f_style, skip_update = TRUE)
-	character.set_facial_hair_colour(facial_hair_colour, skip_update = TRUE)
 
 	character.set_skin_colour(skin_colour, skip_update = TRUE)
 	character.skin_tone = skin_tone
@@ -409,24 +401,27 @@ var/global/list/time_prefs_fixed = list()
 	character.backpack_setup = new(backpack, backpack_metadata["[backpack]"])
 
 	for(var/obj/item/organ/external/O in character.get_external_organs())
-		LAZYCLEARLIST(O.markings)
+		for(var/decl/sprite_accessory_category/sprite_category in O.get_sprite_accessory_categories())
+			if(!sprite_category.clear_in_pref_apply)
+				continue
+			O.clear_sprite_accessories_by_category(sprite_category.type, skip_update = TRUE)
 
-	for(var/M in body_markings)
-		var/decl/sprite_accessory/marking/mark_datum = GET_DECL(M)
-		var/mark_color = "[body_markings[M]]"
-
-		for(var/bodypart in mark_datum.body_parts)
-			var/obj/item/organ/external/O = GET_EXTERNAL_ORGAN(character, bodypart)
-			if(O)
-				LAZYSET(O.markings, M, mark_color)
+	for(var/accessory_category in sprite_accessories)
+		for(var/accessory in sprite_accessories[accessory_category])
+			var/decl/sprite_accessory/accessory_decl = GET_DECL(accessory)
+			var/accessory_colour = sprite_accessories[accessory_category][accessory]
+			for(var/bodypart in accessory_decl.body_parts)
+				var/obj/item/organ/external/O = GET_EXTERNAL_ORGAN(character, bodypart)
+				if(O)
+					O.set_sprite_accessory(accessory, accessory_category, accessory_colour, skip_update = TRUE)
 
 	if(LAZYLEN(appearance_descriptors))
 		character.appearance_descriptors = appearance_descriptors.Copy()
 
 	if(character.dna)
 		character.dna.ready_dna(character)
-		if(client.prefs?.blood_type)
-			character.dna.b_type = client.prefs.blood_type
+		if(blood_type)
+			character.dna.b_type = blood_type
 
 	character.force_update_limbs()
 	character.update_mutations(0)
@@ -512,3 +507,17 @@ var/global/list/time_prefs_fixed = list()
 		// Preferences datum - also holds some persistant data for the client (because we may as well keep these datums to a minimum).
 		SScharacter_setup.preferences_datums[client.ckey] = src
 		setup()
+
+/datum/preferences/proc/set_species(new_species)
+	species = new_species
+	sanitize_preferences()
+	var/decl/species/mob_species = get_species_decl()
+	mob_species.handle_post_species_pref_set(src)
+	var/decl/bodytype/mob_bodytype = get_bodytype_decl()
+	set_bodytype(mob_bodytype)
+
+/datum/preferences/proc/set_bodytype(new_bodytype)
+	bodytype = new_bodytype
+	sanitize_preferences()
+	var/decl/bodytype/mob_bodytype = get_bodytype_decl()
+	mob_bodytype.handle_post_bodytype_pref_set(src)

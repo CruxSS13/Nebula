@@ -26,12 +26,12 @@
 		return TRUE
 
 	var/mob/living/carbon/human/H = user
-	var/decl/species/my_species = istype(H) && H.get_species()
-	if(!istype(my_species))
+	var/decl/bodytype/my_bodytype = istype(H) && H.get_bodytype()
+	if(!istype(my_bodytype))
 		return ..()
 
-	var/datum/appearance_descriptor/age/age = my_species && LAZYACCESS(my_species.appearance_descriptors, "age")
-	if(H.isSynthetic() || !my_species || !age)
+	var/datum/appearance_descriptor/age/age = my_bodytype && LAZYACCESS(my_bodytype.appearance_descriptors, "age")
+	if(H.isSynthetic() || !my_bodytype || !age)
 		to_chat(H, SPAN_WARNING("A feeling of foreboding stills your hand. The fountain is not for your kind."))
 		return
 
@@ -58,8 +58,8 @@
 	else
 		new_age -= rand(5,15)
 
-	var/decl/species/species = user.get_species()
-	var/datum/appearance_descriptor/age/age = LAZYACCESS(species.appearance_descriptors, "age")
+	var/decl/bodytype/bodytype = user.get_bodytype()
+	var/datum/appearance_descriptor/age/age = LAZYACCESS(bodytype.appearance_descriptors, "age")
 	// Let's avoid reverting people to children since that has a lot of baggage attached.
 	var/min_age = age.standalone_value_descriptors[age.standalone_value_descriptors[age.chargen_min_index]]
 	new_age = max(new_age, min_age) // This will clamp to the max defined age already so only need to min()
@@ -74,7 +74,7 @@
 		else
 			to_chat(user, "<span class='cultannounce'>You touch the fountain. All the memories of your life seem to fade into the distant past as seconds drag like years. You feel the inexplicable sensation of your skin tightening and thinning across your entire body as your muscles degrade and your joints weaken. Time returns to its 'normal' pace. You can only just barely remember touching the fountain.</span>")
 			user.became_older = TRUE
-			user.set_hair_colour(COLOR_GRAY80)
+			SET_HAIR_COLOUR(user, COLOR_GRAY80, FALSE)
 			var/max_age = age.standalone_value_descriptors[age.standalone_value_descriptors[length(age.standalone_value_descriptors)]]
 			if(new_age >= max_age)
 				to_chat(user, "<span class='cultannounce'><b>The burden of the years is too much, and you are reduced to dust.</b></span>")
@@ -102,7 +102,7 @@
 	. = ..()
 
 /obj/structure/fountain/mundane/populate_reagents()
-	reagents.add_reagent(/decl/material/liquid/water, reagents.maximum_volume) //Don't give free water when building one
+	add_to_reagents(/decl/material/liquid/water, reagents.maximum_volume) //Don't give free water when building one
 
 /obj/structure/fountain/mundane/attack_hand(mob/user)
 	if(user.a_intent == I_HURT)

@@ -29,6 +29,7 @@
 
 		return 1
 
+	var/zas_participation = SHOULD_PARTICIPATE_IN_ZONES(src)
 	var/previously_open = airflow_open_directions
 	airflow_open_directions = 0
 
@@ -83,58 +84,69 @@
 
 			if(TURF_HAS_VALID_ZONE(unsim))
 
-				//Might have assigned a zone, since this happens for each direction.
-				if(!zone)
+				if(zas_participation)
+					//Might have assigned a zone, since this happens for each direction.
+					if(!zone)
 
-					//We do not merge if
-					//    they are blocking us and we are not blocking them, or if
-					//    we are blocking them and not blocking ourselves - this prevents tiny zones from forming on doorways.
-					if(((block & ZONE_BLOCKED) && !(r_block & ZONE_BLOCKED)) || ((r_block & ZONE_BLOCKED) && !(s_block & ZONE_BLOCKED)))
+						//We do not merge if
+						//    they are blocking us and we are not blocking them, or if
+						//    we are blocking them and not blocking ourselves - this prevents tiny zones from forming on doorways.
+						if(((block & ZONE_BLOCKED) && !(r_block & ZONE_BLOCKED)) || ((r_block & ZONE_BLOCKED) && !(s_block & ZONE_BLOCKED)))
+							#ifdef ZASDBG
+							if(verbose)
+								zas_log("[dir2text(d)] is zone blocked.")
+							//dbg(ZAS_ZONE_BLOCKER(d))
+							#endif
+
+							//Postpone this tile rather than exit, since a connection can still be made.
+							if(!postponed) postponed = list()
+							postponed.Add(unsim)
+
+						else
+
+							unsim.zone.add(src)
+
+							#ifdef ZASDBG
+							dbg(zasdbgovl_assigned)
+							if(verbose)
+								zas_log("Added to [zone]")
+							#endif
+
+					else if(unsim.zone != zone)
+
 						#ifdef ZASDBG
 						if(verbose)
-							zas_log("[dir2text(d)] is zone blocked.")
-						//dbg(ZAS_ZONE_BLOCKER(d))
+							zas_log("Connecting to [unsim.zone]")
 						#endif
 
-						//Postpone this tile rather than exit, since a connection can still be made.
-						if(!postponed) postponed = list()
-						postponed.Add(unsim)
+						SSair.connect(src, unsim)
 
-					else
 
-						unsim.zone.add(src)
+				#ifdef ZASDBG
+					else if(verbose)
+						zas_log("[dir2text(d)] has same zone.")
+				#endif
 
-						#ifdef ZASDBG
-						dbg(zasdbgovl_assigned)
-						if(verbose)
-							zas_log("Added to [zone]")
-						#endif
-
-				else if(unsim.zone != zone)
-
+				else
 					#ifdef ZASDBG
 					if(verbose)
-						zas_log("Connecting to [unsim.zone]")
+						zas_log("Connecting non-ZAS turf to [unsim.zone]")
 					#endif
 
-					SSair.connect(src, unsim)
+					SSair.connect(unsim, src)
 
-
-			#ifdef ZASDBG
-				else if(verbose)
-					zas_log("[dir2text(d)] has same zone.")
-
+		#ifdef ZASDBG
 			else if(verbose)
 				zas_log("[dir2text(d)] has an invalid or rebuilding zone.")
-			#endif
+		#endif
 
-		else
+		else if(zas_participation)
 
 			//Postponing connections to tiles until a zone is assured.
 			if(!postponed) postponed = list()
 			postponed.Add(unsim)
 
-	if(!TURF_HAS_VALID_ZONE(src)) //Still no zone, make a new one.
+	if(zas_participation && !TURF_HAS_VALID_ZONE(src)) //Still no zone, make a new one.
 		var/zone/newzone = new/zone()
 		newzone.add(src)
 
@@ -143,10 +155,10 @@
 		if(verbose)
 			zas_log("New zone created for src.")
 
-	ASSERT(zone)
+	ASSERT(!zas_participation || zone)
 	#endif
 
-	//At this point, a zone should have happened. If it hasn't, don't add more checks, fix the bug.
+	//At this point, a zone should have happened if the turf participates in ZAS. If it hasn't, don't add more checks, fix the bug.
 
 	for(var/turf/T in postponed)
 		SSair.connect(src, T)
@@ -156,8 +168,8 @@
 	ret = 0; \
 	if (T.zone) { \
 		for (var/_gzn_dir in gzn_check) { \
-			var/turf/simulated/other = get_step(T, _gzn_dir); \
-			if (istype(other) && other.zone == T.zone) { \
+			var/turf/other = get_step(T, _gzn_dir); \
+			if (istype(other) && other.simulated && other.zone == T.zone) { \
 				var/block; \
 				ATMOS_CANPASS_TURF(block, other, T); \
 				if (!(block & AIR_BLOCKED)) { \
@@ -190,8 +202,8 @@
 		//for each pair of "adjacent" cardinals (e.g. NORTH and WEST, but not NORTH and SOUTH)
 		if((dir & check_dirs) == dir)
 			//check that they are connected by the corner turf
-			var/turf/simulated/T = get_step(src, dir)
-			if (!istype(T))
+			var/turf/T = get_step(src, dir)
+			if (!istype(T) || !T.simulated)
 				. &= ~dir
 				continue
 			var/connected_dirs
@@ -258,12 +270,15 @@
 	if(!include_heat_sources)
 		return gas
 
-	var/initial_temperature = weather ? weather.adjust_temperature(gas.temperature) : gas.temperature
+	if(weather)
+		gas.temperature = weather.adjust_temperature(gas.temperature)
+	var/initial_temperature = gas.temperature
 	if(length(affecting_heat_sources))
 		for(var/obj/structure/fire_source/heat_source as anything in affecting_heat_sources)
 			gas.temperature = gas.temperature + heat_source.exterior_temperature / max(1, get_dist(src, get_turf(heat_source)))
 			if(abs(gas.temperature - initial_temperature) >= 100)
 				break
+	gas.update_values()
 	return gas
 
 /turf/proc/c_copy_air()

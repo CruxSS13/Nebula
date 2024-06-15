@@ -1,5 +1,6 @@
 #if !defined(USING_MAP_DATUM)
 
+	#include "../../mods/content/pheromones/_pheromones.dme"
 	#include "../../mods/crux/_crux.dme"
 
 	#include "../../mods/content/mundane.dm"
@@ -52,7 +53,6 @@
 	#include "crux_generators.dm"
 	#include "crux_levels.dm"
 	#include "crux_testing.dm"
-
 
 	#include "crux-station-0.dmm"
 	#include "crux-station-1.dmm"

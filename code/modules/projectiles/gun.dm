@@ -48,6 +48,7 @@
 	drop_sound = 'sound/foley/drop1.ogg'
 	pickup_sound = 'sound/foley/pickup2.ogg'
 
+	var/fire_verb = "fire"
 	var/waterproof = FALSE
 	var/burst = 1
 	var/fire_delay = 6 	//delay after shooting before the gun can be used again. Cannot be less than [burst_delay+1]
@@ -166,19 +167,20 @@
 		add_overlay(get_safety_indicator())
 
 /obj/item/gun/proc/update_base_icon()
+	return
 
 /obj/item/gun/proc/get_safety_indicator()
 	return mutable_appearance(icon, "[get_world_inventory_state()][safety_icon][safety()]")
 
-/obj/item/gun/adjust_mob_overlay(mob/living/user_mob, bodytype, image/overlay, slot, bodypart, use_fallback_if_icon_missing = TRUE, skip_offset = FALSE)
-	if(overlay && user_mob.can_wield_item(src) && is_held_twohanded(user_mob))
+/obj/item/gun/adjust_mob_overlay(mob/living/user_mob, bodytype, image/overlay, slot, bodypart, use_fallback_if_icon_missing = TRUE)
+	if(overlay && user_mob?.can_wield_item(src) && is_held_twohanded(user_mob))
 		var/wielded_state = "[overlay.icon_state]-wielded"
 		if(check_state_in_icon(wielded_state, overlay.icon))
 			overlay.icon_state = wielded_state
 	apply_gun_mob_overlays(user_mob, bodytype, overlay, slot, bodypart)
 	. = ..()
 
-/obj/item/gun/proc/apply_gun_mob_overlays(var/mob/living/user_mob, var/bodytype,  var/image/overlay, var/slot, var/bodypart, var/skip_offset = FALSE)
+/obj/item/gun/proc/apply_gun_mob_overlays(var/mob/living/user_mob, var/bodytype,  var/image/overlay, var/slot, var/bodypart)
 	return
 
 //Checks whether a given mob can use the gun
@@ -230,18 +232,24 @@
 
 	Fire(A,user,params) //Otherwise, fire normally.
 
-/obj/item/gun/attack(atom/A, mob/living/user, def_zone)
-	if (A == user && user.get_target_zone() == BP_MOUTH && !mouthshoot)
+/obj/item/gun/use_on_mob(mob/living/target, mob/living/user, animate = TRUE)
+
+	if (target == user && user.get_target_zone() == BP_MOUTH && !mouthshoot)
 		handle_suicide(user)
-	else if(user.a_intent != I_HURT && user.aiming && user.aiming.active) //if aim mode, don't pistol whip
-		if (user.aiming.aiming_at != A)
-			PreFire(A, user)
+		return TRUE
+
+	if(user.a_intent != I_HURT && user.aiming && user.aiming.active) //if aim mode, don't pistol whip
+		if (user.aiming.aiming_at != target)
+			PreFire(target, user)
 		else
-			Fire(A, user, pointblank=1)
-	else if(user.a_intent == I_HURT) //point blank shooting
-		Fire(A, user, pointblank=1)
-	else
-		return ..() //Pistolwhippin'
+			Fire(target, user, pointblank=1)
+		return TRUE
+
+	if(user.a_intent == I_HURT) //point blank shooting
+		Fire(target, user, pointblank = TRUE)
+		return TRUE
+
+	return ..() //Pistolwhippin'
 
 /obj/item/gun/dropped(var/mob/living/user)
 	check_accidents(user)
@@ -352,12 +360,15 @@
 	playsound(src.loc, 'sound/weapons/empty.ogg', 100, 1)
 
 //called after successfully firing
+/obj/item/gun/proc/get_firing_name(obj/projectile)
+	return "\the [src]"
+
 /obj/item/gun/proc/handle_post_fire(atom/movable/firer, atom/target, var/pointblank=0, var/reflex=0, var/obj/projectile)
 	if(fire_anim)
 		flick(fire_anim, src)
 
 	if(!silenced && check_fire_message_spam("fire"))
-		var/user_message = SPAN_WARNING("You fire \the [src][pointblank ? " point blank":""] at \the [target][reflex ? " by reflex" : ""]!")
+		var/user_message = SPAN_WARNING("You [fire_verb] [get_firing_name(projectile)][pointblank ? " point blank":""] at \the [target][reflex ? " by reflex" : ""]!")
 		if (silenced)
 			to_chat(firer, user_message)
 		else
@@ -560,9 +571,9 @@
 			return
 
 		in_chamber.on_hit(M)
-		if (in_chamber.damage_type != PAIN)
+		if (in_chamber.atom_damage_type != PAIN)
 			log_and_message_admins("[key_name(user)] commited suicide using \a [src]")
-			user.apply_damage(in_chamber.damage*2.5, in_chamber.damage_type, BP_HEAD, in_chamber.damage_flags(), used_weapon = "Point blank shot in the mouth with \a [in_chamber]")
+			user.apply_damage(in_chamber.damage*2.5, in_chamber.atom_damage_type, BP_HEAD, in_chamber.damage_flags(), used_weapon = "Point blank shot in the mouth with \a [in_chamber]")
 			user.death()
 		else
 			to_chat(user, "<span class = 'notice'>Ow...</span>")
@@ -717,7 +728,7 @@
 /mob/proc/can_autofire(var/obj/item/gun/autofiring, var/atom/autofiring_at)
 	if(!client || !(autofiring_at in view(client.view,src)))
 		return FALSE
-	if(get_active_hand() != autofiring || incapacitated())
+	if(get_active_held_item() != autofiring || incapacitated())
 		return FALSE
 	return TRUE
 

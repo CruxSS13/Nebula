@@ -6,7 +6,7 @@
 	var/injected_data = REAGENT_DATA(donor, my_species.blood_reagent)
 	var/chems = LAZYACCESS(injected_data, "trace_chem")
 	for(var/C in chems)
-		src.reagents.add_reagent(C, (text2num(chems[C]) / my_species.blood_volume) * amount)//adds trace chemicals to owner's blood
+		add_to_reagents(C, (text2num(chems[C]) / my_species.blood_volume) * amount)//adds trace chemicals to owner's blood
 
 /mob/living/get_blood_data()
 
@@ -34,3 +34,8 @@
 /mob/living/proc/is_blood_incompatible(their_blood_type)
 	var/decl/blood_type/my_blood = get_blood_type_by_name(get_blood_type())
 	return !istype(my_blood) || !my_blood.can_take_donation_from(get_blood_type_by_name(their_blood_type))
+
+/mob/living/get_gibber_type()
+	if(mob_size <= MOB_SIZE_TINY)
+		return isSynthetic() ? /obj/effect/decal/cleanable/blood/gibs/robot : /obj/effect/decal/cleanable/blood/gibs
+	return isSynthetic() ? /obj/effect/gibspawner/robot : /obj/effect/gibspawner/generic

@@ -155,7 +155,7 @@ var/global/list/laser_wavelengths
 	if(!charging && istype(user))
 		charging = selected_wavelength
 		playsound(loc, 'sound/effects/capacitor_whine.ogg', 100, 0)
-		while(!QDELETED(user) && length(capacitors) && charging && user.get_active_hand() == src)
+		while(!QDELETED(user) && length(capacitors) && charging && user.get_active_held_item() == src)
 			var/charged = TRUE
 			for(var/obj/item/stock_parts/capacitor/capacitor in capacitors)
 				if(capacitor.charge < capacitor.max_charge)
@@ -219,7 +219,7 @@ var/global/list/laser_wavelengths
 		var/mob/M = loc
 		M.update_inhand_overlays()
 
-/obj/item/gun/energy/capacitor/apply_gun_mob_overlays(var/mob/living/user_mob, var/bodytype,  var/image/overlay, var/slot, var/bodypart, var/skip_offset = FALSE)
+/obj/item/gun/energy/capacitor/apply_gun_mob_overlays(var/mob/living/user_mob, var/bodytype,  var/image/overlay, var/slot, var/bodypart)
 	..()
 	if(overlay && (slot == BP_L_HAND || slot == BP_R_HAND || slot == slot_back_str))
 		var/image/I = image(overlay.icon, "[overlay.icon_state]-wiring")

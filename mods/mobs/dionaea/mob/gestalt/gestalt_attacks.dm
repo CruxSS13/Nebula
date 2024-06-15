@@ -4,12 +4,13 @@
 		shed_atom(forcefully = TRUE)
 
 /obj/structure/diona_gestalt/hitby()
-	..()
-	shed_atom(forcefully = TRUE)
+	. = ..()
+	if(.)
+		shed_atom(forcefully = TRUE)
 
 /obj/structure/diona_gestalt/bullet_act(var/obj/item/projectile/P, var/def_zone)
 	. = ..()
-	if(P && (P.damage_type == BRUTE || P.damage_type == BURN))
+	if(P && (P.atom_damage_type == BRUTE || P.atom_damage_type == BURN))
 		shed_atom(forcefully = TRUE)
 
 /obj/structure/diona_gestalt/explosion_act()
@@ -19,5 +20,5 @@
 		shed_count--
 		shed_atom(forcefully = TRUE)
 
-/obj/structure/diona_gestalt/proc/handle_member_click(var/mob/living/carbon/alien/diona/clicker)
+/obj/structure/diona_gestalt/proc/handle_member_click(var/mob/living/simple_animal/alien/diona/clicker)
 	return FALSE

@@ -128,9 +128,9 @@
 		if(reagents.total_volume)
 			to_chat(user, SPAN_NOTICE("There is already a blood sample in this syringe."))
 			return
-		if(iscarbon(target))
+		if(ishuman(target))
 			var/amount = REAGENTS_FREE_SPACE(reagents)
-			var/mob/living/carbon/T = target
+			var/mob/living/carbon/human/T = target
 			if(!T.dna)
 				to_chat(user, SPAN_WARNING("You are unable to locate any blood."))
 				if(ishuman(target))
@@ -306,7 +306,7 @@
 	admin_inject_log(user, target, src, contained_reagents, trans, violent=1)
 	break_syringe(target, user)
 
-/obj/item/chems/syringe/proc/break_syringe(mob/living/carbon/target, mob/living/carbon/user)
+/obj/item/chems/syringe/proc/break_syringe(mob/living/carbon/human/target, mob/living/carbon/user)
 	desc += " It is broken."
 	mode = SYRINGE_BROKEN
 	if(target)
@@ -321,14 +321,14 @@
 	amount_per_transfer_from_this = 60
 	volume = 60
 	visible_name = "a giant syringe"
-	time = 300
+	time = 30 SECONDS
 	mode = SYRINGE_INJECT
 	autolabel = FALSE
 	can_stab = FALSE
 
 /obj/item/chems/syringe/ld50_syringe/populate_reagents()
 	SHOULD_CALL_PARENT(FALSE)
-	reagents.add_reagent(/decl/material/liquid/heartstopper, reagents.maximum_volume)
+	add_to_reagents(/decl/material/liquid/heartstopper, reagents.maximum_volume)
 
 /obj/item/chems/syringe/ld50_syringe/drawReagents(var/target, var/mob/user)
 	if(ismob(target)) // No drawing 60 units of blood at once
@@ -345,7 +345,7 @@
 	mode = SYRINGE_INJECT
 
 /obj/item/chems/syringe/stabilizer/populate_reagents()
-	reagents.add_reagent(/decl/material/liquid/stabilizer, reagents.maximum_volume)
+	add_to_reagents(/decl/material/liquid/stabilizer, reagents.maximum_volume)
 	return ..()
 
 /obj/item/chems/syringe/antitoxin
@@ -353,7 +353,7 @@
 	mode = SYRINGE_INJECT
 
 /obj/item/chems/syringe/antitoxin/populate_reagents()
-	reagents.add_reagent(/decl/material/liquid/antitoxins, reagents.maximum_volume)
+	add_to_reagents(/decl/material/liquid/antitoxins, reagents.maximum_volume)
 	return ..()
 
 /obj/item/chems/syringe/antibiotic
@@ -361,7 +361,7 @@
 	mode = SYRINGE_INJECT
 
 /obj/item/chems/syringe/antibiotic/populate_reagents()
-	reagents.add_reagent(/decl/material/liquid/antibiotics, reagents.maximum_volume)
+	add_to_reagents(/decl/material/liquid/antibiotics, reagents.maximum_volume)
 	return ..()
 
 /obj/item/chems/syringe/drugs
@@ -370,9 +370,9 @@
 
 /obj/item/chems/syringe/drugs/populate_reagents()
 	var/vol_each = round(reagents.maximum_volume / 3)
-	reagents.add_reagent(/decl/material/liquid/psychoactives,   vol_each)
-	reagents.add_reagent(/decl/material/liquid/hallucinogenics, vol_each)
-	reagents.add_reagent(/decl/material/liquid/presyncopics,    vol_each)
+	add_to_reagents(/decl/material/liquid/psychoactives,   vol_each)
+	add_to_reagents(/decl/material/liquid/hallucinogenics, vol_each)
+	add_to_reagents(/decl/material/liquid/presyncopics,    vol_each)
 	return ..()
 
 /obj/item/chems/syringe/steroid
@@ -381,8 +381,8 @@
 
 /obj/item/chems/syringe/steroid/populate_reagents()
 	var/vol_third = round(reagents.maximum_volume/3)
-	reagents.add_reagent(/decl/material/liquid/adrenaline,   vol_third)
-	reagents.add_reagent(/decl/material/liquid/amphetamines, 2 * vol_third)
+	add_to_reagents(/decl/material/liquid/adrenaline,   vol_third)
+	add_to_reagents(/decl/material/liquid/amphetamines, 2 * vol_third)
 	return ..()
 
 // TG ports

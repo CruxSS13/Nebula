@@ -39,9 +39,7 @@
 		to_chat(user, "<span class='warning'>You prime \the [name]!</span>")
 		activate(user)
 		add_fingerprint(user)
-		if(iscarbon(user))
-			var/mob/living/carbon/C = user
-			C.throw_mode_on()
+		user.toggle_throw_mode(TRUE)
 
 /obj/item/grenade/chem_grenade/on_update_icon()
 	. = ..()
@@ -155,7 +153,7 @@
 	if(ismob(loc))
 		var/mob/M = loc
 		M.drop_from_inventory(src)
-		M.throw_mode_off()
+		M.toggle_throw_mode(FALSE)
 
 	for(var/obj/item/chems/glass/G in beakers)
 		G.reagents.trans_to_obj(src, G.reagents.total_volume)
@@ -206,9 +204,9 @@
 	. = ..()
 	var/obj/item/chems/glass/beaker/B1 = new(src)
 	var/obj/item/chems/glass/beaker/B2 = new(src)
-	B1.reagents.add_reagent(/decl/material/solid/metal/aluminium, 30)
-	B2.reagents.add_reagent(/decl/material/liquid/foaming_agent, 10)
-	B2.reagents.add_reagent(/decl/material/liquid/acid/polyacid, 10)
+	B1.add_to_reagents(/decl/material/solid/metal/aluminium, 30)
+	B2.add_to_reagents(/decl/material/liquid/foaming_agent, 10)
+	B2.add_to_reagents(/decl/material/liquid/acid/polyacid, 10)
 	detonator = new/obj/item/assembly_holder/timer_igniter(src)
 	beakers += B1
 	beakers += B2
@@ -224,10 +222,10 @@
 	. = ..()
 	var/obj/item/chems/glass/beaker/B1 = new(src)
 	var/obj/item/chems/glass/beaker/B2 = new(src)
-	B1.reagents.add_reagent(/decl/material/solid/metal/aluminium, 15)
-	B1.reagents.add_reagent(/decl/material/liquid/fuel, 15)
-	B2.reagents.add_reagent(/decl/material/solid/metal/aluminium, 15)
-	B2.reagents.add_reagent(/decl/material/liquid/acid, 15)
+	B1.add_to_reagents(/decl/material/solid/metal/aluminium, 15)
+	B1.add_to_reagents(/decl/material/liquid/fuel, 15)
+	B2.add_to_reagents(/decl/material/solid/metal/aluminium, 15)
+	B2.add_to_reagents(/decl/material/liquid/acid, 15)
 	detonator = new/obj/item/assembly_holder/timer_igniter(src)
 	beakers += B1
 	beakers += B2
@@ -243,10 +241,10 @@
 	. = ..()
 	var/obj/item/chems/glass/beaker/B1 = new(src)
 	var/obj/item/chems/glass/beaker/B2 = new(src)
-	B1.reagents.add_reagent(/decl/material/liquid/weedkiller, 25)
-	B1.reagents.add_reagent(/decl/material/solid/potassium, 25)
-	B2.reagents.add_reagent(/decl/material/solid/phosphorus, 25)
-	B2.reagents.add_reagent(/decl/material/liquid/nutriment/sugar, 25)
+	B1.add_to_reagents(/decl/material/liquid/weedkiller, 25)
+	B1.add_to_reagents(/decl/material/solid/potassium, 25)
+	B2.add_to_reagents(/decl/material/solid/phosphorus, 25)
+	B2.add_to_reagents(/decl/material/liquid/nutriment/sugar, 25)
 	detonator = new/obj/item/assembly_holder/timer_igniter(src)
 	beakers += B1
 	beakers += B2
@@ -262,9 +260,9 @@
 	. = ..()
 	var/obj/item/chems/glass/beaker/B1 = new(src)
 	var/obj/item/chems/glass/beaker/B2 = new(src)
-	B1.reagents.add_reagent(/decl/material/liquid/surfactant, 40)
-	B2.reagents.add_reagent(/decl/material/liquid/water, 40)
-	B2.reagents.add_reagent(/decl/material/liquid/cleaner, 10)
+	B1.add_to_reagents(/decl/material/liquid/surfactant, 40)
+	B2.add_to_reagents(/decl/material/liquid/water, 40)
+	B2.add_to_reagents(/decl/material/liquid/cleaner, 10)
 	detonator = new/obj/item/assembly_holder/timer_igniter(src)
 	beakers += B1
 	beakers += B2
@@ -280,11 +278,11 @@
 	. = ..()
 	var/obj/item/chems/glass/beaker/large/B1 = new(src)
 	var/obj/item/chems/glass/beaker/large/B2 = new(src)
-	B1.reagents.add_reagent(/decl/material/solid/phosphorus, 40)
-	B1.reagents.add_reagent(/decl/material/solid/potassium, 40)
-	B1.reagents.add_reagent(/decl/material/liquid/capsaicin/condensed, 40)
-	B2.reagents.add_reagent(/decl/material/liquid/nutriment/sugar, 40)
-	B2.reagents.add_reagent(/decl/material/liquid/capsaicin/condensed, 80)
+	B1.add_to_reagents(/decl/material/solid/phosphorus, 40)
+	B1.add_to_reagents(/decl/material/solid/potassium, 40)
+	B1.add_to_reagents(/decl/material/liquid/capsaicin/condensed, 40)
+	B2.add_to_reagents(/decl/material/liquid/nutriment/sugar, 40)
+	B2.add_to_reagents(/decl/material/liquid/capsaicin/condensed, 80)
 	detonator = new/obj/item/assembly_holder/timer_igniter(src)
 	beakers += B1
 	beakers += B2
@@ -301,8 +299,8 @@
 	. = ..()
 	var/obj/item/chems/glass/beaker/B1 = new(src)
 	var/obj/item/chems/glass/beaker/B2 = new(src)
-	B1.reagents.add_reagent(/decl/material/liquid/water, 40)
-	B2.reagents.add_reagent(/decl/material/liquid/water, 40)
+	B1.add_to_reagents(/decl/material/liquid/water, 40)
+	B2.add_to_reagents(/decl/material/liquid/water, 40)
 	detonator = new/obj/item/assembly_holder/timer_igniter(src)
 	beakers += B1
 	beakers += B2

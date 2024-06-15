@@ -4,8 +4,7 @@
 	always_unpowered = TRUE
 	area_flags = AREA_FLAG_RAD_SHIELDED
 	is_outside = OUTSIDE_YES
-	interior_ambient_light_level = 0.5
-	interior_ambient_light_color = "#f3e6ca"
+	interior_ambient_light_modifier = 0.5
 
 /area/crux/outside/wilderness
 	name = "\improper Wilderness"
@@ -18,8 +17,7 @@
 
 /area/crux/outside/ocean/deep
 	name = "\improper Deep Ocean"
-	interior_ambient_light_level = null
-	interior_ambient_light_color = null
+	interior_ambient_light_modifier = null
 
 /area/crux/outside/ocean/abyssal
 	name = "\improper Abyssal Ocean"

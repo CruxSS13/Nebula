@@ -19,6 +19,7 @@
 	icon_base = 'icons/turf/walls/metal.dmi'
 	icon_reinf = 'icons/turf/walls/reinforced_metal.dmi'
 	exoplanet_rarity_gas = MAT_RARITY_NOWHERE
+	tensile_strength = 0.8 // metal wire is probably better than plastic?
 
 /decl/material/solid/metal/uranium
 	name = "uranium"
@@ -86,7 +87,7 @@
 	hardness = MAT_VALUE_FLEXIBLE + 5
 	integrity = 100
 	stack_origin_tech = @'{"materials":4}'
-	ore_result_amount = 5
+	ore_result_amount = 1
 	ore_name = "native gold"
 	ore_spread_chance = 10
 	ore_scan_icon = "mineral_uncommon"
@@ -173,7 +174,7 @@
 	color = "#d1e6e3"
 	hardness = MAT_VALUE_FLEXIBLE + 10
 	stack_origin_tech = @'{"materials":3}'
-	ore_result_amount = 5
+	ore_result_amount = 1
 	ore_spread_chance = 10
 	ore_name = "native silver"
 	ore_scan_icon = "mineral_uncommon"
@@ -193,7 +194,7 @@
 	boiling_point = 2774
 	weight = MAT_VALUE_NORMAL
 	wall_support_value = MAT_VALUE_VERY_HEAVY // Ideal construction material.
-	hardness = MAT_VALUE_HARD
+	hardness = MAT_VALUE_HARD + 5
 	integrity = 150
 	brute_armor = 5
 	icon_base = 'icons/turf/walls/solid.dmi'
@@ -204,34 +205,13 @@
 	hitsound = 'sound/weapons/smash.ogg'
 	construction_difficulty = MAT_VALUE_NORMAL_DIY
 	value = 1.1
+	dissolves_in = MAT_SOLVENT_STRONGEST
 	dissolves_into = list(
 		/decl/material/solid/metal/iron = 0.98,
 		/decl/material/solid/carbon = 0.02
 	)
 	default_solid_form = /obj/item/stack/material/sheet
-
-/decl/material/solid/metal/steel/generate_recipes(stack_type, reinforce_material)
-	. = ..()
-	if(!holographic && !reinforce_material && islist(.))
-		if(!ispath(stack_type))
-			. += new/datum/stack_recipe/furniture/closet(src)
-			. += new/datum/stack_recipe/furniture/tank_dispenser(src)
-			. += new/datum/stack_recipe/furniture/canister(src)
-			. += new/datum/stack_recipe/furniture/tank(src)
-			. += new/datum/stack_recipe/cannon(src)
-			. += new/datum/stack_recipe_list("tiling", create_recipe_list(/datum/stack_recipe/tile/metal))
-			. += new/datum/stack_recipe/furniture/computerframe(src)
-			. += new/datum/stack_recipe_list("airlock assemblies", create_recipe_list(/datum/stack_recipe/furniture/door_assembly))
-			. += new/datum/stack_recipe/grenade(src)
-			. += new/datum/stack_recipe/light(src)
-			. += new/datum/stack_recipe/light_small(src)
-			. += new/datum/stack_recipe/light_switch(src)
-			. += new/datum/stack_recipe/light_switch/windowtint(src)
-			. += new/datum/stack_recipe/apc(src)
-			. += new/datum/stack_recipe/air_alarm(src)
-			. += new/datum/stack_recipe/fire_alarm(src)
-		else if(ispath(stack_type, /obj/item/stack/material/strut))
-			. += new/datum/stack_recipe/furniture/machine(src)
+	ferrous = TRUE
 
 /decl/material/solid/metal/steel/holographic
 	name = "holographic steel"
@@ -245,6 +225,7 @@
 	melting_point = 1784
 	boiling_point = null
 	wall_support_value = MAT_VALUE_HEAVY
+	hardness = MAT_VALUE_HARD + 5
 	integrity = 175
 	burn_armor = 10
 	color = "#a5a5a5"
@@ -260,6 +241,7 @@
 	exoplanet_rarity_gas = MAT_RARITY_NOWHERE
 	dissolves_in = MAT_SOLVENT_IMMUNE
 	dissolves_into = null
+	ferrous = TRUE
 
 /decl/material/solid/metal/aluminium
 	name = "aluminium"
@@ -276,12 +258,7 @@
 	color = "#cccdcc"
 	hitsound = 'sound/weapons/smash.ogg'
 	taste_description = "metal"
-	default_solid_form = /obj/item/stack/material/shiny
-
-/decl/material/solid/metal/aluminium/generate_recipes(stack_type, reinforce_material)
-	. = ..()
-	if(!holographic && !reinforce_material && islist(.) && !ispath(stack_type))
-		. += new/datum/stack_recipe/grenade(src)
+	default_solid_form = /obj/item/stack/material/sheet/shiny
 
 /decl/material/solid/metal/aluminium/holographic
 	name = "holoaluminium"
@@ -308,18 +285,12 @@
 	hitsound = 'sound/weapons/smash.ogg'
 	value = 1.4
 	reflectiveness = MAT_VALUE_MATTE
-	default_solid_form = /obj/item/stack/material/reinforced
+	default_solid_form = /obj/item/stack/material/sheet/reinforced
 	exoplanet_rarity_plant = MAT_RARITY_UNCOMMON
 	exoplanet_rarity_gas = MAT_RARITY_NOWHERE
 	dissolves_in = MAT_SOLVENT_IMMUNE
 	dissolves_into = null
-
-/decl/material/solid/metal/plasteel/generate_recipes(stack_type, reinforce_material)
-	. = ..()
-	if(!holographic && !reinforce_material && islist(.) && !ispath(stack_type))
-		. += new/datum/stack_recipe/ai_core(src)
-		. += new/datum/stack_recipe/furniture/crate(src)
-		. += new/datum/stack_recipe/grip(src)
+	ferrous = TRUE
 
 /decl/material/solid/metal/titanium
 	name = "titanium"
@@ -343,16 +314,9 @@
 	stack_origin_tech = @'{"materials":2}'
 	hitsound = 'sound/weapons/smash.ogg'
 	reflectiveness = MAT_VALUE_MATTE
-	default_solid_form = /obj/item/stack/material/reinforced
+	default_solid_form = /obj/item/stack/material/sheet/reinforced
 	dissolves_in = MAT_SOLVENT_IMMUNE
 	dissolves_into = null
-
-/decl/material/solid/metal/titanium/generate_recipes(stack_type, reinforce_material)
-	. = ..()
-	if(!holographic && !reinforce_material && islist(.) && !ispath(stack_type))
-		. += new/datum/stack_recipe/ai_core(src)
-		. += new/datum/stack_recipe/furniture/crate(src)
-		. += new/datum/stack_recipe/grip(src)
 
 /decl/material/solid/metal/plasteel/ocp
 	name = "osmium-carbide plasteel"
@@ -393,9 +357,10 @@
 	color = "#deddff"
 	weight = MAT_VALUE_VERY_HEAVY
 	wall_support_value = MAT_VALUE_VERY_HEAVY
+	hardness = MAT_VALUE_VERY_HARD
 	stack_origin_tech = @'{"materials":2}'
 	ore_compresses_to = /decl/material/solid/metal/osmium
-	ore_result_amount = 5
+	ore_result_amount = 1
 	ore_spread_chance = 10
 	ore_name = "raw platinum"
 	ore_scan_icon = "mineral_rare"
@@ -414,9 +379,11 @@
 	boiling_point = 3134
 	color = "#5c5454"
 	hitsound = 'sound/weapons/smash.ogg'
+	hardness = MAT_VALUE_HARD
 	construction_difficulty = MAT_VALUE_NORMAL_DIY
 	reflectiveness = MAT_VALUE_MATTE
 	taste_description = "metal"
+	ferrous = TRUE
 
 /decl/material/solid/metal/iron/affect_ingest(var/mob/living/M, var/removed, var/datum/reagents/holder)
 	if(M.HasTrait(/decl/trait/metabolically_inert))

@@ -44,7 +44,7 @@
 			affecting.take_external_damage(1, 0)
 
 	else if(ismouse(target))
-		var/mob/living/simple_animal/mouse/M = target
+		var/mob/living/simple_animal/passive/mouse/M = target
 		visible_message("<span class='danger'>SPLAT!</span>")
 		M.splat()
 	playsound(target.loc, 'sound/effects/snap.ogg', 50, 1)
@@ -95,8 +95,8 @@
 
 
 /obj/item/assembly/mousetrap/hitby(atom/A)
-	..()
-	if(armed)
+	. = ..()
+	if(. && armed)
 		visible_message(SPAN_WARNING("\The [src] is triggered by \the [A]."))
 		triggered(A)
 

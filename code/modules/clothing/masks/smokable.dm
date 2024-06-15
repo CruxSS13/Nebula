@@ -66,7 +66,7 @@
 				reagents.trans_to_mob(C, smoke_amount * amount, CHEM_INHALE, 0.2)
 				add_trace_DNA(C)
 		else // else just remove some of the reagents
-			reagents.remove_any(smoke_amount * amount)
+			remove_any_reagents(smoke_amount * amount)
 
 		smoke_effect++
 
@@ -113,7 +113,7 @@
 		M.update_equipment_overlay(slot_wear_mask_str, FALSE)
 		M.update_inhand_overlays()
 
-/obj/item/clothing/mask/smokable/adjust_mob_overlay(mob/living/user_mob, bodytype, image/overlay, slot, bodypart, use_fallback_if_icon_missing = TRUE, skip_offset = FALSE)
+/obj/item/clothing/mask/smokable/adjust_mob_overlay(mob/living/user_mob, bodytype, image/overlay, slot, bodypart, use_fallback_if_icon_missing = TRUE)
 	if(overlay && lit && check_state_in_icon("[overlay.icon_state]-on", overlay.icon))
 		var/image/on_overlay = emissive_overlay(overlay.icon, "[overlay.icon_state]-on")
 		on_overlay.appearance_flags |= RESET_COLOR
@@ -136,7 +136,7 @@
 			to_chat(usr, SPAN_WARNING("You cannot light \the [src] underwater."))
 			return
 		lit = TRUE
-		damtype = BURN
+		atom_damage_type = BURN
 		if(REAGENT_VOLUME(reagents, /decl/material/liquid/fuel)) // the fuel explodes
 			var/datum/effect/effect/system/reagents_explosion/e = new()
 			e.set_up(round(REAGENT_VOLUME(reagents, /decl/material/liquid/fuel) / 5, 1), get_turf(src), 0, 0)
@@ -154,7 +154,7 @@
 
 /obj/item/clothing/mask/smokable/proc/extinguish(var/mob/user, var/no_message)
 	lit = FALSE
-	damtype = BRUTE
+	atom_damage_type =  BRUTE
 	STOP_PROCESSING(SSobj, src)
 	set_light(0)
 	update_icon()
@@ -165,9 +165,9 @@
 		var/text = matchmes
 		if(istype(W, /obj/item/flame/match))
 			text = matchmes
-		else if(istype(W, /obj/item/flame/lighter/zippo))
+		else if(istype(W, /obj/item/flame/fuelled/lighter/zippo))
 			text = zippomes
-		else if(istype(W, /obj/item/flame/lighter))
+		else if(istype(W, /obj/item/flame/fuelled/lighter))
 			text = lightermes
 		else if(IS_WELDER(W))
 			text = weldermes
@@ -180,13 +180,12 @@
 		text = replacetext(text, "FLAME", "[W.name]")
 		light(text)
 
-/obj/item/clothing/mask/smokable/attack(var/mob/living/M, var/mob/living/user, def_zone)
-	if(istype(M) && M.on_fire)
-		user.do_attack_animation(M)
-		light(SPAN_NOTICE("\The [user] coldly lights the \the [src] with the burning body of \the [M]."))
-		return 1
-	else
-		return ..()
+/obj/item/clothing/mask/smokable/use_on_mob(mob/living/target, mob/living/user, animate = TRUE)
+	if(target.on_fire)
+		user.do_attack_animation(target)
+		light(SPAN_NOTICE("\The [user] coldly lights the \the [src] with the burning body of \the [target]."))
+		return TRUE
+	return ..()
 
 /obj/item/clothing/mask/smokable/cigarette
 	name = "cigarette"
@@ -214,7 +213,7 @@
 	set_extension(src, /datum/extension/tool, list(TOOL_CAUTERY = TOOL_QUALITY_MEDIOCRE))
 
 /obj/item/clothing/mask/smokable/cigarette/populate_reagents()
-	reagents.add_reagent(/decl/material/solid/tobacco, 1)
+	add_to_reagents(/decl/material/solid/tobacco, 1)
 
 /obj/item/clothing/mask/smokable/cigarette/light(var/flavor_text = "[usr] lights the [name].")
 	..()
@@ -247,7 +246,7 @@
 
 /obj/item/clothing/mask/smokable/cigarette/menthol/populate_reagents()
 	. = ..()
-	reagents.add_reagent(/decl/material/liquid/menthol, 1)
+	add_to_reagents(/decl/material/liquid/menthol, 1)
 
 /obj/item/trash/cigbutt/menthol
 	icon = 'icons/clothing/mask/smokables/cigarette_menthol_butt.dmi'
@@ -263,7 +262,7 @@
 	type_butt = /obj/item/trash/cigbutt/jerichos
 
 /obj/item/clothing/mask/smokable/cigarette/jerichos/populate_reagents()
-	reagents.add_reagent(/decl/material/solid/tobacco/bad, 1.5)
+	add_to_reagents(/decl/material/solid/tobacco/bad, 1.5)
 
 /obj/item/trash/cigbutt/jerichos
 	icon = 'icons/clothing/mask/smokables/cigarette_jericho_butt.dmi'
@@ -280,7 +279,7 @@
 	type_butt = /obj/item/trash/cigbutt/professionals
 
 /obj/item/clothing/mask/smokable/cigarette/professionals/populate_reagents()
-	reagents.add_reagent(/decl/material/solid/tobacco/bad, 1)
+	add_to_reagents(/decl/material/solid/tobacco/bad, 1)
 
 /obj/item/trash/cigbutt/professionals
 	icon = 'icons/clothing/mask/smokables/cigarette_professional_butt.dmi'
@@ -302,7 +301,7 @@
 	var/band_color
 
 /obj/item/clothing/mask/smokable/cigarette/trident/populate_reagents()
-	reagents.add_reagent(/decl/material/solid/tobacco/fine, 2)
+	add_to_reagents(/decl/material/solid/tobacco/fine, 2)
 
 /obj/item/clothing/mask/smokable/cigarette/trident/on_update_icon()
 	. = ..()
@@ -317,42 +316,42 @@
 
 /obj/item/clothing/mask/smokable/cigarette/trident/mint/populate_reagents()
 	. = ..()
-	reagents.add_reagent(/decl/material/liquid/menthol, 2)
+	add_to_reagents(/decl/material/liquid/menthol, 2)
 
 /obj/item/clothing/mask/smokable/cigarette/trident/berry
 	band_color = COLOR_VIOLET
 
 /obj/item/clothing/mask/smokable/cigarette/trident/berry/populate_reagents()
 	. = ..()
-	reagents.add_reagent(/decl/material/liquid/drink/juice/berry, 2)
+	add_to_reagents(/decl/material/liquid/drink/juice/berry, 2)
 
 /obj/item/clothing/mask/smokable/cigarette/trident/cherry
 	band_color = COLOR_RED
 
 /obj/item/clothing/mask/smokable/cigarette/trident/cherry/populate_reagents()
 	. = ..()
-	reagents.add_reagent(/decl/material/liquid/nutriment/cherryjelly, 2)
+	add_to_reagents(/decl/material/liquid/nutriment/cherryjelly, 2)
 
 /obj/item/clothing/mask/smokable/cigarette/trident/grape
 	band_color = COLOR_PURPLE
 
 /obj/item/clothing/mask/smokable/cigarette/trident/grape/populate_reagents()
 	. = ..()
-	reagents.add_reagent(/decl/material/liquid/drink/juice/grape, 2)
+	add_to_reagents(/decl/material/liquid/drink/juice/grape, 2)
 
 /obj/item/clothing/mask/smokable/cigarette/trident/watermelon
 	band_color = COLOR_GREEN
 
 /obj/item/clothing/mask/smokable/cigarette/trident/watermelon/populate_reagents()
 	. = ..()
-	reagents.add_reagent(/decl/material/liquid/drink/juice/watermelon, 2)
+	add_to_reagents(/decl/material/liquid/drink/juice/watermelon, 2)
 
 /obj/item/clothing/mask/smokable/cigarette/trident/orange
 	band_color = COLOR_ORANGE
 
 /obj/item/clothing/mask/smokable/cigarette/trident/orange/populate_reagents()
 	. = ..()
-	reagents.add_reagent(/decl/material/liquid/drink/juice/orange, 2)
+	add_to_reagents(/decl/material/liquid/drink/juice/orange, 2)
 
 /obj/item/trash/cigbutt/woodbutt
 	name = "wooden tip"
@@ -368,26 +367,26 @@
 			return TRUE
 	return ..()
 
-/obj/item/clothing/mask/smokable/cigarette/attack(mob/living/carbon/human/H, mob/user, def_zone)
-	if(lit && H == user && istype(H))
-		var/obj/item/blocked = H.check_mouth_coverage()
+/obj/item/clothing/mask/smokable/cigarette/use_on_mob(mob/living/target, mob/living/user, animate = TRUE)
+	if(lit && target == user)
+		var/obj/item/blocked = target.check_mouth_coverage()
 		if(blocked)
-			to_chat(H, SPAN_WARNING("\The [blocked] is in the way!"))
-			return 1
+			to_chat(target, SPAN_WARNING("\The [blocked] is in the way!"))
+			return TRUE
 		var/decl/pronouns/G = user.get_pronouns()
 		var/puff_str = pick("drag","puff","pull")
 		user.visible_message(\
 			SPAN_NOTICE("\The [user] takes a [puff_str] on [G.his] [name]."), \
 			SPAN_NOTICE("You take a [puff_str] on your [name]."))
 		smoke(12, TRUE)
-		add_trace_DNA(H)
+		add_trace_DNA(target)
 		user.setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
-		return 1
+		return TRUE
 
-	if(!lit && istype(H) && H.on_fire)
-		user.do_attack_animation(H)
-		light(H, user)
-		return 1
+	if(!lit && target.on_fire)
+		user.do_attack_animation(target)
+		light(target, user)
+		return TRUE
 
 	return ..()
 
@@ -434,7 +433,7 @@
 	brand = null
 
 /obj/item/clothing/mask/smokable/cigarette/cigar/populate_reagents()
-	reagents.add_reagent(/decl/material/solid/tobacco/fine, 5)
+	add_to_reagents(/decl/material/solid/tobacco/fine, 5)
 
 /obj/item/clothing/mask/smokable/cigarette/cigar/cohiba
 	name = "\improper Cohiba Robusto cigar"
@@ -451,7 +450,7 @@
 	brand = "Havana"
 
 /obj/item/clothing/mask/smokable/cigarette/cigar/havana/populate_reagents()
-	reagents.add_reagent(/decl/material/solid/tobacco/fine, 10)
+	add_to_reagents(/decl/material/solid/tobacco/fine, 10)
 
 /obj/item/trash/cigbutt
 	name = "cigarette butt"
@@ -489,7 +488,7 @@
 	brand = "sausage... wait what."
 
 /obj/item/clothing/mask/smokable/cigarette/rolled/sausage/populate_reagents()
-	reagents.add_reagent(/decl/material/liquid/nutriment/protein, 6)
+	add_to_reagents(/decl/material/solid/organic/meat, 6)
 
 /obj/item/trash/cigbutt/sausagebutt
 	name = "sausage butt"
@@ -525,7 +524,7 @@
 			to_chat(usr, SPAN_WARNING("You cannot light \the [src] underwater."))
 			return
 		lit = TRUE
-		damtype = BURN
+		atom_damage_type = BURN
 		var/turf/T = get_turf(src)
 		T.visible_message(flavor_text)
 		START_PROCESSING(SSobj, src)
@@ -580,8 +579,8 @@
 		SetName("[G.name]-packed [initial(name)]")
 		qdel(G)
 
-	else if(istype(W, /obj/item/flame/lighter))
-		var/obj/item/flame/lighter/L = W
+	else if(istype(W, /obj/item/flame/fuelled/lighter))
+		var/obj/item/flame/fuelled/lighter/L = W
 		if(L.lit)
 			light(SPAN_NOTICE("[user] manages to light their [name] with [W]."))
 

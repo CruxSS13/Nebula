@@ -10,6 +10,12 @@
 		BP_TAIL = /obj/item/organ/external/tail/monkey
 	)
 	mob_size = MOB_SIZE_SMALL
+	nail_noun = "nails"
+
+	appearance_descriptors = list(
+		/datum/appearance_descriptor/height = 0.6,
+		/datum/appearance_descriptor/build =  0.6
+	)
 
 /decl/bodytype/monkey/Initialize()
 	equip_adjust = list(

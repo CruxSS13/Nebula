@@ -15,6 +15,8 @@
 		for(var/slot in get_inventory_slots())
 			all_slots += get_inventory_slot_datum(slot)
 		for(var/datum/inventory_slot/inv_slot as anything in sortTim(all_slots, /proc/cmp_inventory_slot_desc))
+			if(isnull(inv_slot.quick_equip_priority)) // Never quick-equip into some slots.
+				continue
 			_inventory_slot_priority += inv_slot.slot_id
 	return _inventory_slot_priority
 
@@ -27,8 +29,9 @@
 /mob/living/get_all_available_equipment_slots()
 	. = ..()
 	var/decl/species/my_species = get_species()
-	for(var/slot in my_species?.hud?.equip_slots)
-		LAZYDISTINCTADD(., slot)
+	if(istype(my_species?.species_hud))
+		for(var/slot in my_species.species_hud.equip_slots)
+			LAZYDISTINCTADD(., slot)
 
 /mob/living/add_held_item_slot(var/datum/inventory_slot/held_slot)
 	var/datum/inventory_slot/existing_slot = get_inventory_slot_datum(held_slot.slot_id)
@@ -57,12 +60,13 @@
 	var/last_slot = get_active_held_item_slot()
 	if(slot != last_slot && (slot in get_held_item_slots()))
 		_held_item_slot_selected = slot
-		for(var/obj/screen/inventory/hand in hud_used?.hand_hud_objects)
-			hand.cut_overlay("hand_selected")
-			if(hand.slot_id == slot)
-				hand.add_overlay("hand_selected")
-			hand.compile_overlays()
-		var/obj/item/I = get_active_hand()
+		if(istype(hud_used))
+			for(var/obj/screen/inventory/hand in hud_used.hand_hud_objects)
+				hand.cut_overlay("hand_selected")
+				if(hand.slot_id == slot)
+					hand.add_overlay("hand_selected")
+				hand.compile_overlays()
+		var/obj/item/I = get_active_held_item()
 		if(istype(I))
 			I.on_active_hand()
 
@@ -73,10 +77,10 @@
 		pending_hand_rebuild = TRUE
 		sleep(1)
 		pending_hand_rebuild = FALSE
-		if(hud_used)
+		if(istype(hud_used))
 			hud_used.rebuild_hands()
 
-/mob/living/get_active_hand()
+/mob/living/get_active_held_item()
 	var/datum/inventory_slot/inv_slot = get_inventory_slot_datum(get_active_held_item_slot())
 	return inv_slot?.get_equipped_item()
 
@@ -114,11 +118,11 @@
 		if(!inv_slot?.get_equipped_item())
 			LAZYADD(., hand_slot)
 
-/mob/living/drop_from_hand(var/slot, var/atom/target)
-	var/datum/inventory_slot/inv_slot = get_inventory_slot_datum(slot)
+/mob/living/drop_from_slot(slot_id, atom/new_loc)
+	var/datum/inventory_slot/inv_slot = get_inventory_slot_datum(slot_id)
 	var/held = inv_slot?.get_equipped_item()
 	if(held)
-		return drop_from_inventory(held, target)
+		return drop_from_inventory(held, new_loc)
 	. = ..()
 
 /mob/living/set_inventory_slots(var/list/new_slots)
@@ -182,3 +186,27 @@
 	if(istype(thrust))
 		return thrust
 	return null
+
+/mob/living/verb/quick_equip()
+	set name = "quick-equip"
+	set hidden = 1
+	var/obj/item/I = get_active_held_item()
+	if(!I)
+		to_chat(src, SPAN_WARNING("You are not holding anything to equip."))
+		return
+	if(!equip_to_appropriate_slot(I))
+		to_chat(src, SPAN_WARNING("You are unable to equip that."))
+
+/mob/living/proc/equip_in_one_of_slots(obj/item/W, list/slots, del_on_fail = 1)
+	for (var/slot in slots)
+		if (equip_to_slot_if_possible(W, slots[slot], del_on_fail = 0))
+			return slot
+	if (del_on_fail)
+		qdel(W)
+	return null
+
+//Same as get_covering_equipped_items, but using target zone instead of bodyparts flags
+/mob/living/proc/get_covering_equipped_item_by_zone(var/zone)
+	var/obj/item/organ/external/O = GET_EXTERNAL_ORGAN(src, zone)
+	if(O)
+		return get_covering_equipped_item(O.body_part)

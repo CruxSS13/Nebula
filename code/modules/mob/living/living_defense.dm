@@ -22,7 +22,7 @@
 /mob/living/bullet_act(var/obj/item/projectile/P, var/def_zone)
 
 	//Being hit while using a deadman switch
-	var/obj/item/assembly/signaler/signaler = get_active_hand()
+	var/obj/item/assembly/signaler/signaler = get_active_held_item()
 	if(istype(signaler) && signaler.deadman)
 		log_and_message_admins("has triggered a signaler deadman's switch")
 		src.visible_message("<span class='warning'>[src] triggers their deadman's switch!</span>")
@@ -33,10 +33,10 @@
 	var/flags = P.damage_flags()
 	var/damaged
 	if(!P.nodamage)
-		damaged = apply_damage(damage, P.damage_type, def_zone, flags, P, P.armor_penetration)
+		damaged = apply_damage(damage, P.atom_damage_type, def_zone, flags, P, P.armor_penetration)
 		bullet_impact_visuals(P, def_zone, damaged)
 	if(damaged || P.nodamage) // Run the block computation if we did damage or if we only use armor for effects (nodamage)
-		. = get_blocked_ratio(def_zone, P.damage_type, flags, P.armor_penetration, P.damage)
+		. = get_blocked_ratio(def_zone, P.atom_damage_type, flags, P.armor_penetration, P.damage)
 	P.on_hit(src, ., def_zone)
 
 // For visuals and blood splatters etc
@@ -46,7 +46,7 @@
 		playsound(src, pick(impact_sounds), 75)
 	if(get_bullet_impact_effect_type(def_zone) != BULLET_IMPACT_MEAT)
 		return
-	if(!damage || P.damtype != BRUTE)
+	if(!damage || P.atom_damage_type != BRUTE)
 		return
 	var/hit_dir = get_dir(P.starting, src)
 	var/obj/effect/decal/cleanable/blood/B = blood_splatter(get_step(src, hit_dir), src, 1, hit_dir)
@@ -100,8 +100,7 @@
 	  return 0 //only carbon liveforms have this proc
 
 /mob/living/emp_act(severity)
-	var/list/L = src.get_contents()
-	for(var/obj/O in L)
+	for(var/obj/O in get_mob_contents())
 		O.emp_act(severity)
 	..()
 
@@ -118,90 +117,137 @@
 	else
 		visible_message(SPAN_WARNING("\The [src] has been [DEFAULTPICK(I.attack_verb, "attacked")][weapon_mention] by \the [user]!"))
 	. = standard_weapon_hit_effects(I, user, effective_force, hit_zone)
-	if(I.damtype == BRUTE && prob(33))
+	if(I.atom_damage_type == BRUTE && prob(33))
 		blood_splatter(get_turf(loc), src)
 
 //returns 0 if the effects failed to apply for some reason, 1 otherwise.
 /mob/living/standard_weapon_hit_effects(obj/item/I, mob/living/user, var/effective_force, var/hit_zone)
 	if(effective_force)
-		return apply_damage(effective_force, I.damtype, hit_zone, I.damage_flags(), used_weapon=I, armor_pen=I.armor_penetration)
+		return apply_damage(effective_force, I.atom_damage_type, hit_zone, I.damage_flags(), used_weapon=I, armor_pen=I.armor_penetration)
 
-//this proc handles being hit by a thrown atom
 /mob/living/hitby(var/atom/movable/AM, var/datum/thrownthing/TT)
 
-	..()
+	. = ..()
+	if(.)
 
-	if(isliving(AM))
-		var/mob/living/M = AM
-		playsound(loc, 'sound/weapons/pierce.ogg', 25, 1, -1)
-		if(skill_fail_prob(SKILL_COMBAT, 75))
-			SET_STATUS_MAX(src, STAT_WEAK, rand(3,5))
-		if(M.skill_fail_prob(SKILL_HAULING, 100))
-			SET_STATUS_MAX(M, STAT_WEAK, rand(4,8))
-		M.visible_message(SPAN_DANGER("\The [M] collides with \the [src]!"))
+		if(isliving(AM))
+			var/mob/living/M = AM
+			playsound(loc, 'sound/weapons/pierce.ogg', 25, 1, -1)
+			if(skill_fail_prob(SKILL_COMBAT, 75))
+				SET_STATUS_MAX(src, STAT_WEAK, rand(3,5))
+			if(M.skill_fail_prob(SKILL_HAULING, 100))
+				SET_STATUS_MAX(M, STAT_WEAK, rand(4,8))
+			M.visible_message(SPAN_DANGER("\The [M] collides with \the [src]!"))
 
-	if(!aura_check(AURA_TYPE_THROWN, AM, TT.speed))
-		return
+		if(!aura_check(AURA_TYPE_THROWN, AM, TT.speed))
+			return FALSE
 
-	if(istype(AM,/obj/))
-		var/obj/O = AM
-		var/dtype = O.damtype
-		var/throw_damage = O.throwforce*(TT.speed/THROWFORCE_SPEED_DIVISOR)
+		if(istype(AM, /obj))
+			. = handle_thrown_obj_damage(AM, TT)
 
-		var/miss_chance = max(15*(TT.dist_travelled-2),0)
+	if(!.)
+		process_momentum(AM, TT)
 
-		if (prob(miss_chance))
-			visible_message("<span class='notice'>\The [O] misses [src] narrowly!</span>")
-			return
+/mob/living/proc/handle_thrown_obj_damage(obj/O, datum/thrownthing/TT)
 
-		src.visible_message("<span class='warning'>\The [src] has been hit by \the [O]</span>.")
-		apply_damage(throw_damage, dtype, null, O.damage_flags(), O)
+	var/dtype = O.atom_damage_type
+	var/throw_damage = O.throwforce*(TT?.speed/THROWFORCE_SPEED_DIVISOR)
+	var/zone = BP_CHEST
 
-		if(TT.thrower)
-			var/client/assailant = TT.thrower.client
-			if(assailant)
-				admin_attack_log(TT.thrower, src, "Threw \an [O] at the victim.", "Had \an [O] thrown at them.", "threw \an [O] at")
+	//check if we hit
+	var/miss_chance = max(15*(TT?.dist_travelled-2),0)
+	if(prob(miss_chance))
+		visible_message(SPAN_NOTICE("\The [O] misses \the [src] completely!"))
+		return FALSE
 
-		if(O.can_embed() && (throw_damage > 5*O.w_class)) //Handles embedding for non-humans and simple_animals.
-			embed(O)
+	if (TT?.target_zone)
+		zone = check_zone(TT.target_zone, src)
+	else
+		zone = ran_zone()	//Hits a random part of the body, -was already geared towards the chest
+	zone = get_zone_with_miss_chance(zone, src, miss_chance, ranged_attack=1)
 
-	process_momentum(AM, TT)
+	if(zone && TT?.thrower && TT.thrower != src)
+		var/shield_check = check_shields(throw_damage, O, TT.thrower, zone, "[O]")
+		if(shield_check == PROJECTILE_FORCE_MISS)
+			zone = null
+		else if(shield_check)
+			return FALSE
+
+	// Mobs with organs can potentially be missing the targetted organ.
+	var/obj/item/organ/external/affecting
+	if(length(get_external_organs()))
+		affecting = (zone && GET_EXTERNAL_ORGAN(src, zone))
+		if(!affecting)
+			visible_message(SPAN_NOTICE("\The [O] misses \the [src] narrowly!"))
+			return FALSE
+
+	visible_message(SPAN_DANGER("\The [src] is hit [affecting ? "in \the [affecting.name] " : ""]by \the [O]!"))
+	if(TT?.thrower?.client)
+		admin_attack_log(TT.thrower, src, "Threw \an [O] at the victim.", "Had \an [O] thrown at them.", "threw \an [O] at")
+	try_embed_in_mob(O, zone, throw_damage, dtype, null, affecting, direction = TT.init_dir)
+	return TRUE
 
 /mob/living/momentum_power(var/atom/movable/AM, var/datum/thrownthing/TT)
 	if(anchored || buckled)
 		return 0
-
 	. = (AM.get_mass()*TT.speed)/(get_mass()*min(AM.throw_speed,2))
 	if(has_gravity() || check_space_footing())
 		. *= 0.5
 
-/mob/living/momentum_do(var/power, var/datum/thrownthing/TT, var/atom/movable/AM)
-	if(power >= 0.75)		//snowflake to enable being pinned to walls
-		var/direction = TT.init_dir
-		throw_at(get_edge_target_turf(src, direction), min((TT.maxrange - TT.dist_travelled) * power, 10), throw_speed * min(power, 1.5), callback = CALLBACK(src, TYPE_PROC_REF(/mob/living, pin_to_wall), AM, direction))
-		visible_message(SPAN_DANGER("\The [src] staggers under the impact!"),SPAN_DANGER("You stagger under the impact!"))
-		return
+/mob/living/proc/try_embed_in_mob(obj/O, def_zone, embed_damage = 0, dtype = BRUTE, datum/wound/supplied_wound, obj/item/organ/external/affecting, direction)
 
-	. = ..()
+	if(!istype(O))
+		return FALSE
 
-/mob/living/proc/pin_to_wall(var/obj/O, var/direction)
-	if(!istype(O) || O.loc != src || !O.can_embed())//Projectile is suitable for pinning.
-		return
+	if(!supplied_wound)
+		supplied_wound = apply_damage(embed_damage, dtype, def_zone, O.damage_flags(), O, O.armor_penetration)
 
-	var/turf/T = near_wall(direction,2)
+	if(!O.can_embed())
+		return FALSE
 
-	if(T)
-		forceMove(T)
-		visible_message(SPAN_DANGER("[src] is pinned to the wall by [O]!"),SPAN_DANGER("You are pinned to the wall by [O]!"))
-		src.anchored = TRUE
-		LAZYADD(pinned, O)
-		if(!LAZYISIN(embedded,O))
-			embed(O)
+	if(!affecting)
+		affecting = get_organ(def_zone)
 
-/mob/living/proc/embed(var/obj/O, var/def_zone=null, var/datum/wound/supplied_wound)
-	O.forceMove(src)
-	LAZYADD(embedded, O)
-	src.verbs += /mob/proc/yank_out_object
+	if(affecting && supplied_wound?.is_open() && dtype == BRUTE) // Can't embed in a small bruise.
+		var/obj/item/I = O
+		var/sharp = is_sharp(I)
+		embed_damage *= (1 - get_blocked_ratio(def_zone, BRUTE, O.damage_flags(), O.armor_penetration, I.force))
+
+		//blunt objects should really not be embedding in things unless a huge amount of force is involved
+		var/embed_chance = embed_damage / (sharp ? I.w_class : (I.w_class*3))
+		var/embed_threshold = (sharp ? 5 : 10) * I.w_class
+		var/sharp_embed_chance = embed_damage/(10*I.w_class)*100
+
+		//Sharp objects will always embed if they do enough damage.
+		//Thrown sharp objects have some momentum already and have a small chance to embed even if the damage is below the threshold
+		if((sharp && prob(sharp_embed_chance)) || (embed_damage > embed_threshold && prob(embed_chance)))
+			affecting.embed_in_organ(I, supplied_wound = supplied_wound)
+			I.has_embedded(src)
+			. = TRUE
+
+	// Simple embed for mobs with no limbs.
+	if(!. && !length(get_external_organs()))
+		O.forceMove(src)
+		if(isitem(O))
+			var/obj/item/I = O
+			I.has_embedded(src)
+		. = TRUE
+
+	// Allow a tick for throwing/striking to resolve.
+	if(. && direction)
+		addtimer(CALLBACK(src, PROC_REF(check_embed_pinning), O, direction), 1)
+
+/mob/living/proc/check_embed_pinning(obj/O, direction)
+	if(QDELETED(src) || QDELETED(O) || !isturf(loc) || !(O in embedded) || !direction)
+		return FALSE
+	var/turf/wall = get_step_resolving_mimic(loc, direction)
+	if(!istype(wall) || !wall.density)
+		return FALSE
+	LAZYDISTINCTADD(pinned, O)
+	walk_to(src, 0) // cancel any automated movement
+	visible_message("\The [src] is pinned to \the [wall] by \the [O]!")
+	// TODO: cancel all throwing and momentum after this point
+	return TRUE
 
 //This is called when the mob is thrown into a dense turf
 /mob/living/proc/turf_collision(var/turf/T, var/speed)
@@ -233,7 +279,7 @@
 	admin_attack_log(user, src, "Attacked", "Was attacked", "attacked")
 
 	src.visible_message("<span class='danger'>\The [user] has [attack_message] \the [src]!</span>")
-	adjustBruteLoss(damage)
+	take_damage(damage)
 	user.do_attack_animation(src)
 	return 1
 
@@ -320,25 +366,37 @@
 
 /mob/living/proc/solvent_act(var/severity, var/amount_per_item, var/solvent_power = MAT_SOLVENT_STRONG)
 
+	// TODO move this to a contact var or something.
+	if(solvent_power < MAT_SOLVENT_STRONG)
+		return
+
 	for(var/slot in global.standard_headgear_slots)
 		var/obj/item/thing = get_equipped_item(slot)
 		if(!istype(thing))
 			continue
 		if(!thing.solvent_can_melt(solvent_power) || !try_unequip(thing))
-			to_chat(src, SPAN_NOTICE("Your [thing] protects you from the solvent."))
+			to_chat(src, SPAN_NOTICE("Your [thing.name] protects you from the solvent."))
 			return TRUE
-		to_chat(src, SPAN_DANGER("Your [thing] dissolves!"))
+		to_chat(src, SPAN_DANGER("Your [thing.name] dissolves!"))
 		qdel(thing)
 		severity -= amount_per_item
 		if(severity <= 0)
 			return TRUE
 
-	// TODO move this to a contact var or something.
-	if(solvent_power >= MAT_SOLVENT_STRONG)
-		var/screamed
-		for(var/obj/item/organ/external/affecting in get_external_organs())
-			if(!screamed && affecting.can_feel_pain())
-				screamed = TRUE
-				emote("scream")
-			affecting.status |= ORGAN_DISFIGURED
-		take_organ_damage(0, severity, override_droplimb = DISMEMBER_METHOD_ACID)
+	var/screamed
+	for(var/obj/item/organ/external/affecting in get_external_organs())
+		if(!screamed && affecting.can_feel_pain())
+			screamed = TRUE
+			emote(/decl/emote/audible/scream)
+		affecting.status |= ORGAN_DISFIGURED
+	take_organ_damage(0, severity, override_droplimb = DISMEMBER_METHOD_ACID)
+
+/mob/living/proc/check_shields(var/damage = 0, var/atom/damage_source = null, var/mob/attacker = null, var/def_zone = null, var/attack_text = "the attack")
+	var/list/checking_slots = get_held_items()
+	var/obj/item/suit = get_equipped_item(slot_wear_suit_str)
+	if(suit)
+		LAZYDISTINCTADD(checking_slots, suit)
+	for(var/obj/item/shield in checking_slots)
+		if(shield.handle_shield(src, damage, damage_source, attacker, def_zone, attack_text))
+			return TRUE
+	return FALSE

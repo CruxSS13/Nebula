@@ -104,9 +104,8 @@
 			T.turf_flags |= TURF_FLAG_NO_POINTS_OF_INTEREST
 		if(template_flags & TEMPLATE_FLAG_NO_RADS)
 			qdel(SSradiation.sources_assoc[T])
-		if(istype(T,/turf/simulated))
-			var/turf/simulated/sim = T
-			sim.update_air_properties()
+		if(istype(T) && T.simulated)
+			T.update_air_properties()
 
 /datum/map_template/proc/pre_init_shuttles()
 	. = SSshuttle.block_queue
@@ -258,9 +257,3 @@
 ///Returns whether a given map template is generated at runtime. Mainly used by unit tests.
 /datum/map_template/proc/is_runtime_generated()
 	return FALSE
-
-//for your ever biggening badminnery kevinz000
-//? - Cyberboss
-/proc/load_new_z_level(var/file, var/name)
-	var/datum/map_template/template = new(file, name)
-	template.load_new_z()

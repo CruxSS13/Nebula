@@ -1,5 +1,9 @@
 var/global/list/_limb_mask_cache = list()
-/proc/get_limb_mask_for(var/decl/bodytype/bodytype, var/bodypart)
+/proc/get_limb_mask_for(obj/item/organ/external/limb)
+	var/decl/bodytype/bodytype = limb?.bodytype
+	var/bodypart = limb?.icon_state
+	if(!bodytype || !bodypart)
+		return
 	LAZYINITLIST(_limb_mask_cache[bodytype])
 	if(!_limb_mask_cache[bodytype][bodypart])
 		var/icon/limb_mask = icon(bodytype.icon_base, bodypart)
@@ -16,7 +20,6 @@ var/global/list/_limb_mask_cache = list()
 var/global/list/human_icon_cache    = list()
 var/global/list/eye_icon_cache      = list()
 var/global/list/tail_icon_cache     = list() //key is [bodytype.get_icon_cache_uid(src)][skin_colour]
-var/global/list/light_overlay_cache = list()
 
 /proc/overlay_image(icon,icon_state,color,flags)
 	var/image/ret = image(icon,icon_state)
@@ -38,7 +41,7 @@ versions. Instead, we generate both and store them in two fixed-length lists, bo
 (The indexes are in update_icons.dm): Each list for humans is (at the time of writing) of length 19.
 This will hopefully be reduced as the system is refined.
 
-When we call update_icons, the 'lying' variable is checked and then the appropriate list is assigned to our overlays!
+When we call update_icons, the 'current_posture.prone' variable is checked and then the appropriate list is assigned to our overlays!
 That in itself uses a tiny bit more memory (no more than all the ridiculous lists the game has already mind you).
 
 On the other-hand, it should be very CPU cheap in comparison to the old system.
@@ -66,11 +69,10 @@ There are several things that need to be remembered:
 
 >	There are also these special cases:
 		update_mutations()	//handles updating your appearance for certain mutations.  e.g TK head-glows
-		update_damage_icon()	//handles damage overlays for brute/burn damage //(will rename this when I geta round to it)
+		update_damage_overlays()	//handles damage overlays for brute/burn damage //(will rename this when I geta round to it)
 		update_body()	//Handles updating your mob's icon to reflect their gender/race/complexion etc
 		update_hair()	//Handles updating your hair overlay (used to be update_face, but mouth and
 																			...eyes were merged into update_body)
-		update_targeted() // Updates the target overlay when someone points a gun at you
 
 >	All of these procs update our overlay lists, and then call update_icon() by default.
 	If you wish to update several overlays at once, you can set the argument to 0 to disable the update and call
@@ -100,9 +102,6 @@ If you have any questions/constructive-comments/bugs-to-report/or have a massivl
 Please contact me on #coderbus IRC. ~Carn x
 */
 
-/mob/living/carbon/human
-	var/previous_damage_appearance // store what the body last looked like, so we only have to update it if something changed
-
 /mob/living/carbon/human/refresh_visible_overlays()
 	update_mutations(FALSE)
 	update_body(FALSE)
@@ -113,7 +112,7 @@ Please contact me on #coderbus IRC. ~Carn x
 	update_fire(FALSE)
 	update_surgery(FALSE)
 	update_bandages(FALSE)
-	update_damage_icon(FALSE)
+	update_damage_overlays(FALSE)
 	return ..()
 
 /mob/living/carbon/human/on_update_icon()
@@ -136,7 +135,7 @@ Please contact me on #coderbus IRC. ~Carn x
 
 	var/decl/bodytype/root_bodytype = get_bodytype()
 	var/matrix/M = matrix()
-	if(lying && (root_bodytype.prone_overlay_offset[1] || root_bodytype.prone_overlay_offset[2]))
+	if(current_posture?.prone && (root_bodytype.prone_overlay_offset[1] || root_bodytype.prone_overlay_offset[2]))
 		M.Translate(root_bodytype.prone_overlay_offset[1], root_bodytype.prone_overlay_offset[2])
 
 	var/mangle_planes = FALSE
@@ -170,9 +169,28 @@ Please contact me on #coderbus IRC. ~Carn x
 				underlay.transform = M
 	underlays = visible_underlays
 
-/mob/living/carbon/human/proc/get_icon_scale_mult()
+/mob/living/proc/get_icon_scale_mult()
 	// If you want stuff like scaling based on species or something, here is a good spot to mix the numbers together.
 	return list(icon_scale_x, icon_scale_y)
+
+/mob/living/carbon/human/update_appearance_flags(add_flags, remove_flags)
+	. = ..()
+	if(.)
+		update_icon()
+
+// Separate and duplicated from human logic due to humans having postures and many overlays.
+/mob/living/update_transform()
+	var/list/icon_scale_values = get_icon_scale_mult()
+	var/desired_scale_x = icon_scale_values[1]
+	var/desired_scale_y = icon_scale_values[2]
+	var/matrix/M = matrix()
+	M.Scale(desired_scale_x, desired_scale_y)
+	M.Translate(0, 16 * (desired_scale_y - 1))
+	if(transform_animate_time)
+		animate(src, transform = M, time = transform_animate_time)
+	else
+		transform = M
+	return transform
 
 /mob/living/carbon/human/update_transform()
 
@@ -184,26 +202,26 @@ Please contact me on #coderbus IRC. ~Carn x
 	// Apply KEEP_TOGETHER so all the component overlays move properly when
 	// applying a transform, or remove it if we aren't doing any transforms
 	// (due to cost).
-	if(!lying && desired_scale_x == 1 && desired_scale_y == 1)
-		appearance_flags &= ~KEEP_TOGETHER
+	if(!current_posture.prone && desired_scale_x == 1 && desired_scale_y == 1 && !("turf_alpha_mask" in filter_data))
+		update_appearance_flags(remove_flags = KEEP_TOGETHER)
 	else
-		appearance_flags |= KEEP_TOGETHER
+		update_appearance_flags(add_flags = KEEP_TOGETHER)
 
 	// Scale/translate/rotate and apply the transform.
+	var/turn_angle
 	var/matrix/M = matrix()
-	if(lying)
-		var/turn_angle
-		if(dir & WEST)
-			turn_angle = -90
-		else if(dir & EAST)
+	M.Scale(desired_scale_x, desired_scale_y)
+	if(current_posture.prone && get_bodytype()?.rotate_on_prone)
+		// This locate is very bad but trying to get it to respect the buckled dir is proving tricky.
+		if((dir & EAST) || (isturf(loc) && (locate(/obj/structure/bed) in loc)))
 			turn_angle = 90
+		else if(dir & WEST)
+			turn_angle = -90
 		else
 			turn_angle = pick(-90, 90)
 		M.Turn(turn_angle)
-		M.Scale(desired_scale_y, desired_scale_x)
 		M.Translate(turn_angle == 90 ? 1 : -2, (turn_angle == 90 ? -6 : -5) - default_pixel_z)
 	else
-		M.Scale(desired_scale_x, desired_scale_y)
 		M.Translate(0, 16 * (desired_scale_y - 1))
 
 	if(transform_animate_time)
@@ -211,48 +229,25 @@ Please contact me on #coderbus IRC. ~Carn x
 	else
 		transform = M
 
+	var/atom/movable/mask = global._alpha_masks[src]
+	if(mask)
+		var/matrix/inverted_transform = matrix()
+		inverted_transform.Scale(desired_scale_y, desired_scale_x)
+		if(current_posture.prone)
+			inverted_transform.Turn(-turn_angle)
+			inverted_transform.Translate(turn_angle == -90 ? 1 : -2, (turn_angle == -90 ? -6 : -5) - default_pixel_z)
+		else
+			inverted_transform.Translate(0, 16 * (desired_scale_y - 1))
+		if(transform_animate_time)
+			animate(mask, transform = inverted_transform, time = transform_animate_time)
+		else
+			mask.transform = inverted_transform
+
 	return transform
 
-var/global/list/damage_icon_parts = list()
-
-//DAMAGE OVERLAYS
-//constructs damage icon for each organ from mask * damage field and saves it in our overlays_ lists
-/mob/living/carbon/human/update_damage_icon(var/update_icons=1)
-
-	// first check whether something actually changed about damage appearance
-	var/damage_appearance = ""
-	for(var/obj/item/organ/external/O in get_external_organs())
-		damage_appearance += O.damage_state
-
-	if(damage_appearance == previous_damage_appearance)
-		// nothing to do here
-		return
-
-	previous_damage_appearance = damage_appearance
-	var/decl/bodytype/root_bodytype = get_bodytype()
-	var/image/standing_image = image(root_bodytype.get_damage_overlays(src), icon_state = "00")
-
-	// blend the individual damage states with our icons
-	for(var/obj/item/organ/external/O in get_external_organs())
-		O.update_damstate()
-		O.update_icon()
-		if(O.damage_state == "00")
-			continue
-		var/icon/DI
-		var/use_colour = (BP_IS_PROSTHETIC(O) ? SYNTH_BLOOD_COLOR : O.species.get_species_blood_color(src))
-		var/cache_index = "[O.damage_state]/[O.bodytype.type]/[O.icon_state]/[use_colour]/[species.name]"
-		if(damage_icon_parts[cache_index] == null)
-			DI = new /icon(O.bodytype.get_damage_overlays(src), O.damage_state) // the damage icon for whole human
-			DI.Blend(get_limb_mask_for(O.bodytype, O.icon_state), ICON_MULTIPLY)  // mask with this organ's pixels
-			DI.Blend(use_colour, ICON_MULTIPLY)
-			damage_icon_parts[cache_index] = DI
-		else
-			DI = damage_icon_parts[cache_index]
-
-		standing_image.overlays += DI
-
+/mob/living/carbon/human/update_damage_overlays(update_icons = TRUE)
+	. = ..()
 	update_bandages(update_icons)
-	set_current_mob_overlay(HO_DAMAGE_LAYER, standing_image, update_icons)
 
 /mob/living/carbon/human/proc/update_bandages(var/update_icons=1)
 	var/list/bandage_overlays
@@ -292,7 +287,9 @@ var/global/list/damage_icon_parts = list()
 		//BEGIN CACHED ICON GENERATION.
 		stand_icon = new(root_bodytype.icon_template || 'icons/mob/human.dmi', "blank")
 		for(var/obj/item/organ/external/part in limbs)
-			var/icon/temp = part.icon // Grabbing the icon excludes overlays.
+			if(isnull(part) || part.skip_body_icon_draw)
+				continue
+			var/icon/temp = part.icon
 			//That part makes left and right legs drawn topmost and lowermost when human looks WEST or EAST
 			//And no change in rendering for other parts (they icon_position is 0, so goes to 'else' part)
 			if(part.icon_position & (LEFT | RIGHT))
@@ -346,7 +343,7 @@ var/global/list/damage_icon_parts = list()
 
 		var/image/I
 		if(UW.slot_offset_str && LAZYACCESS(root_bodytype.equip_adjust, UW.slot_offset_str))
-			I = root_bodytype.get_offset_overlay_image(UW.icon, UW.icon_state, UW.color, UW.slot_offset_str)
+			I = root_bodytype.get_offset_overlay_image(src, UW.icon, UW.icon_state, UW.color, UW.slot_offset_str)
 		else
 			I = image(icon = UW.icon, icon_state = UW.icon_state)
 			I.color = UW.color
@@ -357,7 +354,8 @@ var/global/list/damage_icon_parts = list()
 
 /mob/living/carbon/human/update_hair(var/update_icons=1)
 	var/obj/item/organ/external/head/head_organ = get_organ(BP_HEAD, /obj/item/organ/external/head)
-	set_current_mob_overlay(HO_HAIR_LAYER, (istype(head_organ) ? head_organ.get_mob_overlays() : null), update_icons)
+	var/list/new_accessories = head_organ?.get_mob_overlays()
+	set_current_mob_overlay(HO_HAIR_LAYER, new_accessories, update_icons)
 
 /mob/living/carbon/human/proc/update_skin(var/update_icons=1)
 	// todo: make this use bodytype
@@ -426,7 +424,7 @@ var/global/list/damage_icon_parts = list()
 		return // No tail data!
 
 	// These values may be null and are generally optional.
-	var/hair_colour     = get_hair_colour()
+	var/hair_colour     = GET_HAIR_COLOUR(src)
 	var/skin_colour     = get_skin_colour()
 	var/tail_hair       = tail_organ.get_tail_hair()
 	var/tail_blend      = tail_organ.get_tail_blend()
@@ -534,7 +532,7 @@ var/global/list/damage_icon_parts = list()
 
 /mob/living/carbon/human/update_fire(var/update_icons=1)
 	if(on_fire)
-		var/image/standing = overlay_image(get_bodytype().get_ignited_icon(src) || 'icons/mob/OnFire.dmi', "Standing", RESET_COLOR)
+		var/image/standing = overlay_image(get_bodytype()?.get_ignited_icon(src) || 'icons/mob/OnFire.dmi', "Standing", RESET_COLOR)
 		set_current_mob_overlay(HO_FIRE_LAYER, standing, update_icons)
 	else
 		set_current_mob_overlay(HO_FIRE_LAYER, null, update_icons)
@@ -546,7 +544,7 @@ var/global/list/damage_icon_parts = list()
 		return .
 	for(var/obj/item/gear in get_equipped_items(TRUE))
 		client.screen |= gear
-	if(hud_used)
+	if(istype(hud_used))
 		hud_used.hidden_inventory_update()
 		hud_used.persistant_inventory_update()
 		update_action_buttons()

@@ -14,11 +14,9 @@
 	name_plural =           "Utility Frames"
 	description =           "Simple AI-driven robots are used for many menial or repetitive tasks in human space."
 	cyborg_noun = null
-	base_prosthetics_model = null
+	base_external_prosthetics_model = null
 	blood_types = list(/decl/blood_type/coolant)
-
 	available_bodytypes = list(/decl/bodytype/prosthetic/utility_frame)
-	age_descriptor =        /datum/appearance_descriptor/age/utility_frame
 	hidden_from_codex =     FALSE
 	species_flags =         SPECIES_FLAG_NO_POISON
 	spawn_flags =           SPECIES_CAN_JOIN

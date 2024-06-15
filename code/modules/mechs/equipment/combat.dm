@@ -161,7 +161,7 @@
 
 /obj/aura/mechshield/added_to(var/mob/living/target)
 	. = ..()
-	add_vis_contents(target, src)
+	target.add_vis_contents(src)
 	set_dir(target.dir)
 	events_repository.register(/decl/observ/dir_set, user, src, TYPE_PROC_REF(/obj/aura/mechshield, update_dir))
 
@@ -177,7 +177,7 @@
 /obj/aura/mechshield/Destroy()
 	if(user)
 		events_repository.unregister(/decl/observ/dir_set, user, src, TYPE_PROC_REF(/obj/aura/mechshield, update_dir))
-		remove_vis_contents(user, src)
+		user.remove_vis_contents(src)
 	shields = null
 	. = ..()
 
@@ -217,13 +217,14 @@
 
 /obj/aura/mechshield/hitby(atom/movable/M, var/datum/thrownthing/TT)
 	. = ..()
-	if(!active)
-		return
-	if(shields.charge && TT.speed <= 5)
-		user.visible_message(SPAN_WARNING("\The [shields.owner]'s shields flash briefly as they deflect \the [M]."))
-		flick("shield_impact", src)
-		playsound(user,'sound/effects/basscannon.ogg',10,1)
-		return AURA_FALSE|AURA_CANCEL
+	if(.)
+		if(!active)
+			return
+		if(shields.charge && TT.speed <= 5)
+			user.visible_message(SPAN_WARNING("\The [shields.owner]'s shields flash briefly as they deflect \the [M]."))
+			flick("shield_impact", src)
+			playsound(user,'sound/effects/basscannon.ogg',10,1)
+			return AURA_FALSE|AURA_CANCEL
 	//Too fast!
 
 //Melee! As a general rule I would recommend using regular objects and putting logic in them.
@@ -233,7 +234,7 @@
 	restricted_hardpoints = list(HARDPOINT_LEFT_HAND, HARDPOINT_RIGHT_HAND)
 	restricted_software = list(MECH_SOFTWARE_UTILITY)
 
-/obj/item/hatchet/machete/mech
+/obj/item/tool/machete/mech
 	name = "mechete"
 	desc = "That thing is too big to be called a machete. Too big, too thick, too heavy, and too rough, it is more like a large hunk of iron."
 	w_class = ITEM_SIZE_GARGANTUAN
@@ -243,14 +244,14 @@
 	material_force_multiplier = 0.75 // Equals 20 AP with 25 force
 	max_health = ITEM_HEALTH_NO_DAMAGE //Else we need a whole system for replacement blades
 
-/obj/item/hatchet/machete/mech/apply_hit_effect(mob/living/target, mob/living/user, hit_zone)
+/obj/item/tool/machete/mech/apply_hit_effect(mob/living/target, mob/living/user, hit_zone)
 	. = ..()
 	if (.)
 		do_attack_effect(target, "smash")
 		if (target.mob_size < user.mob_size) //Damaging attacks overwhelm smaller mobs
 			target.throw_at(get_edge_target_turf(target,get_dir(user, target)),1, 1)
 
-/obj/item/hatchet/machete/mech/resolve_attackby(atom/A, mob/user, click_params)
+/obj/item/tool/machete/mech/resolve_attackby(atom/A, mob/user, click_params)
 	//Case 1: Default, you are hitting something that isn't a mob. Just do whatever, this isn't dangerous or op.
 	if (!isliving(A))
 		return ..()
@@ -260,7 +261,7 @@
 		playsound(user, 'sound/mecha/mechmove03.ogg', 35, 1)
 		return ..()
 
-/obj/item/hatchet/machete/mech/attack_self(mob/living/user)
+/obj/item/tool/machete/mech/attack_self(mob/living/user)
 	. = ..()
 	if (user.a_intent != I_HURT)
 		return
@@ -274,13 +275,13 @@
 			playsound(E, 'sound/mecha/mechmove03.ogg', 35, 1)
 			if (do_after(E, 1.2 SECONDS, get_turf(user)) && E && MC)
 				for (var/mob/living/M in orange(1, E))
-					attack(M, E, E.get_target_zone(), FALSE)
+					use_on_mob(M, E, animate = FALSE)
 				E.spin(0.65 SECONDS, 0.125 SECONDS)
 				playsound(E, 'sound/mecha/mechturn.ogg', 40, 1)
 
 /obj/item/mech_equipment/mounted_system/melee/machete
 	icon_state = "mech_blade"
-	holding = /obj/item/hatchet/machete/mech
+	holding = /obj/item/tool/machete/mech
 
 
 //Ballistic shield
@@ -404,7 +405,7 @@
 
 /obj/aura/mech_ballistic/added_to(mob/living/target)
 	. = ..()
-	add_vis_contents(target, src)
+	target.add_vis_contents(src)
 	set_dir(target.dir)
 	global.events_repository.register(/decl/observ/dir_set, user, src, TYPE_PROC_REF(/obj/aura/mech_ballistic, update_dir))
 
@@ -414,7 +415,7 @@
 /obj/aura/mech_ballistic/Destroy()
 	if (user)
 		global.events_repository.unregister(/decl/observ/dir_set, user, src, TYPE_PROC_REF(/obj/aura/mech_ballistic, update_dir))
-		remove_vis_contents(user, src)
+		user.remove_vis_contents(src)
 	shield = null
 	. = ..()
 
@@ -429,12 +430,11 @@
 
 /obj/aura/mech_ballistic/hitby(atom/movable/M, datum/thrownthing/TT)
 	. = ..()
-	if (shield)
+	if (. && shield)
 		var/throw_damage = 0
 		if (istype(M,/obj/))
 			var/obj/O = M
 			throw_damage = O.throwforce*(TT.speed/THROWFORCE_SPEED_DIVISOR)
-
 		if (prob(shield.block_chance(throw_damage, 0, source = M, attacker = TT.thrower)))
 			user.visible_message(SPAN_WARNING("\The [M] bounces off \the [user]'s [shield]."))
 			playsound(user.loc, 'sound/weapons/Genhit.ogg', 50, 1)

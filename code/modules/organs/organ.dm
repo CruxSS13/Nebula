@@ -10,6 +10,7 @@
 
 	// Strings.
 	var/organ_tag = "organ"                // Unique identifier.
+	var/organ_category                     // Identifier for use in organ collections, unused if unset. Would be nice to make this a list, but bodytypes rely on initial() with it.
 	var/parent_organ = BP_CHEST            // Organ holding this object.
 
 	// Status tracking.
@@ -23,6 +24,7 @@
 	var/decl/species/species               // Original species.
 	var/decl/bodytype/bodytype             // Original bodytype.
 	var/list/ailments                      // Current active ailments if any.
+	var/meat_name                          // Taken from first owner.
 
 	// Damage vars.
 	var/damage = 0                         // Current damage to the organ
@@ -32,6 +34,9 @@
 	var/rejecting                          // Is this organ already being rejected?
 	var/death_time                         // REALTIMEOFDAY at moment of death.
 	var/scale_max_damage_to_species_health // Whether or not we should scale the damage values of this organ to the owner species.
+
+	/// Set to true if this organ should return info to Stat(). See get_stat_info().
+	var/has_stat_info
 
 /obj/item/organ/Destroy()
 	if(owner)
@@ -54,11 +59,8 @@
 /obj/item/organ/attack_self(var/mob/user)
 	return (owner && loc == owner && owner == user)
 
-/obj/item/organ/proc/update_organ_health()
-	return
-
 /obj/item/organ/proc/is_broken()
-	return (damage >= min_broken_damage || (status & ORGAN_CUT_AWAY) || (status & ORGAN_BROKEN))
+	return (damage >= min_broken_damage || (status & ORGAN_CUT_AWAY) || (status & ORGAN_BROKEN) || (status & ORGAN_DEAD))
 
 //Third argument may be a dna datum; if null will be set to holder's dna.
 /obj/item/organ/Initialize(mapload, material_key, datum/dna/given_dna, decl/bodytype/new_bodytype)
@@ -109,11 +111,11 @@
 
 // todo: make this redundant with matter shenanigans
 /obj/item/organ/populate_reagents()
-	var/reagent_to_add = /decl/material/liquid/nutriment/protein
+	var/reagent_to_add = /decl/material/solid/organic/meat
 	if(bodytype)
 		reagent_to_add = bodytype.edible_reagent // can set this to null and skip the next block
 	if(reagent_to_add)
-		reagents.add_reagent(reagent_to_add, reagents.maximum_volume)
+		add_to_reagents(reagent_to_add, reagents.maximum_volume)
 
 /obj/item/organ/proc/set_dna(var/datum/dna/new_dna)
 	if(istype(bodytype) && (bodytype.body_flags & BODY_FLAG_NO_DNA))
@@ -155,6 +157,11 @@
 	reset_status()
 	return TRUE
 
+// resets scarring, but ah well
+/obj/item/organ/proc/set_max_damage(var/ndamage)
+	absolute_max_damage = FLOOR(ndamage)
+	max_damage = absolute_max_damage
+
 /obj/item/organ/proc/set_species(specie_name)
 	vital_to_owner = null // This generally indicates the owner mob is having species set, and this value may be invalidated.
 	if(istext(specie_name))
@@ -173,15 +180,13 @@
 	//Use initial value to prevent scaling down each times we change the species during init
 	absolute_max_damage = initial(absolute_max_damage)
 	min_broken_damage = initial(min_broken_damage)
-	max_damage = initial(max_damage)
 
 	if(absolute_max_damage)
-		absolute_max_damage = max(1, FLOOR(absolute_max_damage * total_health_coefficient))
+		set_max_damage(max(1, FLOOR(absolute_max_damage * total_health_coefficient)))
 		min_broken_damage = max(1, FLOOR(absolute_max_damage * 0.5))
 	else
 		min_broken_damage = max(1, FLOOR(min_broken_damage * total_health_coefficient))
-		absolute_max_damage = max(1, FLOOR(min_broken_damage * 2))
-	max_damage = absolute_max_damage // resets scarring, but ah well
+		set_max_damage(max(1, FLOOR(min_broken_damage * 2)))
 
 	reset_status()
 
@@ -214,7 +219,7 @@
 		if(prob(40) && reagents.total_volume >= 0.1)
 			if(reagents.has_reagent(/decl/material/liquid/blood))
 				blood_splatter(get_turf(src), src, 1)
-			reagents.remove_any(0.1)
+			remove_any_reagents(0.1)
 		if(get_config_value(/decl/config/toggle/health_organs_decay))
 			take_general_damage(rand(1,3))
 		germ_level += rand(2,6)
@@ -252,7 +257,7 @@
 		var/obj/item/organ/O = loc
 		return O.is_preserved()
 	var/static/list/preserved_types = list(
-		/obj/item/storage/box/freezer,
+		/obj/item/box/freezer,
 		/obj/structure/closet/crate/freezer,
 		/obj/structure/closet/body_bag/cryobag
 	)
@@ -289,7 +294,7 @@
 
 	if(germ_level >= INFECTION_LEVEL_ONE)
 		var/fever_temperature = (owner.get_mob_temperature_threshold(HEAT_LEVEL_1) - owner.species.body_temperature - 5)* min(germ_level/INFECTION_LEVEL_TWO, 1) + owner.species.body_temperature
-		owner.bodytemperature += clamp(0, (fever_temperature - T20C)/BODYTEMP_COLD_DIVISOR + 1, fever_temperature - owner.bodytemperature)
+		owner.bodytemperature += clamp((fever_temperature - T20C)/BODYTEMP_COLD_DIVISOR + 1, 0, fever_temperature - owner.bodytemperature)
 
 	if (germ_level >= INFECTION_LEVEL_TWO)
 		var/obj/item/organ/external/parent = GET_EXTERNAL_ORGAN(owner, parent_organ)
@@ -325,9 +330,9 @@
 						germ_level += rand(3,5)
 						var/decl/blood_type/blood_decl = dna?.b_type && get_blood_type_by_name(dna.b_type)
 						if(istype(blood_decl))
-							owner.reagents.add_reagent(blood_decl.transfusion_fail_reagent, round(rand(2,4) * blood_decl.transfusion_fail_percentage))
+							owner.add_to_reagents(blood_decl.transfusion_fail_reagent, round(rand(2,4) * blood_decl.transfusion_fail_percentage))
 						else
-							owner.reagents.add_reagent(/decl/material/liquid/coagulated_blood, rand(1,2))
+							owner.add_to_reagents(/decl/material/liquid/coagulated_blood, rand(1,2))
 
 /obj/item/organ/proc/remove_rejuv()
 	qdel(src)
@@ -364,7 +369,7 @@
 		germ_level -= 5	//at germ_level == 500, this should cure the infection in 5 minutes
 	else
 		germ_level -= 3 //at germ_level == 1000, this will cure the infection in 10 minutes
-	if(owner && owner.lying)
+	if(owner && owner.current_posture.prone)
 		germ_level -= 2
 	germ_level = max(0, germ_level)
 
@@ -373,11 +378,12 @@
 
 /obj/item/organ/proc/heal_damage(amount)
 	if(can_recover())
-		damage = clamp(0, damage - round(amount, 0.1), max_damage)
+		damage = clamp(damage - round(amount, 0.1), 0, max_damage)
 		if(owner)
 			owner.update_health()
 
-/obj/item/organ/attack(var/mob/target, var/mob/user)
+/obj/item/organ/use_on_mob(mob/living/target, mob/living/user, animate = TRUE)
+
 	if(BP_IS_PROSTHETIC(src) || !istype(target) || !istype(user) || (user != target && user.a_intent == I_HELP))
 		return ..()
 
@@ -391,18 +397,22 @@
 	if(!user.try_unequip(src))
 		return
 
-	var/obj/item/chems/food/organ/O = new(get_turf(src))
-	O.SetName(name)
-	O.appearance = src
+	target.attackby(convert_to_food(user), user)
+
+/obj/item/organ/proc/convert_to_food(mob/user)
+	var/obj/item/chems/food/organ/yum = new(get_turf(src))
+	yum.SetName(name)
+	yum.appearance = src
 	if(reagents && reagents.total_volume)
-		reagents.trans_to(O, reagents.total_volume)
-	transfer_fingerprints_to(O)
-	user.put_in_active_hand(O)
+		reagents.trans_to(yum, reagents.total_volume)
+	transfer_fingerprints_to(yum)
+	if(user)
+		user.put_in_active_hand(yum)
 	qdel(src)
-	target.attackby(O, user)
+	return yum
 
 /obj/item/organ/proc/can_feel_pain()
-	return !(bodytype.body_flags & BODY_FLAG_NO_PAIN)
+	return bodytype && !(bodytype.body_flags & BODY_FLAG_NO_PAIN)
 
 /obj/item/organ/proc/is_usable()
 	return !(status & (ORGAN_CUT_AWAY|ORGAN_MUTATED|ORGAN_DEAD))
@@ -464,9 +474,6 @@
 //used by stethoscope
 /obj/item/organ/proc/listen()
 	return
-
-/obj/item/organ/proc/get_mechanical_assisted_descriptor()
-	return "mechanically-assisted [name]"
 
 var/global/list/ailment_reference_cache = list()
 /proc/get_ailment_reference(var/ailment_type)
@@ -555,6 +562,8 @@ var/global/list/ailment_reference_cache = list()
 		return
 
 	owner = target
+	if(owner && isnull(meat_name))
+		meat_name = owner.get_butchery_product_name()
 	vital_to_owner = null
 	action_button_name = initial(action_button_name)
 	if(owner)
@@ -624,3 +633,19 @@ var/global/list/ailment_reference_cache = list()
 			return FALSE
 		vital_to_owner = (organ_tag in root_bodytype.vital_organs)
 	return vital_to_owner
+
+/obj/item/organ/proc/place_butcher_product(decl/butchery_data/butchery_decl)
+	if(butchery_decl.meat_type)
+		var/list/products = butchery_decl.place_products(owner, material?.type, clamp(w_class, 1, 3), butchery_decl.meat_type)
+		if(meat_name)
+			for(var/obj/item/chems/food/butchery/product in products)
+				product.set_meat_name(meat_name)
+
+/obj/item/organ/physically_destroyed(skip_qdel)
+	if(!owner && !BP_IS_PROSTHETIC(src) && species?.butchery_data)
+		place_butcher_product(GET_DECL(species.butchery_data))
+	return ..()
+
+/// Returns a list with two entries, first being the stat panel title, the second being the value. See has_stat_value bool above.
+/obj/item/organ/proc/get_stat_info()
+	return null

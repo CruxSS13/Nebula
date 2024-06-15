@@ -9,9 +9,9 @@
 	break_stuff_probability = 15
 	faction = "drakes"
 	pry_time = 4 SECONDS
-	skull_type = /obj/item/whip/tail
+	butchery_data = /decl/butchery_data/animal/reptile/drake
 	bleed_colour = COLOR_VIOLET
-	mob_default_max_health = 200
+	max_health = 200
 	natural_weapon = /obj/item/natural_weapon/claws/drake
 	natural_armor = list(
 		ARMOR_MELEE = ARMOR_MELEE_RESISTANT,
@@ -28,7 +28,7 @@
 /mob/living/simple_animal/hostile/drake/lava_act(datum/gas_mixture/air, temperature, pressure)
 	return
 
-/mob/living/simple_animal/hostile/drake/AttackingTarget()
+/mob/living/simple_animal/hostile/drake/attack_target(mob/target)
 	. = ..()
 	if(empowered_attack)
 		depower()

@@ -2,7 +2,7 @@
 	name = "megaleech"
 	desc = "A green leech the size of a common snake."
 	icon = 'icons/mob/simple_animal/megaleech.dmi'
-	mob_default_max_health = 15
+	max_health = 15
 	harm_intent_damage = 5
 	natural_weapon = /obj/item/natural_weapon/bite/weak
 	pass_flags = PASS_FLAG_TABLE
@@ -27,7 +27,7 @@
 		else
 			belly -= 1
 
-/mob/living/simple_animal/hostile/leech/AttackingTarget()
+/mob/living/simple_animal/hostile/leech/attack_target(mob/target)
 	. = ..()
 	if(ishuman(.) && belly <= 75)
 		var/mob/living/carbon/human/H = .

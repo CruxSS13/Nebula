@@ -22,7 +22,7 @@
 	if(loaded_tank)
 		add_overlay("[icon_state]-tank")
 
-/obj/item/gun/launcher/sealant/apply_gun_mob_overlays(var/mob/living/user_mob, var/bodytype,  var/image/overlay, var/slot, var/bodypart, var/skip_offset = FALSE)
+/obj/item/gun/launcher/sealant/apply_gun_mob_overlays(var/mob/living/user_mob, var/bodytype,  var/image/overlay, var/slot, var/bodypart)
 	if(overlay && loaded_tank)
 		var/tank_state = "[overlay.icon_state]-tank"
 		if(check_state_in_icon(tank_state, overlay.icon))
@@ -35,7 +35,7 @@
 /obj/item/gun/launcher/sealant/consume_next_projectile()
 	if(loaded_tank?.foam_charges >= foam_charges_per_shot)
 		loaded_tank.foam_charges -= foam_charges_per_shot
-		. = new /obj/item/clothing/sealant(src)
+		. = new /obj/item/sealant(src)
 
 /obj/item/gun/launcher/sealant/Initialize()
 	. = ..()

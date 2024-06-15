@@ -130,15 +130,15 @@
 
 	//20% chance that the grille provides a bit more cover than usual. Support structure for example might take up 20% of the grille's area.
 	//If they click on the grille itself then we assume they are aiming at the grille itself and the extra cover behaviour is always used.
-	switch(Proj.damage_type)
+	switch(Proj.atom_damage_type)
 		if(BRUTE)
 			//bullets
 			if(Proj.original == src || prob(20))
-				Proj.damage *= clamp(0, Proj.damage/60, 0.5)
+				Proj.damage *= clamp(Proj.damage/60, 0, 0.5)
 				if(prob(max((damage-10)/25, 0))*100)
 					passthrough = 1
 			else
-				Proj.damage *= clamp(0, Proj.damage/60, 1)
+				Proj.damage *= clamp(Proj.damage/60, 0, 1)
 				passthrough = 1
 		if(BURN)
 			//beams and other projectiles are either blocked completely by grilles or stop half the damage.
@@ -148,9 +148,9 @@
 
 	if(passthrough)
 		. = PROJECTILE_CONTINUE
-		damage = clamp(0, (damage - Proj.damage)*(Proj.damage_type == BRUTE? 0.4 : 1), 10) //if the bullet passes through then the grille avoids most of the damage
+		damage = clamp((damage - Proj.damage)*(Proj.atom_damage_type == BRUTE? 0.4 : 1), 0, 10) //if the bullet passes through then the grille avoids most of the damage
 
-	take_damage(damage*0.2)
+	take_damage(damage*0.2, Proj.atom_damage_type)
 
 /obj/structure/grille/proc/cut_grille()
 	playsound(loc, 'sound/items/Wirecutter.ogg', 100, 1)
@@ -159,7 +159,10 @@
 	else
 		set_density(0)
 		if(material)
-			material.create_object(get_turf(src), 1, parts_type)
+			var/res = material.create_object(get_turf(src), 1, parts_type)
+			if(paint_color)
+				for(var/obj/item/thing in res)
+					thing.set_color(paint_color)
 		destroyed = TRUE
 		parts_amount = 1
 		update_icon()
@@ -168,19 +171,24 @@
 	if(IS_WIRECUTTER(W))
 		if(!material.conductive || !shock(user, 100))
 			cut_grille()
+		return TRUE
 
-	else if((IS_SCREWDRIVER(W)) && (istype(loc, /turf/simulated) || anchored))
-		if(!shock(user, 90))
-			playsound(loc, 'sound/items/Screwdriver.ogg', 100, 1)
-			anchored = !anchored
-			user.visible_message(SPAN_NOTICE("[user] [anchored ? "fastens" : "unfastens"] the grille."), \
-								 SPAN_NOTICE("You have [anchored ? "fastened the grille to" : "unfastened the grill from"] the floor."))
-			update_connections(1)
-			update_icon()
-			return
+	if((IS_SCREWDRIVER(W)))
+		var/turf/turf = loc
+		if(((istype(turf) && turf.simulated) || anchored))
+			if(!shock(user, 90))
+				playsound(loc, 'sound/items/Screwdriver.ogg', 100, 1)
+				anchored = !anchored
+				user.visible_message(
+					SPAN_NOTICE("[user] [anchored ? "fastens" : "unfastens"] the grille."),
+					SPAN_NOTICE("You have [anchored ? "fastened the grille to" : "unfastened the grill from"] the floor.")
+				)
+				update_connections(1)
+				update_icon()
+			return TRUE
 
-//window placing
-	else if(istype(W,/obj/item/stack/material))
+	//window placing
+	if(istype(W,/obj/item/stack/material))
 		var/obj/item/stack/material/ST = W
 		if(ST.material.opacity > 0.7)
 			return 0
@@ -195,18 +203,20 @@
 					to_chat(user, "<span class='notice'>You can't reach.</span>")
 					return
 		place_window(user, loc, dir_to_set, ST)
-		return
+		return TRUE
 
-	else if(!(W.obj_flags & OBJ_FLAG_CONDUCTIBLE) || !shock(user, 70))
+	if(!(W.obj_flags & OBJ_FLAG_CONDUCTIBLE) || !shock(user, 70))
 		user.setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
 		user.do_attack_animation(src)
 		playsound(loc, 'sound/effects/grillehit.ogg', 80, 1)
-		switch(W.damtype)
+		switch(W.atom_damage_type)
 			if(BURN)
 				take_damage(W.force)
 			if(BRUTE)
 				take_damage(W.force * 0.1)
-	..()
+		return TRUE
+
+	return ..()
 
 /obj/structure/grille/physically_destroyed(var/skip_qdel)
 	SHOULD_CALL_PARENT(FALSE)
@@ -241,8 +251,8 @@
 
 /obj/structure/grille/fire_act(datum/gas_mixture/air, exposed_temperature, exposed_volume)
 	if(!destroyed)
-		if(exposed_temperature > material.melting_point)
-			take_damage(1)
+		if(exposed_temperature > material.temperature_damage_threshold)
+			take_damage(1, BURN)
 	..()
 
 // Used in mapping to avoid

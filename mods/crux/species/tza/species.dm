@@ -1,28 +1,14 @@
-/datum/appearance_descriptor/age/tza
-	chargen_min_index = 3
-	chargen_max_index = 6
-	standalone_value_descriptors = list(
-		"a larva"        = 1,
-		"a nymph"        = 2,
-		"a juvenile"     = 3,
-		"an adolescent"  = 5,
-		"a young adult"  = 12,
-		"a full adult"   = 20,
-		"senescent"      = 35
-	)
-
 /decl/species/tza
 	name                   = SPECIES_TZA
 	name_plural            = SPECIES_TZA
 	show_ssd               = "in torpor"
-	base_prosthetics_model = null
+	base_external_prosthetics_model = null
 	available_bodytypes    = list(/decl/bodytype/tza)
 	description            = "Bugs!"
 	flesh_color            = COLOR_PALE_PINK
 	move_trail             = /obj/effect/decal/cleanable/blood/tracks/snake
 	blood_types            = list(/decl/blood_type/hemolymph)
 	speech_chance          = 100
-	age_descriptor         = /datum/appearance_descriptor/age/tza
 	rarity_value           = 3
 	gluttonous             = 2
 	preview_outfit         = null
@@ -66,30 +52,9 @@
 		TAG_RELIGION =  /decl/cultural_info/religion/other
 	)
 
-	appearance_descriptors = list(
-		/datum/appearance_descriptor/height      = 0.8,
-		/datum/appearance_descriptor/body_length = 0.6
-	)
-
 	pain_emotes_with_pain_level = list(
 		list(/decl/emote/pheromone/pain, /decl/emote/pheromone/fear) = 40
 	)
-
-/decl/species/tza/Initialize()
-	default_emotes |= list(
-		/decl/emote/pheromone/pain,
-		/decl/emote/pheromone/fear,
-		/decl/emote/pheromone/calm,
-		/decl/emote/pheromone/storm,
-		/decl/emote/pheromone/flood,
-		/decl/emote/pheromone/newsisters,
-		/decl/emote/pheromone/foodgood,
-		/decl/emote/pheromone/foodbad,
-		/decl/emote/pheromone/happy,
-		/decl/emote/pheromone/sad,
-		/decl/emote/pheromone/custom
-	)
-	. = ..()
 
 /decl/species/tza/handle_autohiss(message, decl/language/lang, mode)
 	if(autohiss_exempt && (lang.name in autohiss_exempt))

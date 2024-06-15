@@ -1,9 +1,9 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "a" = (
-/turf/exterior/seafloor/flooded,
+/turf/floor/natural/seafloor/flooded,
 /area/crux/outside/ocean)
 "e" = (
-/turf/exterior/wall/flooded,
+/turf/wall/natural/flooded,
 /area/crux/outside/ocean)
 "o" = (
 /obj/abstract/level_data_spawner/crux_below,
@@ -13,11 +13,11 @@
 /turf/unsimulated/mask,
 /area/crux/outside/underground)
 "v" = (
-/turf/exterior/wall,
+/turf/wall/natural,
 /area/crux/outside/underground)
 "B" = (
 /obj/abstract/ramp_sculptor/west,
-/turf/exterior/wall/flooded,
+/turf/wall/natural/flooded,
 /area/crux/outside/ocean)
 "C" = (
 /turf/unsimulated/dark_filler,
@@ -27,11 +27,11 @@
 /area/crux/outside/underground)
 "V" = (
 /obj/abstract/ramp_sculptor/north,
-/turf/exterior/wall/flooded,
+/turf/wall/natural/flooded,
 /area/crux/outside/ocean)
 "Z" = (
 /obj/abstract/ramp_sculptor/south,
-/turf/exterior/wall/flooded,
+/turf/wall/natural/flooded,
 /area/crux/outside/ocean)
 
 (1,1,1) = {"

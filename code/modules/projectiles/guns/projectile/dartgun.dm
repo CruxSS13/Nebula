@@ -31,7 +31,7 @@
 		return
 	for(var/chem in starting_chems)
 		var/obj/B = new container_type(src)
-		B.reagents.add_reagent(chem, 60)
+		B.add_to_reagents(chem, 60)
 		beakers += B
 
 /obj/item/gun/projectile/dartgun/on_update_icon()
@@ -41,16 +41,16 @@
 	else
 		icon_state = get_world_inventory_state()
 
-/obj/item/gun/projectile/dartgun/adjust_mob_overlay(mob/living/user_mob, bodytype, image/overlay, slot, bodypart, use_fallback_if_icon_missing = TRUE, skip_offset = FALSE)
+/obj/item/gun/projectile/dartgun/adjust_mob_overlay(mob/living/user_mob, bodytype, image/overlay, slot, bodypart, use_fallback_if_icon_missing = TRUE)
 	if(overlay && (slot in user_mob?.get_held_item_slots()) && ammo_magazine)
 		overlay.icon_state += "-[clamp(length(ammo_magazine.stored_ammo.len), 0, 5)]"
 	. = ..()
 
 /obj/item/gun/projectile/dartgun/consume_next_projectile()
-	. = ..()
-	var/obj/item/projectile/bullet/chemdart/dart = .
+	var/obj/item/projectile/bullet/chemdart/dart = ..()
 	if(istype(dart))
 		fill_dart(dart)
+	return dart
 
 /obj/item/gun/projectile/dartgun/examine(mob/user)
 	. = ..()
@@ -60,7 +60,7 @@
 			if(B.reagents && LAZYLEN(B.reagents?.reagent_volumes))
 				for(var/rtype in B.reagents.reagent_volumes)
 					var/decl/material/R = GET_DECL(rtype)
-					to_chat(user, "<span class='notice'>[REAGENT_VOLUME(B.reagents, rtype)] units of [R.name]</span>")
+					to_chat(user, "<span class='notice'>[REAGENT_VOLUME(B.reagents, rtype)] units of [R.get_reagent_name(B.reagents)]</span>")
 
 /obj/item/gun/projectile/dartgun/attackby(obj/item/I, mob/user)
 	if(istype(I, /obj/item/chems/glass))
@@ -111,7 +111,7 @@
 			if(B.reagents && LAZYLEN(B.reagents.reagent_volumes))
 				for(var/rtype in B.reagents.reagent_volumes)
 					var/decl/material/R = GET_DECL(rtype)
-					dat += "<br>    [REAGENT_VOLUME(B.reagents, rtype)] units of [R.name], "
+					dat += "<br>    [REAGENT_VOLUME(B.reagents, rtype)] units of [R.get_reagent_name(B.reagents)], "
 				if(B in mixing)
 					dat += "<A href='?src=\ref[src];stop_mix=[i]'><font color='green'>Mixing</font></A> "
 				else

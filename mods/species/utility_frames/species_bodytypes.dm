@@ -21,11 +21,14 @@
 		BP_EYES  = /obj/item/organ/internal/eyes,
 		BP_CELL  = /obj/item/organ/internal/cell
 	)
-	base_markings = list(
-		/decl/sprite_accessory/marking/frame/plating = "#8888cc",
-		/decl/sprite_accessory/marking/frame/plating/legs = "#8888cc",
-		/decl/sprite_accessory/marking/frame/plating/head = "#8888cc"
+	default_sprite_accessories = list(
+		SAC_MARKINGS = list(
+			/decl/sprite_accessory/marking/frame/plating = "#8888cc",
+			/decl/sprite_accessory/marking/frame/plating/legs = "#8888cc",
+			/decl/sprite_accessory/marking/frame/plating/head = "#8888cc"
+		)
 	)
+	age_descriptor =        /datum/appearance_descriptor/age/utility_frame
 
 /decl/bodytype/prosthetic/utility_frame/Initialize()
 	equip_adjust = list(

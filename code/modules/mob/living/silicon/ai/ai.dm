@@ -56,7 +56,7 @@ var/global/list/ai_verbs_default = list(
 	density = TRUE
 	status_flags = CANSTUN|CANPARALYSE|CANPUSH
 	shouldnt_see = list(/obj/effect/rune)
-	mob_default_max_health = 200
+	max_health = 200
 
 	silicon_camera = /obj/item/camera/siliconcam/ai_camera
 	silicon_radio = /obj/item/radio/headset/heads/ai_integrated
@@ -314,20 +314,6 @@ var/global/list/custom_ai_icons_by_ckey_and_name = list()
 		call_shuttle_proc(src)
 
 	post_status("shuttle")
-
-/mob/living/silicon/ai/proc/ai_recall_shuttle()
-	set category = "Silicon Commands"
-	set name = "Cancel Evacuation"
-
-	if(check_unable(AI_CHECK_WIRELESS))
-		return
-
-	var/confirm = alert("Are you sure you want to cancel the evacuation?", "Confirm Cancel", "Yes", "No")
-	if(check_unable(AI_CHECK_WIRELESS))
-		return
-
-	if(confirm == "Yes")
-		cancel_call_proc(src)
 
 /mob/living/silicon/ai/var/emergency_message_cooldown = 0
 /mob/living/silicon/ai/proc/ai_emergency_message()
@@ -677,10 +663,6 @@ var/global/list/custom_ai_icons_by_ckey_and_name = list()
 
 // Pass lying down or getting up to our pet human, if we're in a rig.
 /mob/living/silicon/ai/lay_down()
-	set name = "Rest"
-	set category = "IC"
-
-	resting = 0
 	var/obj/item/rig/rig = src.get_rig()
 	if(rig)
 		rig.force_rest(src)
@@ -714,7 +696,7 @@ var/global/list/custom_ai_icons_by_ckey_and_name = list()
 	if(!A)
 		return
 
-	for(var/turf/simulated/floor/bluegrid/F in A)
+	for(var/turf/floor/bluegrid/F in A)
 		F.color = f_color
 
 	to_chat(usr, SPAN_NOTICE("Proccessing strata color was changed to \"<font color='[f_color]'>[f_color]</font>\""))

@@ -125,11 +125,11 @@ var/global/list/localhost_addresses = list(
 
 	switch (connection)
 		if ("seeker", "web") // check for invalid connection type. do nothing if valid
+			pass()
 		else return null
 
 	deactivate_darkmode(clear_chat = FALSE) // Overwritten if the pref is set later.
 
-	#if DM_VERSION >= 512
 	var/bad_version = byond_version < get_config_value(/decl/config/num/minimum_byond_version)
 	var/bad_build   = byond_build < get_config_value(/decl/config/num/minimum_byond_build)
 
@@ -143,8 +143,6 @@ var/global/list/localhost_addresses = list(
 		to_chat(src, "You are attempting to connect with a broken and possibly exploitable BYOND build. Please update to the latest version at http://www.byond.com/ before trying again.")
 		qdel(src)
 		return
-
-	#endif
 
 	var/local_connection = (get_config_value(/decl/config/toggle/on/auto_local_admin) && (isnull(address) || global.localhost_addresses[address]))
 	if(!local_connection)
@@ -697,21 +695,6 @@ var/global/const/MAX_VIEW = 41
 /client/verb/drop_item()
 	set hidden = 1
 	if(!isrobot(mob) && mob.stat == CONSCIOUS && isturf(mob.loc))
-		var/obj/item/I = mob.get_active_hand()
+		var/obj/item/I = mob.get_active_held_item()
 		if(I && I.can_be_dropped_by_client(mob))
 			mob.drop_item()
-
-/client/verb/activate_ability(var/slot as num)
-	set name = ".activate_ability"
-//	set hidden = 1
-	if(!mob)
-		return // Paranoid.
-	if(isnull(slot) || !isnum(slot))
-		to_chat(src,"<span class='warning'>.activate_ability requires a number as input, corrisponding to the slot you wish to use.</span>")
-		return // Bad input.
-	if(!mob.ability_master)
-		return // No abilities.
-	if(slot > mob.ability_master.ability_objects.len || slot <= 0)
-		return // Out of bounds.
-	var/obj/screen/ability/A = mob.ability_master.ability_objects[slot]
-	A.activate()

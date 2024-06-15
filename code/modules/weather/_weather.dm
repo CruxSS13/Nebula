@@ -62,7 +62,7 @@
 	for(var/tz in affecting_zs)
 		for(var/turf/T as anything in block(locate(1, 1, tz), locate(world.maxx, world.maxy, tz)))
 			if(T.weather == src)
-				remove_vis_contents(T, vis_contents_additions)
+				T.remove_vis_contents(vis_contents_additions)
 				T.weather = null
 	vis_contents_additions.Cut()
 	SSweather.unregister_weather_system(src)
@@ -74,7 +74,7 @@
 	SHOULD_CALL_PARENT(FALSE)
 	var/decl/state/weather/weather_state = weather_system.current_state
 	if(istype(weather_state))
-		to_chat(user, weather_state.descriptor)
+		to_chat(user, SPAN_NOTICE(FONT_SMALL(weather_state.descriptor)))
 	show_wind(user, force = TRUE)
 
 // Called by /decl/state/weather to assess validity of a state in the weather FSM.

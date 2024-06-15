@@ -50,9 +50,9 @@ var/global/list/image/ghost_sightless_images = list() //this is a list of images
 				name = body.real_name
 			else
 				if(gender == MALE)
-					name = capitalize(pick(global.first_names_male)) + " " + capitalize(pick(global.last_names))
+					name = capitalize(pick(global.using_map.first_names_male)) + " " + capitalize(pick(global.using_map.last_names))
 				else
-					name = capitalize(pick(global.first_names_female)) + " " + capitalize(pick(global.last_names))
+					name = capitalize(pick(global.using_map.first_names_female)) + " " + capitalize(pick(global.using_map.last_names))
 
 		mind = body.mind	//we don't transfer the mind but we keep a reference to it.
 	else
@@ -66,7 +66,7 @@ var/global/list/image/ghost_sightless_images = list() //this is a list of images
 	forceMove(T)
 
 	if(!name)							//To prevent nameless ghosts
-		name = capitalize(pick(global.first_names_male)) + " " + capitalize(pick(global.last_names))
+		name = capitalize(pick(global.using_map.first_names_male)) + " " + capitalize(pick(global.using_map.last_names))
 	real_name = name
 
 	var/decl/special_role/cultist/cult = GET_DECL(/decl/special_role/cultist)
@@ -109,8 +109,8 @@ Works together with spawning an observer, noted above.
 
 /mob/observer/ghost/Life()
 
-	. = ..()
-	if(!. || !loc || !client)
+	..()
+	if(!loc || !client)
 		return FALSE
 
 	handle_hud_glasses()
@@ -182,14 +182,11 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 			response = alert(src, "Are you -sure- you want to ghost?\n(You are alive. If you ghost, you won't be able to return to this body! You can't change your mind so choose wisely!)", "Are you sure you want to ghost?", "Ghost", "Stay in body")
 		if(response != "Ghost")
 			return
-		resting = 1
+		set_posture(/decl/posture/lying)
 		log_and_message_admins("has ghosted.")
 		var/mob/observer/ghost/ghost = ghostize(0)	//0 parameter is so we can never re-enter our body, "Charlie, you can never come baaaack~" :3
 		ghost.timeofdeath = world.time // Because the living mob won't have a time of death and we want the respawn timer to work properly.
 		announce_ghost_joinleave(ghost)
-
-/mob/observer/ghost/can_use_hands()
-	return FALSE
 
 /mob/observer/ghost/is_active()
 	return FALSE
@@ -391,7 +388,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 
 
 	//find a viable mouse candidate
-	var/mob/living/simple_animal/mouse/host
+	var/mob/living/simple_animal/passive/mouse/host
 	var/obj/machinery/atmospherics/unary/vent_pump/vent_found
 	var/list/found_vents = list()
 	for(var/obj/machinery/atmospherics/unary/vent_pump/v in SSmachines.machinery)
@@ -399,7 +396,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 			found_vents.Add(v)
 	if(found_vents.len)
 		vent_found = pick(found_vents)
-		host = new /mob/living/simple_animal/mouse(vent_found.loc)
+		host = new /mob/living/simple_animal/passive/mouse(vent_found.loc)
 	else
 		to_chat(src, "<span class='warning'>Unable to find any unwelded vents to spawn mice at.</span>")
 	if(host)

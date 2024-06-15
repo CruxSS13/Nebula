@@ -2,11 +2,11 @@
 	name = "space parrot"
 	desc = "It could be some all-knowing being that, for reasons we could never hope to understand, is assuming the shape and general mannerisms of a parrot - or just a rather large bird."
 	gender = FEMALE
-	mob_default_max_health = 750
+	max_health = 750
 	mob_size = MOB_SIZE_LARGE
-	speak = list("...")
-	speak_emote = list("professes","speaks unto you","elaborates","proclaims")
-	emote_hear = list("sings a song to herself", "preens herself")
+	speak_emote  = list("professes","speaks unto you","elaborates","proclaims")
+	emote_speech = null
+	emote_hear   = list("sings a song to herself", "preens herself")
 	natural_weapon = /obj/item/natural_weapon/giant
 	min_gas = null
 	max_gas = null
@@ -20,33 +20,25 @@
 	parrot_isize = ITEM_SIZE_LARGE
 	simple_parrot = TRUE
 	ability_cooldown = 2 MINUTES
-
-	meat_amount = 10
-	bone_amount = 20
-	skin_amount = 20
-
-	var/list/subspecies = list(/decl/parrot_subspecies,
-								/decl/parrot_subspecies/purple,
-								/decl/parrot_subspecies/blue,
-								/decl/parrot_subspecies/green,
-								/decl/parrot_subspecies/red,
-								/decl/parrot_subspecies/brown,
-								/decl/parrot_subspecies/black)
+	butchery_data = /decl/butchery_data/animal/bird/parrot/space
 	var/get_subspecies_name = TRUE
+
+/mob/living/simple_animal/hostile/retaliate/parrot/space/proc/get_parrot_species()
+	var/list/parrot_species = decls_repository.get_decls_of_type(/decl/parrot_subspecies)
+	return LAZYLEN(parrot_species) ? parrot_species[pick(parrot_species)] : null
 
 /mob/living/simple_animal/hostile/retaliate/parrot/space/Initialize()
 	. = ..()
-	var/subspecies_type = SAFEPICK(subspecies)
-	if(subspecies_type)
-		var/decl/parrot_subspecies/ps = GET_DECL(subspecies_type)
+	var/decl/parrot_subspecies/ps = get_parrot_species()
+	if(ps)
 		icon_set = ps.icon_set
-		skin_material = ps.feathers
+		butchery_data = ps.butchery_data
 		if(get_subspecies_name)
 			SetName(ps.name)
 	set_scale(2)
 	update_icon()
 
-/mob/living/simple_animal/hostile/retaliate/parrot/space/AttackingTarget()
+/mob/living/simple_animal/hostile/retaliate/parrot/space/attack_target(mob/target)
 	. = ..()
 	if(ishuman(.) && can_act() && !is_on_special_ability_cooldown() && Adjacent(.))
 		var/mob/living/carbon/human/H = .
@@ -65,16 +57,18 @@
 //subtypes
 /mob/living/simple_animal/hostile/retaliate/parrot/space/lesser
 	name = "Avatar of the Howling Dark"
-	subspecies = list(/decl/parrot_subspecies/black)
 	get_subspecies_name = FALSE
 	natural_weapon = /obj/item/natural_weapon/large
-	mob_default_max_health = 300
+	max_health = 300
+
+/mob/living/simple_animal/hostile/retaliate/parrot/space/lesser/get_parrot_species()
+	return GET_DECL(/decl/parrot_subspecies/black)
 
 /mob/living/simple_animal/hostile/retaliate/parrot/space/megafauna
 	name = "giant parrot"
 	desc = "A huge parrot-like bird."
 	get_subspecies_name = FALSE
-	mob_default_max_health = 350
+	max_health = 350
 	speak_emote = list("squawks")
 	emote_hear = list("preens itself")
 	natural_weapon = /obj/item/natural_weapon/large

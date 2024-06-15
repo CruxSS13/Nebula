@@ -4,7 +4,13 @@
 	is_spawnable_type = TRUE
 	abstract_type = /obj
 
+	///The maximum health that the object can have. If set to ITEM_HEALTH_NO_DAMAGE, the object won't take any damage.
+	max_health = ITEM_HEALTH_NO_DAMAGE
+	///The current health of the obj. Leave to null, unless you want the object to start at a different health than max_health.
+	current_health = null
+
 	var/obj_flags
+	var/datum/talking_atom/talking_atom
 	var/list/req_access
 	var/list/matter //Used to store information about the contents of the object.
 	var/w_class // Size of the object.
@@ -12,31 +18,25 @@
 	var/sharp = 0		// whether this object cuts
 	var/edge = 0		// whether this object is more likely to dismember
 	var/in_use = 0 // If we have a user using us, this will be set on. We will check if the user has stopped using us, and thus stop updating and LAGGING EVERYTHING!
-	var/damtype = BRUTE
+	var/atom_damage_type = BRUTE
 	var/armor_penetration = 0
 	var/anchor_fall = FALSE
 	var/holographic = 0 //if the obj is a holographic object spawned by the holodeck
-	var/tmp/directional_offset ///JSON list of directions to x,y offsets to be applied to the object depending on its direction EX: @'{"NORTH":{"x":12,"y":5}, "EAST":{"x":10,"y":50}}'
-
-	///The current health of the obj. Leave to null, unless you want the object to start at a different health than max_health.
-	var/health
-	///The maximum health that the object can have. If set to ITEM_HEALTH_NO_DAMAGE, the object won't take any damage.
-	var/max_health = ITEM_HEALTH_NO_DAMAGE
+	var/list/directional_offset ///JSON list of directions to x,y offsets to be applied to the object depending on its direction EX: @'{"NORTH":{"x":12,"y":5}, "EAST":{"x":10,"y":50}}'
 
 /obj/Initialize(mapload)
 	//Health should be set to max_health only if it's null.
-	if(isnull(health))
-		health = max_health
 	. = ..()
-	temperature_coefficient = isnull(temperature_coefficient) ? clamp(MAX_TEMPERATURE_COEFFICIENT - w_class, MIN_TEMPERATURE_COEFFICIENT, MAX_TEMPERATURE_COEFFICIENT) : temperature_coefficient
 	create_matter()
 	//Only apply directional offsets if the mappers haven't set any offsets already
 	if(!pixel_x && !pixel_y && !pixel_w && !pixel_z)
 		update_directional_offset()
+	if(isnull(current_health))
+		current_health = get_max_health()
 
 /obj/hitby(atom/movable/AM, var/datum/thrownthing/TT)
-	..()
-	if(!anchored)
+	. = ..()
+	if(. && !anchored)
 		step(src, AM.last_move)
 
 /obj/proc/create_matter()
@@ -46,6 +46,7 @@
 	UNSETEMPTY(matter)
 
 /obj/Destroy()
+	QDEL_NULL(talking_atom)
 	STOP_PROCESSING(SSobj, src)
 	return ..()
 
@@ -115,9 +116,6 @@
 		*/
 	return
 
-/obj/proc/see_emote(mob/M, text, var/emote_type)
-	return
-
 /obj/proc/show_message(msg, type, alt, alt_type)//Message, type of message (1 or 2), alternative message, alt message type (1 or 2)
 	return
 
@@ -127,15 +125,14 @@
 		. |= DAM_EDGE
 	if(is_sharp(src))
 		. |= DAM_SHARP
-		if(damtype == BURN)
+		if(atom_damage_type == BURN)
 			. |= DAM_LASER
 
 /obj/attackby(obj/item/O, mob/user)
-	if(obj_flags & OBJ_FLAG_ANCHORABLE)
-		if(IS_WRENCH(O))
-			wrench_floor_bolts(user)
-			update_icon()
-			return
+	if((obj_flags & OBJ_FLAG_ANCHORABLE) && IS_WRENCH(O))
+		wrench_floor_bolts(user)
+		update_icon()
+		return TRUE
 	return ..()
 
 /obj/proc/wrench_floor_bolts(mob/user, delay=20)
@@ -159,7 +156,7 @@
 	return ..() && w_class <= round(amt/20)
 
 /obj/proc/can_embed()
-	return is_sharp(src)
+	return FALSE
 
 /obj/examine(mob/user, distance, infix, suffix)
 	. = ..()
@@ -289,6 +286,10 @@
 	if(length(matter))
 		. = MERGE_ASSOCS_WITH_NUM_VALUES(., matter.Copy())
 
+/obj/proc/clear_matter()
+	matter = null
+	reagents?.clear_reagents()
+
 ////////////////////////////////////////////////////////////////
 // Interactions
 ////////////////////////////////////////////////////////////////
@@ -320,15 +321,77 @@
 	var/decl/material/mat = get_material()
 	return !mat || mat.dissolves_in <= solvent_power
 
-/obj/melt()
+/obj/handle_melting(list/meltable_materials)
+	. = ..()
+	if(QDELETED(src))
+		return
+	if(reagents?.total_volume)
+		reagents.trans_to(loc, reagents.total_volume)
+	dump_contents()
+	return place_melted_product(meltable_materials)
+
+/obj/proc/place_melted_product(list/meltable_materials)
 	if(length(matter))
 		var/datum/gas_mixture/environment = loc?.return_air()
 		for(var/mat in matter)
 			var/decl/material/M = GET_DECL(mat)
 			M.add_burn_product(environment, MOLES_PER_MATERIAL_UNIT(matter[mat]))
 		matter = null
-	new /obj/effect/decal/cleanable/molten_item(src)
+	. = new /obj/effect/decal/cleanable/molten_item(src)
 	qdel(src)
 
 /obj/can_be_injected_by(var/atom/injector)
 	return ATOM_IS_OPEN_CONTAINER(src)
+
+/obj/ProcessAtomTemperature()
+	. = ..()
+	if(QDELETED(src))
+		return
+	// Bake any matter into the cooked form.
+	if(LAZYLEN(matter))
+		var/new_matter
+		var/remove_matter
+		for(var/matter_type in matter)
+			var/decl/material/mat = GET_DECL(matter_type)
+			if(mat.bakes_into_material && !isnull(mat.bakes_into_at_temperature) && temperature >= mat.bakes_into_at_temperature)
+				LAZYINITLIST(new_matter)
+				new_matter[mat.bakes_into_material] += matter[matter_type]
+				LAZYDISTINCTADD(remove_matter, remove_matter)
+		if(LAZYLEN(new_matter))
+			for(var/mat in new_matter)
+				matter[mat] = new_matter[mat]
+		if(LAZYLEN(remove_matter))
+			for(var/mat in remove_matter)
+				matter -= mat
+		UNSETEMPTY(matter)
+
+/obj/proc/get_blend_objects()
+	return
+
+/obj/proc/is_compostable()
+	for(var/mat in matter)
+		var/decl/material/composting_mat = GET_DECL(mat)
+		if(composting_mat.compost_value)
+			return TRUE
+	return FALSE
+
+// Used to determine if something can be used as the basis of a mold.
+/obj/proc/get_mould_difficulty()
+	return SKILL_IMPOSSIBLE // length(matter) <= 1
+
+// Used to determine what a mold made from this item produces.
+/obj/proc/get_mould_product_type()
+	return type
+
+// Used to pass an associative list of data to the mold to pass to the product.
+/obj/proc/get_mould_metadata()
+	return
+
+// Called when passing the metadata back to the item.
+/obj/proc/take_mould_metadata(list/metadata)
+	return
+
+/obj/try_burn_wearer(var/mob/living/holder, var/held_slot, var/delay = 0)
+	if(obj_flags & OBJ_FLAG_INSULATED_HANDLE)
+		return
+	return ..()

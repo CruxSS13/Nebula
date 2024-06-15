@@ -197,7 +197,7 @@ var/global/list/radial_menus = list()
 			MA.maptext_height = 64
 			MA.appearance_flags = APPEARANCE_UI_IGNORE_ALPHA
 			MA.maptext_x = -round(MA.maptext_width/2) + 16
-			MA.maptext_x = -round(MA.maptext_height/2) + 16
+			MA.maptext_y = -round(MA.maptext_height/2) + 16
 			MA.maptext = STYLE_SMALLFONTS_OUTLINE("<center>[E.name]</center>", 7, COLOR_WHITE, COLOR_BLACK)
 
 	return MA
@@ -217,7 +217,7 @@ var/global/list/radial_menus = list()
 	//Blank
 	menu_holder = image(icon = 'icons/effects/effects.dmi', loc = anchor, icon_state = "nothing", layer = HUD_ABOVE_ITEM_LAYER)
 	menu_holder.appearance_flags |= KEEP_APART
-	add_vis_contents(menu_holder, elements + close_button)
+	menu_holder.add_vis_contents(elements + close_button)
 	current_user.images += menu_holder
 
 /datum/radial_menu/proc/hide()

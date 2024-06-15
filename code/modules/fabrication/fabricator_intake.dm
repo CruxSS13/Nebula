@@ -15,7 +15,7 @@
 		var/reagent_matter = round(taking_reagent / REAGENT_UNITS_PER_MATERIAL_UNIT)
 		if(reagent_matter <= 0)
 			continue
-		thing.reagents.remove_reagent(R, taking_reagent)
+		thing.remove_from_reagents(R, taking_reagent)
 		stored_material[R] += reagent_matter
 		// If we're destroying this, take everything.
 		if(destructive)
@@ -76,15 +76,18 @@
 				. = SUBSTANCE_TAKEN_SOME
 
 /obj/machinery/fabricator/proc/can_ingest(var/obj/item/thing)
-	. = (has_recycler || istype(thing, /obj/item/stack/material))
+	if(istype(thing, /obj/item/debris))
+		return TRUE
+	var/obj/item/stack/material/stack = thing
+	return istype(stack) && !stack.reinf_material
 
-/obj/machinery/fabricator/proc/show_intake_message(var/mob/user, var/value, var/thing)
+/obj/machinery/fabricator/proc/show_intake_message(var/mob/user, var/value, var/thing, var/took_reagents)
 	if(value == SUBSTANCE_TAKEN_FULL)
 		to_chat(user, SPAN_NOTICE("You fill \the [src] to capacity with \the [thing]."))
 	else if(value == SUBSTANCE_TAKEN_SOME)
 		to_chat(user, SPAN_NOTICE("You fill \the [src] from \the [thing]."))
 	else if(value == SUBSTANCE_TAKEN_ALL)
-		to_chat(user, SPAN_NOTICE("You dump \the [thing] into \the [src]."))
+		to_chat(user, SPAN_NOTICE("You [took_reagents ? "empty" : "dump"] \the [thing] into \the [src]."))
 	else
 		to_chat(user, SPAN_WARNING("\The [src] cannot process \the [thing]."))
 
@@ -122,11 +125,18 @@
 			visible_message(SPAN_NOTICE("\The [user] inserts \the [O] into \the [src], and after a second or so of loud clicking, the fabricator beeps and spits it out again."))
 			return
 
+	// TEMP HACK FIX:
+	// Autolathes currently do not process atom contents. As a workaround, refuse all atoms with contents.
+	if(length(O.contents) && !ignore_input_contents_length)
+		to_chat(user, SPAN_WARNING("\The [src] cannot process an object containing other objects. Empty it out first."))
+		return
+	// REMOVE FIX WHEN LATHES TAKE CONTENTS PLS.
+
 	// Take reagents, if any are applicable.
 	var/atom_name = O.name
 	var/reagents_taken = take_reagents(O, user)
 	if(reagents_taken != SUBSTANCE_TAKEN_NONE)
-		show_intake_message(user, reagents_taken, atom_name)
+		show_intake_message(user, reagents_taken, atom_name, took_reagents = TRUE)
 		updateUsrDialog()
 		return TRUE
 	// Take everything if we have a recycler.

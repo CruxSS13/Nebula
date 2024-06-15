@@ -13,10 +13,12 @@
 	nutriment_amt = 3
 	nutriment_type = /decl/material/liquid/nutriment/bread
 	bitesize = 2
+	backyard_grilling_product = /obj/item/chems/food/toastedsandwich
+	backyard_grilling_announcement = "is toasted golden brown."
 
 /obj/item/chems/food/sandwich/populate_reagents()
 	. = ..()
-	reagents.add_reagent(/decl/material/liquid/nutriment/protein, 3)
+	add_to_reagents(/decl/material/solid/organic/meat, 3)
 
 /obj/item/chems/food/toastedsandwich
 	name = "toasted sandwich"
@@ -32,8 +34,8 @@
 
 /obj/item/chems/food/toastedsandwich/populate_reagents()
 	. = ..()
-	reagents.add_reagent(/decl/material/liquid/nutriment/protein, 3)
-	reagents.add_reagent(/decl/material/solid/carbon,             2)
+	add_to_reagents(/decl/material/solid/organic/meat, 3)
+	add_to_reagents(/decl/material/solid/carbon,             2)
 
 /obj/item/chems/food/grilledcheese
 	name = "grilled cheese sandwich"
@@ -48,7 +50,7 @@
 
 /obj/item/chems/food/grilledcheese/populate_reagents()
 	. = ..()
-	reagents.add_reagent(/decl/material/liquid/nutriment/protein, 4)
+	add_to_reagents(/decl/material/solid/organic/meat, 4)
 
 /obj/item/chems/food/baguette
 	name = "baguette"
@@ -63,8 +65,8 @@
 
 /obj/item/chems/food/baguette/populate_reagents()
 	. = ..()
-	reagents.add_reagent(/decl/material/solid/blackpepper,    1)
-	reagents.add_reagent(/decl/material/solid/sodiumchloride, 1)
+	add_to_reagents(/decl/material/solid/blackpepper,    1)
+	add_to_reagents(/decl/material/solid/sodiumchloride, 1)
 
 /obj/item/chems/food/jelliedtoast
 	name = "jellied toast"
@@ -80,7 +82,7 @@
 
 /obj/item/chems/food/jelliedtoast/cherry/populate_reagents()
 	. = ..()
-	reagents.add_reagent(/decl/material/liquid/nutriment/cherryjelly, 5)
+	add_to_reagents(/decl/material/liquid/nutriment/cherryjelly, 5)
 
 /obj/item/chems/food/jellysandwich
 	name = "jelly sandwich"
@@ -96,7 +98,7 @@
 
 /obj/item/chems/food/jellysandwich/cherry/populate_reagents()
 	. = ..()
-	reagents.add_reagent(/decl/material/liquid/nutriment/cherryjelly, 5)
+	add_to_reagents(/decl/material/liquid/nutriment/cherryjelly, 5)
 
 /obj/item/chems/food/twobread
 	name = "\improper Two Bread"

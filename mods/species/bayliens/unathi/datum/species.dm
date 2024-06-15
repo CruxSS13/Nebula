@@ -11,10 +11,14 @@
 		"elderly" =       260
 	)
 
+/decl/butchery_data/humanoid/unathi
+	meat_name = "lizard"
+	skin_material = /decl/material/solid/organic/skin/lizard
+
 /decl/species/unathi
 	name = SPECIES_LIZARD
 	name_plural = SPECIES_LIZARD
-	skin_material = /decl/material/solid/organic/skin/lizard
+	butchery_data = /decl/butchery_data/humanoid/unathi
 
 	available_bodytypes = list(
 		/decl/bodytype/lizard,
@@ -28,6 +32,13 @@
 		/decl/natural_attack/bite/sharp
 	)
 
+	available_accessory_categories = list(
+		SAC_HORNS,
+		SAC_FRILLS,
+		SAC_COSMETICS,
+		SAC_MARKINGS
+	)
+
 	primitive_form = "Stok"
 	gluttonous = GLUT_TINY
 	strength = STR_HIGH
@@ -36,8 +47,7 @@
 	blood_volume = 800
 
 	hunger_factor = DEFAULT_HUNGER_FACTOR * 2
-
-	age_descriptor = /datum/appearance_descriptor/age/lizard
+	thirst_factor = DEFAULT_THIRST_FACTOR * 2
 
 	body_temperature = null // cold-blooded, implemented the same way nabbers do it
 
@@ -65,19 +75,14 @@
 
 	breathing_sound = 'mods/species/bayliens/unathi/sound/lizard_breathing.ogg'
 
-	appearance_descriptors = list(
-		/datum/appearance_descriptor/height = 1.25,
-		/datum/appearance_descriptor/build =  1.25
-		)
-
 	default_emotes = list(
-		/decl/emote/human/swish,
-		/decl/emote/human/wag,
-		/decl/emote/human/sway,
-		/decl/emote/human/qwag,
-		/decl/emote/human/fastsway,
-		/decl/emote/human/swag,
-		/decl/emote/human/stopsway
+		/decl/emote/visible/tail/swish,
+		/decl/emote/visible/tail/wag,
+		/decl/emote/visible/tail/sway,
+		/decl/emote/visible/tail/qwag,
+		/decl/emote/visible/tail/fastsway,
+		/decl/emote/visible/tail/swag,
+		/decl/emote/visible/tail/stopsway
 	)
 
 	pain_emotes_with_pain_level = list(

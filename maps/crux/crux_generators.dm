@@ -6,15 +6,15 @@
 
 /datum/random_map/noise/crux/seafloor
 	descriptor = "Novika seafloor (roundstart)"
-	target_turf_type = /turf/exterior/seafloor/flooded
+	target_turf_type = /turf/floor/natural/seafloor/flooded
 
 /datum/random_map/noise/crux/seafloor/get_appropriate_path(var/value)
 	var/val = min(9,max(0,round((value/cell_range)*10)))
 	switch(val)
 		if(6)
-			return /turf/exterior/clay/flooded
+			return /turf/floor/natural/clay/flooded
 		if(7 to 9)
-			return /turf/exterior/mud/flooded
+			return /turf/floor/natural/mud/flooded
 
 /datum/random_map/noise/crux/seafloor/get_additional_spawns(var/value, var/turf/T)
 	var/val = min(9,max(0,round((value/cell_range)*10)))
@@ -49,12 +49,12 @@
 
 /datum/random_map/noise/crux/abyss
 	descriptor = "Novika abyss (roundstart)"
-	target_turf_type = /turf/exterior/mud/flooded
+	target_turf_type = /turf/floor/natural/mud/flooded
 
 /datum/random_map/noise/crux/abyss/get_appropriate_path(var/value)
 	var/val = min(9,max(0,round((value/cell_range)*10)))
 	if(val > 7)
-		return /turf/exterior/clay/flooded
+		return /turf/floor/natural/clay/flooded
 
 /datum/random_map/noise/crux/grassland
 	descriptor = "Crux grassland (roundstart)"
@@ -71,13 +71,13 @@
 /datum/random_map/noise/crux/grassland/get_appropriate_path(var/value)
 	switch(value)
 		if(0)
-			return /turf/exterior/mud
+			return /turf/floor/natural/mud
 		if(1 to 2)
-			return /turf/exterior/dirt
+			return /turf/floor/natural/dirt
 		if(3 to 5)
-			return /turf/exterior/grass
+			return /turf/floor/natural/grass
 		if(6 to 9)
-			return /turf/exterior/wildgrass
+			return /turf/floor/natural/grass/wild
 
 /datum/random_map/noise/crux/grassland/get_additional_spawns(var/value, var/turf/T)
 	if(prob(60))
@@ -145,5 +145,5 @@
 
 /datum/random_map/automata/cave_system/crux/flooded
 	descriptor = "Novika ocean caves (roundstart)"
-	wall_type =  /turf/exterior/wall/flooded
-	floor_type = /turf/exterior/mud/flooded
+	wall_type =  /turf/wall/natural/flooded
+	floor_type = /turf/floor/natural/mud/flooded

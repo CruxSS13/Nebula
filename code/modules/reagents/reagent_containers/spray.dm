@@ -29,8 +29,12 @@
 	. = ..()
 	src.verbs -= /obj/item/chems/verb/set_amount_per_transfer_from_this
 
+// Override to avoid drinking from this or feeding it to your neighbor.
+/obj/item/chems/spray/use_on_mob(mob/living/target, mob/living/user, animate = TRUE)
+	return FALSE
+
 /obj/item/chems/spray/afterattack(atom/A, mob/user, proximity)
-	if(istype(A, /obj/item/storage) || istype(A, /obj/structure/table) || istype(A, /obj/structure/closet) || istype(A, /obj/item/chems) || istype(A, /obj/structure/hygiene/sink) || istype(A, /obj/structure/janitorialcart))
+	if(A?.storage || istype(A, /obj/structure/table) || istype(A, /obj/structure/closet) || istype(A, /obj/item/chems) || istype(A, /obj/structure/hygiene/sink) || istype(A, /obj/structure/janitorialcart))
 		return
 
 	if(istype(A, /spell))
@@ -72,12 +76,11 @@
 /obj/item/chems/spray/proc/create_chempuff(var/atom/movable/target, var/particle_amount)
 	set waitfor = FALSE
 
-	var/obj/effect/effect/water/chempuff/D = new/obj/effect/effect/water/chempuff(get_turf(src))
+	var/obj/effect/effect/water/chempuff/D = new(get_turf(src))
 	D.create_reagents(amount_per_transfer_from_this)
 	if(QDELETED(src))
 		return
 	reagents.trans_to_obj(D, amount_per_transfer_from_this)
-	D.set_color()
 	D.set_up(get_turf(target), particle_amount? particle_amount : spray_particles, particle_move_delay)
 	return D
 
@@ -89,7 +92,7 @@
 		//If no safety, we just toggle the nozzle
 		var/decl/interaction_handler/IH = GET_DECL(/decl/interaction_handler/next_spray_amount)
 		if(IH.is_possible(src, user))
-			IH.invoked(src, user)
+			IH.invoked(src, user, src)
 			return TRUE
 
 ///Whether the spray has a safety toggle
@@ -137,21 +140,21 @@
 	particle_move_delay = 6
 
 /obj/item/chems/spray/cleaner/populate_reagents()
-	reagents.add_reagent(/decl/material/liquid/cleaner, reagents.maximum_volume)
+	add_to_reagents(/decl/material/liquid/cleaner, reagents.maximum_volume)
 
 /obj/item/chems/spray/antiseptic
 	name = "antiseptic spray"
 	desc = "Great for hiding incriminating bloodstains and sterilizing scalpels."
 
 /obj/item/chems/spray/antiseptic/populate_reagents()
-	reagents.add_reagent(/decl/material/liquid/antiseptic, reagents.maximum_volume)
+	add_to_reagents(/decl/material/liquid/antiseptic, reagents.maximum_volume)
 
 /obj/item/chems/spray/hair_remover
 	name = "hair remover"
 	desc = "Very effective at removing hair, feathers, spines and horns."
 
 /obj/item/chems/spray/hair_remover/populate_reagents()
-	reagents.add_reagent(/decl/material/liquid/hair_remover, reagents.maximum_volume)
+	add_to_reagents(/decl/material/liquid/hair_remover, reagents.maximum_volume)
 
 /obj/item/chems/spray/pepper
 	name = "pepperspray"
@@ -164,7 +167,7 @@
 	safety = TRUE
 
 /obj/item/chems/spray/pepper/populate_reagents()
-	reagents.add_reagent(/decl/material/liquid/capsaicin/condensed, reagents.maximum_volume)
+	add_to_reagents(/decl/material/liquid/capsaicin/condensed, reagents.maximum_volume)
 
 /obj/item/chems/spray/pepper/has_safety()
 	return TRUE
@@ -180,7 +183,7 @@
 	volume = 10
 
 /obj/item/chems/spray/waterflower/populate_reagents()
-	reagents.add_reagent(/decl/material/liquid/water, reagents.maximum_volume)
+	add_to_reagents(/decl/material/liquid/water, reagents.maximum_volume)
 
 /obj/item/chems/spray/chemsprayer
 	name = "chem sprayer"
@@ -219,7 +222,7 @@
 	volume = 100
 
 /obj/item/chems/spray/plantbgone/populate_reagents()
-	reagents.add_reagent(/decl/material/liquid/weedkiller, reagents.maximum_volume)
+	add_to_reagents(/decl/material/liquid/weedkiller, reagents.maximum_volume)
 
 /obj/item/chems/spray/plantbgone/afterattack(atom/A, mob/user, proximity)
 	if(!proximity) return

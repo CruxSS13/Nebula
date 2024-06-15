@@ -2,7 +2,7 @@
 	use_global_exterior_ambience = FALSE
 	ambient_light_level = 1
 	ambient_light_color = "#f3e6ca"
-	base_turf = /turf/exterior/dirt
+	base_turf = /turf/floor/natural/dirt
 	exterior_atmosphere = list(
 		/decl/material/gas/oxygen =   MOLES_O2STANDARD,
 		/decl/material/gas/nitrogen = MOLES_N2STANDARD
@@ -24,7 +24,7 @@
 	ambient_light_color = "#59f7dc"
 	connected_levels = list("eleostura_shallows" = WEST)
 	base_area = /area/crux/outside/underground
-	transition_turf_type = /turf/unsimulated/mimic_edge/transition/flooded
+	transition_turf_type = /turf/mimic_edge/transition/flooded
 	level_id = "eleostura_belowground"
 	level_generators = list(
 		/datum/random_map/noise/crux/seafloor,
@@ -91,7 +91,7 @@
 	name = "Port Eleostura - Ocean Shallows"
 	level_id = "eleostura_shallows"
 	connected_levels = list("eleostura_belowground" = EAST)
-	transition_turf_type = /turf/unsimulated/mimic_edge/transition/flooded
+	transition_turf_type = /turf/mimic_edge/transition/flooded
 	ambient_light_level = 0.4
 	ambient_light_color = "#59f7dc"
 	base_area = /area/crux/outside/ocean/deep

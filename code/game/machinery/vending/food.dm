@@ -11,8 +11,8 @@
 	base_type = /obj/machinery/vending/snack
 	products = list(
 		/obj/item/clothing/mask/chewable/candy/lolli = 8,
-		/obj/item/storage/chewables/candy/gum = 4,
-		/obj/item/storage/chewables/candy/cookies = 4,
+		/obj/item/chewables/candy/gum = 4,
+		/obj/item/chewables/candy/cookies = 4,
 		/obj/item/chems/food/candy = 6,
 		/obj/item/chems/drinks/dry_ramen = 6,
 		/obj/item/chems/food/chips = 6,
@@ -51,7 +51,7 @@
 /obj/machinery/vending/snix/on_update_icon()
 	..()
 	if(!(stat & NOPOWER))
-		overlays += image(icon, "[initial(icon_state)]-fan")
+		add_overlay("[initial(icon_state)]-fan")
 
 /obj/machinery/vending/sol
 	name = "Mars-Mart"
@@ -93,7 +93,7 @@
 /obj/machinery/vending/weeb/on_update_icon()
 	..()
 	if(!(stat & NOPOWER))
-		overlays += image(icon, "[initial(icon_state)]-fan")
+		add_overlay("[initial(icon_state)]-fan")
 
 /obj/machinery/vending/hotfood
 	name = "Hot Foods"
@@ -115,7 +115,7 @@
 /obj/machinery/vending/hotfood/on_update_icon()
 	..()
 	if(!(stat & NOPOWER))
-		overlays += image(icon, "[initial(icon_state)]-heater")
+		add_overlay("[initial(icon_state)]-heater")
 
 /obj/machinery/vending/boozeomat
 	name = "Booze-O-Mat"
@@ -209,7 +209,7 @@
 	if(stat & BROKEN && prob(20))
 		icon_state = "[initial(icon_state)]-hellfire"
 	else if(!(stat & NOPOWER))
-		overlays += image(icon, "[initial(icon_state)]-screen")
+		add_overlay("[initial(icon_state)]-screen")
 
 /obj/machinery/vending/cola
 	name = "Robust Softdrinks"
@@ -257,9 +257,9 @@
 		/obj/item/chems/drinks/glass2/fitnessflask/proteinshake = 8,
 		/obj/item/chems/drinks/glass2/fitnessflask = 8,
 		/obj/item/chems/food/candy/proteinbar = 8,
-		/obj/item/storage/mre/random = 8,
-		/obj/item/storage/mre/menu9 = 4,
-		/obj/item/storage/mre/menu10 = 4,
+		/obj/item/mre/random = 8,
+		/obj/item/mre/menu9 = 4,
+		/obj/item/mre/menu10 = 4,
 		/obj/item/towel/random = 8
 	)
 	contraband = list(/obj/item/chems/syringe/steroid = 4)
@@ -267,7 +267,7 @@
 /obj/machinery/vending/fitness/on_update_icon()
 	..()
 	if(!(stat & NOPOWER))
-		overlays += image(icon, "[initial(icon_state)]-overlay")
+		add_overlay("[initial(icon_state)]-overlay")
 
 /obj/machinery/vending/sovietsoda
 	name = "BODA"

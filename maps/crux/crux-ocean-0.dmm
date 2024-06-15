@@ -1,6 +1,6 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "a" = (
-/turf/exterior/wall/flooded,
+/turf/wall/natural/flooded,
 /area/crux/outside/ocean/abyssal)
 "g" = (
 /turf/unsimulated/dark_filler,
@@ -10,14 +10,14 @@
 /area/crux/outside/ocean/abyssal)
 "D" = (
 /obj/abstract/ramp_sculptor/west,
-/turf/exterior/wall/flooded,
+/turf/wall/natural/flooded,
 /area/crux/outside/ocean/abyssal)
 "Q" = (
 /obj/abstract/level_data_spawner/crux_ocean_abyss,
-/turf/exterior/mud/flooded,
+/turf/floor/natural/mud/flooded,
 /area/crux/outside/ocean/abyssal)
 "T" = (
-/turf/exterior/mud/flooded,
+/turf/floor/natural/mud/flooded,
 /area/crux/outside/ocean/abyssal)
 
 (1,1,1) = {"

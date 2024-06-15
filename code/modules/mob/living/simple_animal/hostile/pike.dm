@@ -9,17 +9,14 @@
 	mob_size = MOB_SIZE_LARGE
 	offset_overhead_text_x = 16
 	pixel_x = -16
-	mob_default_max_health = 150
+	max_health = 150
 
 	harm_intent_damage = 5
 	natural_weapon = /obj/item/natural_weapon/bite/pike
 	can_escape = TRUE
 
 	break_stuff_probability = 55
-
-	meat_amount = 10
-	bone_amount = 20
-	skin_amount = 20
+	butchery_data = /decl/butchery_data/animal/fish/space_carp/pike
 
 /obj/item/natural_weapon/bite/pike
 	force = 25

@@ -12,8 +12,6 @@
 
 	var/turf_flags
 
-	var/holy = 0
-
 	// Initial air contents (in moles)
 	var/list/initial_gas
 
@@ -62,6 +60,8 @@
 	//This exists to store air during zone rebuilds, as well as for unsimulated turfs.
 	//They are never deleted to not overwhelm the garbage collector.
 	var/datum/gas_mixture/air
+	///Whether this tile is willing to copy air from a previous tile through ChangeTurf, transfer_turf_properties etc.
+	var/can_inherit_air = TRUE
 	///Is this turf queued in the TURFS cycle of SSair?
 	var/needs_air_update = 0
 
@@ -78,6 +78,9 @@
 	var/last_flow_strength = 0
 	var/last_flow_dir = 0
 	var/atom/movable/fluid_overlay/fluid_overlay
+
+	// Temporary list of weakrefs of atoms who should be excepted from falling into us
+	var/list/skip_height_fall_for
 
 /turf/Initialize(mapload, ...)
 	. = null && ..()	// This weird construct is to shut up the 'parent proc not called' warning without disabling the lint for child types. We explicitly return an init hint so this won't change behavior.
@@ -113,7 +116,13 @@
 
 	if(flooded)
 		set_flooded(flooded, TRUE, skip_vis_contents_update = TRUE, mapload = mapload)
-	refresh_vis_contents()
+	update_vis_contents()
+
+	if(simulated)
+		var/area/A = get_area(src)
+		if(istype(A) && (A.area_flags & AREA_FLAG_HOLY))
+			turf_flags |= TURF_FLAG_HOLY
+		levelupdate()
 
 	return INITIALIZE_HINT_NORMAL
 
@@ -163,7 +172,7 @@
 		connections.erase_all()
 
 	if(weather)
-		remove_vis_contents(src, weather.vis_contents_additions)
+		remove_vis_contents(weather.vis_contents_additions)
 		weather = null
 
 	QDEL_NULL(fluid_overlay)
@@ -187,6 +196,9 @@
 	. = get_base_movement_delay(travel_dir, mover)
 	if(weather)
 		. += weather.get_movement_delay(return_air(), travel_dir)
+	// TODO: check user species webbed feet, wearing swimming gear
+	if(reagents?.total_volume > FLUID_PUDDLE)
+		. += (reagents.total_volume > FLUID_SHALLOW) ? 6 : 3
 
 /turf/attack_hand(mob/user)
 	SHOULD_CALL_PARENT(FALSE)
@@ -213,27 +225,57 @@
 			T.try_build_turf(user, src)
 			return TRUE
 
-		if(IS_SHOVEL(W) && can_be_dug())
-			if(get_diggable_resources())
-				if(W.do_tool_interaction(TOOL_SHOVEL, user, src, 4 SECONDS))
-					drop_diggable_resources()
-			else if(can_dig_pit())
-				try_dig_pit(user, W)
-			else
-				to_chat(user, SPAN_WARNING("There is nothing to be dug out of \the [src]."))
+		if(IS_HOE(W) && can_dig_farm(W.material?.hardness))
+			try_dig_farm(user, W)
 			return TRUE
 
-	if(ATOM_IS_OPEN_CONTAINER(W) && W.reagents && reagents?.total_volume >= FLUID_PUDDLE)
+		if(IS_SHOVEL(W))
+
+			if(!can_be_dug(W.material?.hardness))
+				to_chat(user, SPAN_WARNING("\The [src] is too hard to be dug with \the [W]."))
+				return TRUE
+
+			if(user.a_intent == I_HELP && can_dig_pit(W.material?.hardness))
+				try_dig_pit(user, W)
+			else if(can_dig_trench(W.material?.hardness))
+				try_dig_trench(user, W)
+			else
+				to_chat(user, SPAN_WARNING("You cannot dig anything out of \the [src] with \the [W]."))
+			return TRUE
+
+		var/decl/material/material = get_material()
+		if(IS_PICK(W) && material)
+
+			if(material?.hardness <= MAT_VALUE_FLEXIBLE)
+				to_chat(user, SPAN_WARNING("\The [src] is too soft to be excavated with \the [W]. Use a shovel."))
+				return TRUE
+
+			// Let picks dig out hard turfs, but not dig pits.
+			if(!can_be_dug(W.material?.hardness, using_tool = TOOL_PICK))
+				to_chat(user, SPAN_WARNING("\The [src] is too hard to be excavated with \the [W]."))
+				return TRUE
+
+			if(can_dig_trench(W.material?.hardness, using_tool = TOOL_PICK))
+				try_dig_trench(user, W, using_tool = TOOL_PICK)
+			else
+				to_chat(user, SPAN_WARNING("You cannot excavate \the [src] with \the [W]."))
+
+			return TRUE
+
+		if(W?.storage?.collection_mode && W.storage.gather_all(src, user))
+			return TRUE
+
+	// Must be open, but food items should not be filled from sources like this. They're open in order to add condiments, not to be poured into/out of.
+	// TODO: Rewrite open-container-ness or food to make this unnecessary!
+	if(ATOM_IS_OPEN_CONTAINER(W) && !istype(W, /obj/item/chems/food) && W.reagents && reagents?.total_volume >= FLUID_PUDDLE)
 		var/taking = min(reagents.total_volume, REAGENTS_FREE_SPACE(W.reagents))
 		if(taking > 0)
 			to_chat(user, SPAN_NOTICE("You fill \the [W] with [reagents.get_primary_reagent_name()] from \the [src]."))
 			reagents.trans_to(W, taking)
 			return TRUE
 
-	if(istype(W, /obj/item/storage))
-		var/obj/item/storage/S = W
-		if(S.use_to_pickup && S.collection_mode)
-			S.gather_all(src, user)
+	if(istype(W, /obj/item) && storage && storage.use_to_pickup && storage.collection_mode)
+		storage.gather_all(src, user)
 		return TRUE
 
 	if(istype(W, /obj/item/grab))
@@ -242,6 +284,9 @@
 			return TRUE
 
 		step(G.affecting, get_dir(G.affecting.loc, src))
+		return TRUE
+
+	if(IS_COIL(W) && try_build_cable(W, user))
 		return TRUE
 
 	return ..()
@@ -285,20 +330,42 @@
 			if(!obstacle.CanPass(mover, mover.loc, 1, 0) && (forget != obstacle))
 				mover.Bump(obstacle, 1)
 				return 0
+
+	// Check if they need to climb out of a hole.
+	if(has_gravity())
+		var/mob/mover_mob = mover
+		if(!istype(mover_mob) || (!mover_mob.throwing && !mover_mob.can_overcome_gravity()))
+			var/turf/old_turf  = mover.loc
+			var/old_height     = old_turf.get_physical_height() + old_turf.reagents?.total_volume
+			var/current_height = get_physical_height() + reagents?.total_volume
+			if(abs(current_height - old_height) > FLUID_SHALLOW)
+				if(current_height > old_height)
+					return 0
+				if(istype(mover_mob) && MOVING_DELIBERATELY(mover_mob))
+					to_chat(mover_mob, SPAN_WARNING("You refrain from stepping over the edge; it looks like a steep drop down to \the [src]."))
+					return 0
+
 	return 1 //Nothing found to block so return success!
 
 /turf/proc/adjacent_fire_act(turf/adj_turf, datum/gas_mixture/adj_air, adj_temp, adj_volume)
 	return
 
 /turf/proc/is_plating()
-	return 0
+	return FALSE
 
 /turf/proc/protects_atom(var/atom/A)
 	return FALSE
 
 /turf/proc/levelupdate()
-	for(var/obj/O in src)
-		O.hide(O.hides_under_flooring() && !is_plating())
+	if(is_open() || is_plating())
+		for(var/obj/O in src)
+			O.hide(FALSE)
+	else if(is_wall())
+		for(var/obj/O in src)
+			O.hide(TRUE)
+	else
+		for(var/obj/O in src)
+			O.hide(O.hides_under_flooring())
 
 /turf/proc/AdjacentTurfs(var/check_blockage = TRUE)
 	. = list()
@@ -346,21 +413,18 @@
 		if(istype(O,/obj/effect/rune) || istype(O,/obj/effect/decal/cleanable))
 			qdel(O)
 
-/turf/proc/update_blood_overlays()
-	return
-
 /turf/proc/remove_decals()
 	LAZYCLEARLIST(decals)
+	update_icon()
 
 // Called when turf is hit by a thrown object
 /turf/hitby(atom/movable/AM, var/datum/thrownthing/TT)
 	SHOULD_CALL_PARENT(FALSE) // /atom/hitby() applies damage to AM if it's a living mob.
+	. = TRUE
 	if(density)
 		if(isliving(AM))
 			var/mob/living/M = AM
 			M.turf_collision(src, TT.speed)
-			if(LAZYLEN(M.pinned))
-				return
 		addtimer(CALLBACK(src, TYPE_PROC_REF(/turf, bounce_off), AM, TT.init_dir), 2)
 	else if(isobj(AM))
 		var/obj/structure/ladder/L = locate() in contents
@@ -368,6 +432,12 @@
 			L.hitby(AM)
 
 /turf/proc/bounce_off(var/atom/movable/AM, var/direction)
+	if(AM.anchored)
+		return
+	if(ismob(AM))
+		var/mob/living/M = AM
+		if(LAZYLEN(M.pinned))
+			return
 	step(AM, turn(direction, 180))
 
 /turf/proc/can_engrave()
@@ -431,14 +501,14 @@
 	if(istype(new_weather) && is_outside())
 		if(weather != new_weather)
 			if(weather)
-				remove_vis_contents(src, weather.vis_contents_additions)
+				remove_vis_contents(weather.vis_contents_additions)
 			weather = new_weather
-			add_vis_contents(src, weather.vis_contents_additions)
+			add_vis_contents(weather.vis_contents_additions)
 			. = TRUE
 
 	// We are indoors or there is no local weather system, clear our vis contents.
 	else if(weather)
-		remove_vis_contents(src, weather.vis_contents_additions)
+		remove_vis_contents(weather.vis_contents_additions)
 		weather = null
 		. = TRUE
 
@@ -449,27 +519,20 @@
 			below.update_weather(new_weather)
 
 // Updates turf participation in ZAS according to outside status. Must be called whenever the outside status of a turf may change.
-/turf/proc/update_external_atmos_participation(overwrite_air = TRUE)
+/turf/proc/update_external_atmos_participation()
+	var/old_outside = last_outside_check
+	last_outside_check = OUTSIDE_UNCERTAIN
 	if(is_outside())
 		if(zone && external_atmosphere_participation)
 			if(can_safely_remove_from_zone())
-				#ifdef MULTIZAS
-				var/dirs = global.cardinalz
-				#else
-				var/dirs = global.cardinal
-				#endif
 				zone.remove(src)
-				// Update neighbors to create edges between zones and exterior
-				for(var/dir in dirs)
-					var/turf/neighbor = get_step(src, dir)
-					SSair.mark_for_update(neighbor)
 			else
 				zone.rebuild()
-	else if(zone_membership_candidate)
+	else if(!zone && zone_membership_candidate && old_outside == OUTSIDE_YES)
 		// Set the turf's air to the external atmosphere to add to its new zone.
-		if(overwrite_air)
-			air = get_external_air(FALSE)
-		SSair.mark_for_update(src)
+		air = get_external_air(FALSE)
+
+	SSair.mark_for_update(src)
 
 /turf/proc/is_outside()
 
@@ -509,12 +572,11 @@
 		return FALSE
 
 	is_outside = new_outside
-	if(!skip_weather_update)
-		update_weather()
+	update_external_atmos_participation()
 	SSambience.queued |= src
 
-	last_outside_check = OUTSIDE_UNCERTAIN
-	update_external_atmos_participation()
+	if(!skip_weather_update)
+		update_weather()
 
 	if(!HasBelow(z))
 		return TRUE
@@ -525,7 +587,7 @@
 		checking = GetBelow(checking)
 		if(!isturf(checking))
 			break
-		checking.last_outside_check = OUTSIDE_UNCERTAIN
+		checking.update_external_atmos_participation()
 		if(!checking.is_open())
 			break
 	return TRUE
@@ -539,10 +601,10 @@
 	var/datum/gas_mixture/environment = return_air()
 	return environment?.graphic
 
-/turf/proc/get_vis_contents_to_add()
+/turf/get_vis_contents_to_add()
 	var/air_graphic = get_air_graphic()
 	if(length(air_graphic))
-		LAZYADD(., air_graphic)
+		LAZYDISTINCTADD(., air_graphic)
 	if(weather)
 		LAZYADD(., weather)
 	if(flooded)
@@ -587,40 +649,6 @@
 /turf/proc/resolve_to_actual_turf()
 	return src
 
-/// Return an assoc list of resource item type to a base and a random component
-/// ex. return list(/obj/item/stack/material/ore/sand = list(3, 2))
-/turf/proc/get_diggable_resources()
-	return null
-
-/turf/proc/clear_diggable_resources()
-	SHOULD_CALL_PARENT(TRUE)
-	update_icon()
-
-/turf/proc/can_be_dug()
-	return FALSE
-
-/turf/proc/drop_diggable_resources()
-	SHOULD_CALL_PARENT(TRUE)
-	var/list/diggable_resources = get_diggable_resources()
-	if(!length(diggable_resources))
-		return
-	for(var/resource_type in diggable_resources)
-		var/list/resource_amounts = diggable_resources[resource_type]
-		LAZYADD(., new resource_type(src, resource_amounts[1] + rand(resource_amounts[2])))
-	clear_diggable_resources()
-
-
-/turf/proc/can_dig_pit()
-	return can_be_dug() && !(locate(/obj/structure/pit) in src)
-
-/turf/proc/try_dig_pit(var/mob/user, var/obj/item/tool)
-	if(!user || !tool || tool.do_tool_interaction(TOOL_SHOVEL, user, src, 4 SECONDS))
-		return dig_pit()
-	return null
-
-/turf/proc/dig_pit()
-	return can_dig_pit() && new /obj/structure/pit(src)
-
 // Largely copied from stairs.
 /turf/proc/can_move_up_ramp(atom/movable/AM, turf/above_wall, turf/under_atom, turf/above_atom)
 	if(!istype(AM) || !istype(above_wall) || !istype(under_atom) || !istype(above_atom))
@@ -630,7 +658,7 @@
 /turf/Bumped(var/atom/movable/AM)
 	if(!istype(AM) || !HasAbove(z))
 		return ..()
-	var/turf/exterior/wall/slope = AM.loc
+	var/turf/wall/natural/slope = AM.loc
 	if(!istype(slope) || !slope.ramp_slope_direction || get_dir(src, slope) != slope.ramp_slope_direction)
 		return ..()
 	var/turf/above_wall = GetAbove(src)
@@ -644,8 +672,156 @@
 		to_chat(AM, SPAN_WARNING("Something blocks the path."))
 	return TRUE
 
-/turf/proc/wet_floor(var/wet_val = 1, var/overwrite = FALSE)
+/turf/clean(clean_forensics = TRUE)
+	for(var/obj/effect/decal/cleanable/blood/B in contents)
+		B.clean(clean_forensics)
+	. = ..()
+
+//returns 1 if made bloody, returns 0 otherwise
+/turf/add_blood(mob/living/M)
+	if(!simulated || !..() || !ishuman(M))
+		return FALSE
+	var/mob/living/carbon/human/H = M
+	var/unique_enzymes = H.get_unique_enzymes()
+	var/blood_type     = H.get_blood_type()
+	if(unique_enzymes && blood_type)
+		for(var/obj/effect/decal/cleanable/blood/B in contents)
+			if(!LAZYACCESS(B.blood_DNA, unique_enzymes))
+				LAZYSET(B.blood_DNA, unique_enzymes, blood_type)
+				LAZYSET(B.blood_data, unique_enzymes, REAGENT_DATA(H.vessel, H.species.blood_reagent))
+				var/datum/extension/forensic_evidence/forensics = get_or_create_extension(B, /datum/extension/forensic_evidence)
+				forensics.add_data(/datum/forensics/blood_dna, unique_enzymes)
+	else
+		blood_splatter(src, M, 1)
+	return TRUE
+
+/turf/proc/AddTracks(var/typepath,var/bloodDNA,var/comingdir,var/goingdir,var/bloodcolor=COLOR_BLOOD_HUMAN)
+	if(!simulated)
+		return
+	var/obj/effect/decal/cleanable/blood/tracks/tracks = locate(typepath) in src
+	if(!tracks)
+		tracks = new typepath(src)
+	tracks.AddTracks(bloodDNA,comingdir,goingdir,bloodcolor)
+
+// Proc called in /turf/Entered() to supply an appropriate fluid overlay.
+/turf/proc/get_movable_alpha_mask_state(atom/movable/mover)
+	if(flooded)
+		return null
+	if(ismob(mover))
+		var/mob/moving_mob = mover
+		if(moving_mob.can_overcome_gravity())
+			return null
+	var/fluid_depth = get_fluid_depth()
+	if(fluid_depth > FLUID_PUDDLE)
+		if(fluid_depth <= FLUID_SHALLOW)
+			return "mask_shallow"
+		if(fluid_depth <= FLUID_DEEP)
+			return "mask_deep"
+
+/turf/spark_act(obj/effect/sparks/sparks)
+	if(simulated)
+		hotspot_expose(1000,100)
+		for(var/atom/thing in contents)
+			if(thing.simulated && prob(25))
+				thing.spark_act(sparks)
+		return TRUE
+	return FALSE
+
+/turf/proc/get_trench_name()
+	if(check_fluid_depth(FLUID_SHALLOW))
+		return get_fluid_name()
+	return src
+
+/turf/receive_mouse_drop(atom/dropping, mob/user, params)
+	. = ..()
+	if(!. && simulated && dropping == user && isturf(user.loc) && user.Adjacent(src))
+		var/turf/other_turf = user.loc
+		var/our_height = get_physical_height()
+		var/their_height = other_turf.get_physical_height()
+		if(abs(our_height-their_height) > FLUID_SHALLOW)
+			. = TRUE
+			if(our_height < their_height)
+				user.visible_message(SPAN_NOTICE("\The [user] starts climbing down into \the [get_trench_name()]."))
+			else
+				user.visible_message(SPAN_NOTICE("\The [user] starts climbing out of \the [other_turf.get_trench_name()]."))
+			if(!do_after(user, 2 SECONDS, src) || QDELETED(user) || user?.loc != other_turf || !user.Adjacent(src))
+				return
+			if(our_height < their_height)
+				user.visible_message(SPAN_NOTICE("\The [user] climbs down into \the [get_trench_name()]."))
+			else
+				user.visible_message(SPAN_NOTICE("\The [user] climbs out of \the [other_turf.get_trench_name()]."))
+			LAZYDISTINCTADD(skip_height_fall_for, weakref(user))
+			user.dropInto(src)
+			LAZYREMOVE(skip_height_fall_for, weakref(user))
+
+/turf/proc/handle_universal_decay()
 	return
 
-/turf/proc/unwet_floor(var/check_very_wet = TRUE)
-	return
+/turf/proc/get_plant_growth_rate()
+	return 0
+
+/turf/proc/get_soil_color()
+	return null
+
+/turf/proc/get_fishing_result(obj/item/chems/food/bait)
+	var/area/A = get_area(src)
+	return A.get_fishing_result(src, bait)
+
+/turf/get_alt_interactions(mob/user)
+	. = ..()
+	LAZYADD(., /decl/interaction_handler/show_turf_contents)
+	if(user)
+		var/obj/item/held = user.get_active_held_item()
+		if(istype(held))
+			if(IS_SHOVEL(held))
+				if(can_dig_pit(held.material?.hardness))
+					LAZYDISTINCTADD(., /decl/interaction_handler/dig/pit)
+				if(can_dig_trench(held.material?.hardness))
+					LAZYDISTINCTADD(., /decl/interaction_handler/dig/trench)
+			if(IS_PICK(held) && can_dig_trench(held.material?.hardness, using_tool = TOOL_PICK))
+				LAZYDISTINCTADD(., /decl/interaction_handler/dig/trench)
+			if(IS_HOE(held) && can_dig_farm(held.material?.hardness))
+				LAZYDISTINCTADD(., /decl/interaction_handler/dig/farm)
+
+/decl/interaction_handler/show_turf_contents
+	name = "Show Turf Contents"
+	expected_user_type = /mob
+	interaction_flags = 0
+
+/decl/interaction_handler/show_turf_contents/invoked(atom/target, mob/user, obj/item/prop)
+	target.show_atom_list_for_turf(user, get_turf(target))
+
+/decl/interaction_handler/dig
+	abstract_type = /decl/interaction_handler/dig
+	expected_user_type = /mob
+	expected_target_type = /turf
+	interaction_flags = INTERACTION_NEEDS_PHYSICAL_INTERACTION | INTERACTION_NEEDS_TURF
+
+/decl/interaction_handler/dig/trench
+	name = "Dig Trench"
+
+/decl/interaction_handler/dig/trench/invoked(atom/target, mob/user, obj/item/prop)
+	var/turf/T = get_turf(target)
+	if(IS_SHOVEL(prop))
+		if(T.can_dig_trench(prop?.material?.hardness))
+			T.try_dig_trench(user, prop)
+	else if(IS_PICK(prop))
+		var/decl/material/material = T.get_material()
+		if(material?.hardness > MAT_VALUE_FLEXIBLE && T.can_dig_trench(prop?.material?.hardness, using_tool = TOOL_PICK))
+			T.try_dig_trench(user, prop, using_tool = TOOL_PICK)
+
+/decl/interaction_handler/dig/pit
+	name = "Dig Pit"
+
+/decl/interaction_handler/dig/pit/invoked(atom/target, mob/user, obj/item/prop)
+	var/turf/T = get_turf(target)
+	if(T.can_dig_pit(prop?.material?.hardness))
+		T.try_dig_pit(user, prop)
+
+/decl/interaction_handler/dig/farm
+	name = "Dig Farm Plot"
+
+/decl/interaction_handler/dig/farm/invoked(atom/target, mob/user, obj/item/prop)
+	var/turf/T = get_turf(target)
+	if(T.can_dig_farm(prop?.material?.hardness))
+		T.try_dig_farm(user, prop)

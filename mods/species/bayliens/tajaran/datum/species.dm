@@ -14,13 +14,10 @@
 /decl/species/tajaran
 	name = SPECIES_TAJARA
 	name_plural = "Tajaran"
-	base_prosthetics_model = null
+	base_external_prosthetics_model = null
 
 	description = "A small mammalian carnivore. If you are reading this, you are probably a Tajaran."
 	hidden_from_codex = FALSE
-
-	age_descriptor = /datum/appearance_descriptor/age/tajaran
-
 	available_bodytypes = list(/decl/bodytype/feline)
 
 	preview_outfit = /decl/hierarchy/outfit/job/generic/engineer
@@ -43,6 +40,7 @@
 	organs_icon = 'mods/species/bayliens/tajaran/icons/organs.dmi'
 
 	hunger_factor = DEFAULT_HUNGER_FACTOR * 1.2
+	thirst_factor = DEFAULT_THIRST_FACTOR * 1.2
 	gluttonous = GLUT_TINY
 
 	unarmed_attacks = list(
@@ -62,13 +60,13 @@
 	)
 
 	default_emotes = list(
-		/decl/emote/human/swish,
-		/decl/emote/human/wag,
-		/decl/emote/human/sway,
-		/decl/emote/human/qwag,
-		/decl/emote/human/fastsway,
-		/decl/emote/human/swag,
-		/decl/emote/human/stopsway,
+		/decl/emote/visible/tail/swish,
+		/decl/emote/visible/tail/wag,
+		/decl/emote/visible/tail/sway,
+		/decl/emote/visible/tail/qwag,
+		/decl/emote/visible/tail/fastsway,
+		/decl/emote/visible/tail/swag,
+		/decl/emote/visible/tail/stopsway,
 		/decl/emote/audible/purr,
 		/decl/emote/audible/purrlong
 	)

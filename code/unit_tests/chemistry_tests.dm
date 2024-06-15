@@ -12,7 +12,7 @@
 
 	var/atom/from = new donor_type(test_loc)
 	from.create_reagents(container_volume)
-	from.reagents.add_reagent(/decl/material/liquid/water, container_volume)
+	from.add_to_reagents(/decl/material/liquid/water, container_volume)
 
 	var/atom/target
 	if(ispath(recipient_type, /turf) && istype(test_loc, recipient_type))
@@ -196,11 +196,11 @@
 			if(chem_type in excepted_types)
 				continue
 			var/atom/chem = chem_type
-			if(TYPE_IS_ABSTRACT(chem))
+			if(!TYPE_IS_SPAWNABLE(chem))
 				continue
 			chem = new chem(spawn_spot)
 			if(QDELETED(chem))
-				failures += "- [type] qdeleted after Initialize()"
+				failures += "- [chem.type] qdeleted after Initialize()"
 				continue
 			chem_refs[chem.type] = weakref(chem)
 

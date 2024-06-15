@@ -374,8 +374,7 @@ By design, d1 is the smallest direction and d2 is the highest
 // Powernets handling helpers
 //////////////////////////////////////////////
 
-//if powernetless_only = 1, will only get connections without powernet
-/obj/structure/cable/proc/get_connections(var/powernetless_only = 0)
+/obj/structure/cable/proc/get_cable_connections(var/skip_assigned_powernets = FALSE)
 	. = list()	// this will be a list of all connected power objects
 	var/turf/T
 
@@ -403,17 +402,22 @@ By design, d1 is the smallest direction and d2 is the highest
 		if(C.d1 == d1 || C.d2 == d1 || C.d1 == d2 || C.d2 == d2) // if either of C's d1 and d2 match either of ours
 			. += C
 
-	if(d1 == 0)
-		for(var/obj/machinery/power/P in loc)
-			if(P.powernet == 0) continue // exclude APCs with powernet=0
-			if(!powernetless_only || !P.powernet)
-				. += P
-
-	// if the caller asked for powernetless cables only, dump the ones with powernets
-	if(powernetless_only)
+	// if asked, skip any cables with powernts
+	if(skip_assigned_powernets)
 		for(var/obj/structure/cable/C in .)
 			if(C.powernet)
 				. -= C
+
+/obj/structure/cable/proc/get_machine_connections(var/skip_assigned_powernets = FALSE)
+	. = list()	// this will be a list of all connected power objects
+	if(d1 == 0)
+		for(var/obj/machinery/power/P in loc)
+			if(P.powernet == 0) continue // exclude APCs with powernet=0
+			if(!skip_assigned_powernets || !P.powernet)
+				. += P
+
+/obj/structure/cable/proc/get_connections(var/skip_assigned_powernets = FALSE)
+	return get_cable_connections(skip_assigned_powernets) + get_machine_connections(skip_assigned_powernets)
 
 //should be called after placing a cable which extends another cable, creating a "smooth" cable that no longer terminates in the centre of a turf.
 //needed as this can, unlike other placements, disconnect cables
@@ -517,7 +521,7 @@ By design, d1 is the smallest direction and d2 is the highest
 
 /obj/item/stack/cable_coil/Initialize(mapload, c_length, var/param_color = null)
 	. = ..(mapload, c_length)
-	set_extension(src, /datum/extension/tool/variable, list(
+	set_extension(src, /datum/extension/tool/variable/simple, list(
 		TOOL_CABLECOIL = TOOL_QUALITY_DEFAULT,
 		TOOL_SUTURES =   TOOL_QUALITY_MEDIOCRE
 	))
@@ -531,24 +535,20 @@ By design, d1 is the smallest direction and d2 is the highest
 ///////////////////////////////////
 
 //you can use wires to heal robotics
-/obj/item/stack/cable_coil/attack(var/atom/A, var/mob/living/user, var/def_zone)
-	if(ishuman(A) && user.a_intent == I_HELP)
-		var/mob/living/carbon/human/H = A
+/obj/item/stack/cable_coil/use_on_mob(mob/living/target, mob/living/user, animate = TRUE)
+	if(ishuman(target) && user.a_intent == I_HELP)
+		var/mob/living/carbon/human/H = target
 		var/obj/item/organ/external/S = GET_EXTERNAL_ORGAN(H, user.get_target_zone())
-
-		if (!S) return
-		if(!BP_IS_PROSTHETIC(S) || user.a_intent != I_HELP)
+		if(!S || !BP_IS_PROSTHETIC(S) || user.a_intent != I_HELP)
 			return ..()
-
 		if(BP_IS_BRITTLE(S))
 			to_chat(user, SPAN_WARNING("\The [H]'s [S.name] is hard and brittle - \the [src] cannot repair it."))
-			return 1
-
+			return TRUE
 		var/use_amt = min(src.amount, CEILING(S.burn_dam/3), 5)
 		if(can_use(use_amt))
 			if(S.robo_repair(3*use_amt, BURN, "some damaged wiring", src, user))
-				src.use(use_amt)
-		return
+				use(use_amt)
+		return TRUE
 	return ..()
 
 /obj/item/stack/cable_coil/on_update_icon()
@@ -871,7 +871,7 @@ By design, d1 is the smallest direction and d2 is the highest
 
 /obj/item/stack/cable_coil/fabricator/use(var/used)
 	var/obj/item/cell/cell = get_cell()
-	if(cell) cell.use(used * cost_per_cable)
+	return cell?.use(used * cost_per_cable)
 
 /obj/item/stack/cable_coil/fabricator/get_amount()
 	var/obj/item/cell/cell = get_cell()

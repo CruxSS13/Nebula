@@ -21,16 +21,21 @@ var/global/list/map_count = list()
 	var/preserve_map = 1
 
 	// Turf paths.
-	var/wall_type =  /turf/simulated/wall
-	var/floor_type = /turf/simulated/floor
+	var/wall_type =  /turf/wall
+	var/floor_type = /turf/floor
+	// Turf type to act on when applying this map. Set to TRUE to use world.turf, or a path to use a specific turf subtype.
 	var/target_turf_type
 
+	var/change_area = FALSE
 	var/area/use_area // If set, turfs will be put in this area. If set to type, new instance will be spawned for the map
 
 	// Storage for the final iteration of the map.
 	var/list/map = list()           // Actual map.
 
 /datum/random_map/New(var/tx, var/ty, var/tz, var/tlx, var/tly, var/do_not_apply, var/do_not_announce, var/used_area)
+
+	if(target_turf_type == TRUE)
+		target_turf_type = world.turf
 
 	// Store this for debugging.
 	if(!map_count[descriptor])
@@ -45,11 +50,15 @@ var/global/list/map_count = list()
 	if(tlx) limit_x = tlx
 	if(tly) limit_y = tly
 
-	if(used_area)
+	if(!change_area)
+		use_area = null
+	else if(!use_area && used_area)
 		if(ispath(used_area))
 			use_area = new(used_area)
 		else
 			use_area = used_area
+	else if(ispath(use_area))
+		use_area = new(use_area)
 
 	if(do_not_apply)
 		auto_apply = null

@@ -1,8 +1,8 @@
 /decl/hierarchy/outfit/nanotrasen
 	abstract_type = /decl/hierarchy/outfit/nanotrasen
-	uniform = /obj/item/clothing/under/centcom
+	uniform = /obj/item/clothing/costume/centcom
 	shoes = /obj/item/clothing/shoes/dress
-	gloves = /obj/item/clothing/gloves/color/white
+	gloves = /obj/item/clothing/gloves
 	l_ear = /obj/item/radio/headset/heads/hop
 	glasses = /obj/item/clothing/glasses/sunglasses
 	id_slot = slot_wear_id_str
@@ -24,7 +24,7 @@
 
 /decl/hierarchy/outfit/nanotrasen/captain
 	name = "Corporate Captain"
-	uniform = /obj/item/clothing/under/centcom_captain
+	uniform = /obj/item/clothing/costume/centcom_captain
 	l_ear = /obj/item/radio/headset/heads/captain
 	head = /obj/item/clothing/head/beret/corp/centcom/captain
 	belt = /obj/item/gun/energy
@@ -35,12 +35,12 @@
 	head = /obj/item/clothing/head/centhat
 	mask = /obj/item/clothing/mask/smokable/cigarette/cigar/cohiba
 	shoes = /obj/item/clothing/shoes/jackboots/swat
-	uniform = /obj/item/clothing/under/centcom_captain
+	uniform = /obj/item/clothing/costume/centcom_captain
 	suit = /obj/item/clothing/suit/armor/bulletproof
 	gloves = /obj/item/clothing/gloves/thick/swat
 	l_ear =  /obj/item/radio/headset/heads/captain
 	glasses = /obj/item/clothing/glasses/eyepatch
-	l_pocket = /obj/item/flame/lighter/zippo
+	l_pocket = /obj/item/flame/fuelled/lighter/zippo
 	id_pda_assignment = "Corporate Commander"
 
 /decl/hierarchy/outfit/death_command

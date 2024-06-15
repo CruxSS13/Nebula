@@ -5,16 +5,11 @@
 	icon_state = "egg"
 	pixel_x = -128
 	pixel_y = -128
-	mob_default_max_health = 100
+	max_health = 100
 	universal_understand = TRUE
 	mob_sort_value = 5
-
-	meat_type = null
-	meat_amount = 0
-	skin_material = null
-	skin_amount = 0
-	bone_material = null
-	bone_amount = 0
+	is_spawnable_type = FALSE
+	butchery_data = null
 
 	var/eye_type = /mob/observer/eye/freelook/cult
 	var/datum/visualnet/cultnet/eyenet
@@ -32,7 +27,7 @@
 	eyeobj.possess(src)
 	eyenet.add_source(src)
 
-/mob/living/deity/death()
+/mob/living/deity/death(gibbed)
 	. = ..()
 	if(.)
 		for(var/m in minions)
@@ -66,7 +61,7 @@
 			qdel(items[i])
 		items.Cut()
 
-	death(0)
+	death()
 	if(length(minions))
 		minions.Cut()
 	if(length(structures))

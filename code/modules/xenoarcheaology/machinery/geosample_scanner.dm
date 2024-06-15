@@ -265,7 +265,7 @@
 	radiation = 0
 	t_left_radspike = 0
 	if(used_coolant)
-		src.reagents.remove_any(used_coolant)
+		remove_any_reagents(used_coolant)
 		used_coolant = 0
 
 /obj/machinery/radiocarbon_spectrometer/proc/complete_scan()
@@ -287,7 +287,7 @@
 
 	var/anom_found = 0
 	var/datum/extension/geological_data/GD = get_extension(scanned_item, /datum/extension/geological_data)
-	if(GD && GD.geodata)
+	if(GD?.geodata)
 		data = " - Spectometric analysis on mineral sample has determined type [responsive_carriers[GD.geodata.source_mineral]]<br>"
 		data += " - Radiometric dating shows age of [GD.geodata.age * 1000] years<br>"
 		data += " - Chromatographic analysis shows the following materials present:<br>"

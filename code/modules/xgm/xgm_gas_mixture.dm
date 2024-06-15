@@ -260,7 +260,7 @@
 /datum/gas_mixture/proc/remove_ratio(ratio, out_group_multiplier = 1)
 	if(ratio <= 0)
 		return null
-	out_group_multiplier = clamp(1, out_group_multiplier, group_multiplier)
+	out_group_multiplier = clamp(out_group_multiplier, 1, group_multiplier)
 
 	ratio = min(ratio, 1)
 
@@ -403,24 +403,6 @@
 			var/new_alpha = min(230, round(pressure_mod * concentration_mod * 180, 5))
 			if(new_alpha != O.alpha)
 				O.update_alpha_animation(new_alpha)
-
-//Simpler version of merge(), adjusts gas amounts directly and doesn't account for temperature or group_multiplier.
-/datum/gas_mixture/proc/add(datum/gas_mixture/right_side)
-	for(var/g in right_side.gas)
-		gas[g] += right_side.gas[g]
-
-	update_values()
-	return 1
-
-
-//Simpler version of remove(), adjusts gas amounts directly and doesn't account for group_multiplier.
-/datum/gas_mixture/proc/subtract(datum/gas_mixture/right_side)
-	for(var/g in right_side.gas)
-		gas[g] -= right_side.gas[g]
-
-	update_values()
-	return 1
-
 
 //Multiply all gas amounts by a factor.
 /datum/gas_mixture/proc/multiply(factor)

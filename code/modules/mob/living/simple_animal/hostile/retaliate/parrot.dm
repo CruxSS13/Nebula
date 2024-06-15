@@ -31,19 +31,17 @@
 	icon = 'icons/mob/simple_animal/parrot.dmi'
 	pass_flags = PASS_FLAG_TABLE
 	mob_size = MOB_SIZE_SMALL
-	speak = list("Hi","Hello!","Cracker?")
-	speak_emote = list("squawks","says","yells")
-	emote_hear = list("squawks","bawks")
-	emote_see = list("flutters its wings")
+	emote_speech = list("Hi","Hello!","Cracker?")
+	speak_emote  = list("squawks","says","yells")
+	emote_hear   = list("squawks","bawks")
+	emote_see    = list("flutters its wings")
 	natural_weapon = /obj/item/natural_weapon/beak
-	speak_chance = 1//1% (1 in 100) chance every tick; So about once per 150 seconds, assuming an average tick is 1.5s
+	speak_chance = 1 // 1% (1 in 100) chance every tick; So about once per 150 seconds, assuming an average tick is 1.5s
 	turns_per_move = 5
 	response_harm = "swats"
 	stop_automated_movement = 1
 	universal_speak = TRUE
-	meat_type = /obj/item/chems/food/meat/chicken/game
-	meat_amount = 3
-	skin_material = /decl/material/solid/organic/skin/feathers
+	butchery_data = /decl/butchery_data/animal/bird/parrot
 
 	var/parrot_state = PARROT_WANDER // Hunt for a perch when created
 	var/parrot_sleep_max = 25        // The time the parrot sits while perched before looking around. Mosly a way to avoid the parrot's AI in life() being run every single tick.
@@ -101,12 +99,15 @@
 		held_item = null
 	return ..()
 
-/mob/living/simple_animal/hostile/retaliate/parrot/death(gibbed, deathmessage, show_dead_message)
-	if(held_item)
-		held_item.dropInto(loc)
-		held_item = null
-	walk(src,0)
-	..(gibbed, deathmessage, show_dead_message)
+/mob/living/simple_animal/hostile/retaliate/parrot/death(gibbed)
+	var/oldloc = loc
+	. = ..()
+	if(. && held_item)
+		if(oldloc)
+			held_item.dropInto(oldloc)
+			held_item = null
+		else
+			QDEL_NULL(held_item)
 
 /mob/living/simple_animal/hostile/retaliate/parrot/Stat()
 	. = ..()
@@ -511,4 +512,4 @@
 /mob/living/simple_animal/hostile/retaliate/parrot/Poly
 	name = "Poly"
 	desc = "Poly the Parrot. An expert on quantum cracker theory."
-	speak = list("Poly wanna cracker!", "Check the singlo, you chucklefucks!","Wire the solars, you lazy bums!","WHO TOOK THE DAMN HARDSUITS?","OH GOD ITS FREE CALL THE SHUTTLE!")
+	emote_speech = list("Poly wanna cracker!", "Check the singlo, you chucklefucks!","Wire the solars, you lazy bums!","WHO TOOK THE DAMN HARDSUITS?","OH GOD ITS FREE CALL THE SHUTTLE!")
