@@ -337,9 +337,8 @@
 	to_chat(src, "[A.alarm_name()]! ([(cameratext)? cameratext : "No Camera"])")
 
 
-/mob/living/silicon/proc/is_traitor()
-	var/decl/special_role/traitors = GET_DECL(/decl/special_role/traitor)
-	return mind && (mind in traitors.current_antagonists)
+/mob/living/silicon/proc/is_malfunctioning()
+	return FALSE
 
 /mob/living/silicon/reset_view()
 	..()
@@ -455,12 +454,6 @@
 	if(.)
 		adjustBruteLoss(5, do_update_health = FALSE)
 		adjustFireLoss(10)
-
-/mob/living/silicon/get_death_message(gibbed)
-	return "gives one shrill beep before falling lifeless."
-
-/mob/living/silicon/get_self_death_message(gibbed)
-	return "You have suffered a critical system failure, and are dead."
 
 /mob/living/silicon/get_available_postures()
 	var/static/list/available_postures = list(

@@ -184,7 +184,7 @@ var/global/list/wall_fullblend_objects = list(
 	F.icon_state = "wall_thermite"
 	visible_message(SPAN_DANGER("\The [src] spontaneously combusts!"))
 
-/turf/wall/take_damage(damage, damage_type = BRUTE, damage_flags, inflicter, armor_pen = 0)
+/turf/wall/take_damage(damage, damage_type = BRUTE, damage_flags, inflicter, armor_pen = 0, silent, do_update_health)
 	if(damage)
 		src.damage = max(0, src.damage + damage)
 		update_damage()
@@ -299,20 +299,6 @@ var/global/list/wall_fullblend_objects = list(
 
 /turf/wall/is_wall()
 	return TRUE
-
-/turf/wall/on_defilement()
-	var/new_material
-	if(material?.type != /decl/material/solid/stone/cult)
-		new_material = /decl/material/solid/stone/cult
-	var/new_rmaterial
-	if(reinf_material && reinf_material.type != /decl/material/solid/stone/cult/reinforced)
-		new_rmaterial = /decl/material/solid/stone/cult/reinforced
-	if(new_material || new_rmaterial)
-		..()
-		set_turf_materials(new_material, new_rmaterial)
-
-/turf/wall/is_defiled()
-	return material?.type == /decl/material/solid/stone/cult || reinf_material?.type == /decl/material/solid/stone/cult/reinforced || ..()
 
 /turf/wall/handle_universal_decay()
 	handle_melting()
