@@ -521,26 +521,31 @@
 		return TRUE
 	return FALSE
 
-/obj/item/attackby(obj/item/W, mob/user)
+/obj/item/proc/user_can_wield(mob/user, silent = FALSE)
+	return !needs_attack_dexterity || user.check_dexterity(needs_attack_dexterity, silent = silent)
 
-	if(try_slapcrafting(W, user))
+/obj/item/attackby(obj/item/used_item, mob/user)
+	// if can_wield is false we still need to call parent for storage objects to work properly
+	var/can_wield = user_can_wield(user, silent = TRUE)
+
+	if(can_wield && try_slapcrafting(used_item, user))
 		return TRUE
 
-	if(W.storage?.use_to_pickup)
+	if(used_item.storage?.use_to_pickup)
 		//Mode is set to collect all items
-		if(W.storage.collection_mode && isturf(src.loc))
-			W.storage.gather_all(src.loc, user)
+		if(used_item.storage.collection_mode && isturf(src.loc))
+			used_item.storage.gather_all(src.loc, user)
 			return TRUE
-		if(W.storage.can_be_inserted(src, user))
-			W.storage.handle_item_insertion(user, src)
+		if(used_item.storage.can_be_inserted(src, user))
+			used_item.storage.handle_item_insertion(user, src)
 			return TRUE
 
-	if(has_extension(src, /datum/extension/loaded_cell))
+	if(can_wield && has_extension(src, /datum/extension/loaded_cell))
 		var/datum/extension/loaded_cell/cell_loaded = get_extension(src, /datum/extension/loaded_cell)
-		if(cell_loaded.has_tool_unload_interaction(W))
-			return cell_loaded.try_unload(user, W)
-		else if(istype(W, /obj/item/cell))
-			return cell_loaded.try_load(user, W)
+		if(cell_loaded.has_tool_unload_interaction(used_item))
+			return cell_loaded.try_unload(user, used_item)
+		else if(istype(used_item, /obj/item/cell))
+			return cell_loaded.try_load(user, used_item)
 
 	return ..()
 
@@ -783,7 +788,7 @@ var/global/list/_item_blood_mask = icon('icons/effects/blood.dmi', "itemblood")
 /obj/item/proc/showoff(mob/user)
 	for(var/mob/M in view(user))
 		if(!user.is_invisible_to(M))
-			M.show_message("[user] holds up [src]. <a HREF=?src=\ref[M];lookitem=\ref[src]>Take a closer look.</a>", 1)
+			M.show_message("[user] holds up [src]. <a HREF='byond://?src=\ref[M];lookitem=\ref[src]'>Take a closer look.</a>", 1)
 
 /*
 For zooming with scope or binoculars. This is called from
@@ -884,7 +889,7 @@ modules/mob/living/human/life.dm if you die, you will be zoomed out.
 	. = "[html_icon(src)] [get_examine_name()]"
 	var/ID = GetIdCard()
 	if(ID)
-		. += " <a href='?src=\ref[ID];look_at_id=1'>\[Look at ID\]</a>"
+		. += " <a href='byond://?src=\ref[ID];look_at_id=1'>\[Look at ID\]</a>"
 
 /obj/item/proc/on_active_hand()
 	return
