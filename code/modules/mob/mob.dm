@@ -1,4 +1,7 @@
 /mob/Destroy() //This makes sure that mobs with clients/keys are not just deleted from the game.
+
+	stop_automove()
+
 	STOP_PROCESSING(SSmobs, src)
 	global.dead_mob_list_ -= src
 	global.living_mob_list_ -= src
@@ -60,9 +63,9 @@
 /mob/Initialize()
 	if(ispath(skillset))
 		skillset = new skillset(src)
-	if(!move_intent)
+	if(!ispath(move_intent) || !(move_intent in move_intents))
 		move_intent = move_intents[1]
-	if(ispath(move_intent))
+	if(!istype(move_intent))
 		move_intent = GET_DECL(move_intent)
 	. = ..()
 	ability_master = new(null, src)
@@ -216,7 +219,13 @@
 		. += 6
 	if(current_posture.prone) //Crawling, it's slower
 		. += (8 + ((GET_STATUS(src, STAT_WEAK) * 3) + (GET_STATUS(src, STAT_CONFUSE) * 2)))
-	. += move_intent.move_delay + (ENCUMBERANCE_MOVEMENT_MOD * encumbrance())
+	var/_automove_delay = get_automove_delay()
+	if(isnull(_automove_delay))
+		. += move_intent.move_delay
+	else
+		. += _automove_delay
+	. = max(. + (ENCUMBERANCE_MOVEMENT_MOD * encumbrance()), 1)
+
 #undef ENCUMBERANCE_MOVEMENT_MOD
 
 /mob/proc/encumbrance()
@@ -346,7 +355,7 @@
 		if(!inv_slot || inv_slot.skip_on_strip_display)
 			continue
 		var/obj/item/held = inv_slot.get_equipped_item()
-		dat += "<b>[capitalize(inv_slot.slot_name)]:</b> <A href='?src=\ref[src];item=[hand_slot]'>[held?.name || "nothing"]</A>"
+		dat += "<b>[capitalize(inv_slot.slot_name)]:</b> <A href='byond://?src=\ref[src];item=[hand_slot]'>[held?.name || "nothing"]</A>"
 
 	var/list/all_slots = get_all_available_equipment_slots()
 	if(all_slots)
@@ -354,39 +363,39 @@
 			if(slot in my_held_item_slots)
 				continue
 			var/obj/item/thing_in_slot = get_equipped_item(slot)
-			dat += "<B>[capitalize(get_descriptive_slot_name(slot))]:</b> <a href='?src=\ref[src];item=[slot]'>[thing_in_slot || "nothing"]</a>"
+			dat += "<B>[capitalize(get_descriptive_slot_name(slot))]:</b> <a href='byond://?src=\ref[src];item=[slot]'>[thing_in_slot || "nothing"]</a>"
 			if(istype(thing_in_slot, /obj/item/clothing))
 				var/obj/item/clothing/C = thing_in_slot
 				if(LAZYLEN(C.accessories))
-					dat += "<A href='?src=\ref[src];item=accessory;holder=\ref[C]'>Remove accessory</A>"
+					dat += "<A href='byond://?src=\ref[src];item=accessory;holder=\ref[C]'>Remove accessory</A>"
 
 	// Do they get an option to set internals?
 	if(istype(get_equipped_item(slot_wear_mask_str), /obj/item/clothing/mask) || istype(get_equipped_item(slot_head_str), /obj/item/clothing/head/helmet/space))
 		for(var/slot in list(slot_back_str, slot_belt_str, slot_s_store_str))
 			var/obj/item/tank/tank = get_equipped_item(slot)
 			if(istype(tank))
-				dat += "<BR><A href='?src=\ref[src];item=internals'>Toggle internals.</A>"
+				dat += "<BR><A href='byond://?src=\ref[src];item=internals'>Toggle internals.</A>"
 				break
 
 	// Other incidentals.
 	var/obj/item/clothing/suit = get_equipped_item(slot_w_uniform_str)
 	if(istype(suit))
-		dat += "<BR><b>Pockets:</b> <A href='?src=\ref[src];item=pockets'>Empty or Place Item</A>"
+		dat += "<BR><b>Pockets:</b> <A href='byond://?src=\ref[src];item=pockets'>Empty or Place Item</A>"
 	var/obj/item/clothing/sensor/vitals/sensor = get_vitals_sensor()
 	if(sensor)
 		if(sensor.get_sensors_locked())
-			dat += "<BR><A href='?src=\ref[src];item=lock_sensors'>Unlock vitals sensors</A>"
+			dat += "<BR><A href='byond://?src=\ref[src];item=lock_sensors'>Unlock vitals sensors</A>"
 		else if(user.get_multitool())
-			dat += "<BR><A href='?src=\ref[src];item=lock_sensors'>Lock vitals sensors</A>"
-			dat += "<BR><A href='?src=\ref[src];item=sensors'>Set vitals sensors</A>"
+			dat += "<BR><A href='byond://?src=\ref[src];item=lock_sensors'>Lock vitals sensors</A>"
+			dat += "<BR><A href='byond://?src=\ref[src];item=sensors'>Set vitals sensors</A>"
 	if(get_equipped_item(slot_handcuffed_str))
-		dat += "<BR><A href='?src=\ref[src];item=[slot_handcuffed_str]'>Handcuffed</A>"
+		dat += "<BR><A href='byond://?src=\ref[src];item=[slot_handcuffed_str]'>Handcuffed</A>"
 
 	var/list/strip_add = get_additional_stripping_options()
 	if(length(strip_add))
 		dat += strip_add
 
-	dat += "<BR><A href='?src=\ref[src];refresh=1'>Refresh</A>"
+	dat += "<BR><A href='byond://?src=\ref[src];refresh=1'>Refresh</A>"
 
 	var/datum/browser/popup = new(user, "[name]", "Inventory of \the [name]", 325, 500, src)
 	popup.set_content(jointext(dat, "<br>"))
@@ -1358,3 +1367,7 @@
 	var/decl/butchery_data/butchery_decl = GET_DECL(butchery_data)
 	. = butchery_decl?.meat_name || name
 
+/mob/reset_movement_delay()
+	var/datum/movement_handler/mob/delay/delay = locate() in movement_handlers
+	if(istype(delay))
+		delay.next_move = world.time

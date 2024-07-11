@@ -60,6 +60,8 @@
 /obj/item/grenade/attack_self(mob/user)
 	if(active)
 		return
+	if(!user.check_dexterity(DEXTERITY_WEAPONS))
+		return TRUE // prevent further interactions
 	if(clown_check(user))
 		to_chat(user, "<span class='warning'>You prime \the [name]! [det_time/10] seconds!</span>")
 		activate(user)
@@ -70,7 +72,7 @@
 	if(active)
 		return
 	if(user)
-		msg_admin_attack("[user.name] ([user.ckey]) primed \a [src] (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[user.x];Y=[user.y];Z=[user.z]'>JMP</a>)")
+		msg_admin_attack("[user.name] ([user.ckey]) primed \a [src] (<A HREF='byond://?_src_=holder;adminplayerobservecoodjump=1;X=[user.x];Y=[user.y];Z=[user.z]'>JMP</a>)")
 	active = TRUE
 	update_icon()
 	playsound(loc, arm_sound, 75, 0, -3)

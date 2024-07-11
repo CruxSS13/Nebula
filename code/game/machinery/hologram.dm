@@ -110,7 +110,7 @@ var/global/list/holopads = list()
 					if(!AI.client)	continue
 					if (holopadType != HOLOPAD_LONG_RANGE && !SSmapping.are_connected_levels(AI.z, src.z))
 						continue
-					to_chat(AI, "<span class='info'>Your presence is requested at <a href='?src=\ref[AI];jumptoholopad=\ref[src]'>\the [holopad_id]</a>.</span>")
+					to_chat(AI, "<span class='info'>Your presence is requested at <a href='byond://?src=\ref[AI];jumptoholopad=\ref[src]'>\the [holopad_id]</a>.</span>")
 			else
 				to_chat(user, "<span class='notice'>A request for AI presence was already sent recently.</span>")
 		if("Holocomms")
@@ -146,7 +146,7 @@ var/global/list/holopads = list()
 					to_chat(user, "<span class='info'>Using such sophisticated technology, just to talk to yourself seems a bit silly.</span>")
 					return
 				if(targetpad && targetpad.caller_id)
-					to_chat(user, "<span class='info'>The pad flashes a busy sign. Maybe you should try again later..</span>")
+					to_chat(user, "<span class='info'>The pad flashes a busy sign. Maybe you should try again later.</span>")
 					return
 				if(targetpad)
 					make_call(targetpad, user)
@@ -234,8 +234,7 @@ For the other part of the code, check silicon say.dm. Particularly robot talk.*/
 				else
 					ai_text = stars(text)
 			if(isanimal(M) && !M.universal_speak)
-				var/mob/living/simple_animal/SA = M
-				ai_text = DEFAULTPICK(SA.emote_speech, "...")
+				ai_text = DEFAULTPICK(M.ai?.emote_speech, "...")
 			var/name_used = M.GetVoice()
 			//This communication is imperfect because the holopad "filters" voices and is only designed to connect to the master only.
 			var/short_links = master.get_preference_value(/datum/client_preference/ghost_follow_link_length) == PREF_SHORT
@@ -245,8 +244,7 @@ For the other part of the code, check silicon say.dm. Particularly robot talk.*/
 	var/name_used = M.GetVoice()
 	var/message
 	if(isanimal(M) && !M.universal_speak)
-		var/mob/living/simple_animal/SA = M
-		message = get_hear_message(name_used, DEFAULTPICK(SA.emote_speech, "..."), verb, speaking)
+		message = get_hear_message(name_used, DEFAULTPICK(M.ai?.emote_speech, "..."), verb, speaking)
 	else
 		message = get_hear_message(name_used, text, verb, speaking)
 	if(targetpad && !targetpad.incoming_connection) //If this is the pad you're making the call from and the call is accepted
